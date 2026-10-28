@@ -969,12 +969,13 @@
       const btn = document.getElementById("btnSubmitTicket");
       const originalHtml = btn.innerHTML;
       btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Đang tải lên và gửi...`;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1.5"></i> Đang gửi lên hệ thống...`;
 
       const selectedCategory = document.querySelector('input[name="category"]:checked')?.value || "Máy tính / PC";
       const machineVal = document.getElementById("machineName").value.trim() || detectedClient.machineName;
 
       const payload = {
+        action: "createTicket",
         fullname: document.getElementById("fullname").value.trim(),
         phone: document.getElementById("phone").value.trim(),
         department: document.getElementById("department").value,
@@ -989,36 +990,52 @@
 
       saveUserInfoIfChecked();
 
-      // Sinh mã tạm đẹp
+      // Sinh mã tạm dự phòng
       const now = new Date();
       const dCode = `${String(now.getFullYear()).slice(2)}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
-      const tempId = `TK-${dCode}-${Math.floor(100 + Math.random() * 900)}`;
-      const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')} - ${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}`;
+      let finalTicketId = `TK-${dCode}-${Math.floor(100 + Math.random() * 900)}`;
+      let finalTimestamp = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+      let serverSuccess = false;
 
       // Gửi lên Google Sheet
       if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
         try {
-          await fetch(SCRIPT_URL, {
+          const response = await fetch(SCRIPT_URL, {
             method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify(payload)
           });
+          const result = await response.json();
+          if (result && result.success) {
+            serverSuccess = true;
+            if (result.ticketId) finalTicketId = result.ticketId;
+            if (result.timestamp) finalTimestamp = result.timestamp;
+          } else {
+            console.warn("Server phản hồi nhưng không thành công:", result);
+          }
         } catch (err) {
-          console.warn("Lỗi gửi POST, chuyển thử GET fallback:", err);
+          console.warn("Lỗi gửi POST, kích hoạt GET fallback:", err);
           try {
-            // Nếu không gửi được ảnh qua GET vì dài thì chỉ gửi text
+            // Nếu không gửi được ảnh qua GET vì URL quá dài thì chỉ gửi text
             const clonePayload = Object.assign({}, payload);
             delete clonePayload.imageBase64;
-            await fetch(`${SCRIPT_URL}?action=createTicket&data=${encodeURIComponent(JSON.stringify(clonePayload))}`, { mode: "no-cors" });
-          } catch(e2){}
+            const resGet = await fetch(`${SCRIPT_URL}?action=createTicket&data=${encodeURIComponent(JSON.stringify(clonePayload))}`);
+            const resultGet = await resGet.json();
+            if (resultGet && resultGet.success) {
+              serverSuccess = true;
+              if (resultGet.ticketId) finalTicketId = resultGet.ticketId;
+              if (resultGet.timestamp) finalTimestamp = resultGet.timestamp;
+            }
+          } catch(e2) {
+            console.error("GET fallback cũng gặp lỗi:", e2);
+          }
         }
       }
 
       // Cập nhật ngay vào danh sách hiển thị
       currentTickets.unshift({
-        id: tempId,
-        timestamp: timeStr,
+        id: finalTicketId,
+        timestamp: finalTimestamp,
         fullname: payload.fullname,
         phone: payload.phone,
         department: payload.department,
@@ -1032,7 +1049,7 @@
         clientSpecs: payload.clientSpecs
       });
 
-      // Lưu cache local nếu ở chế độ demo
+      // Lưu cache local nếu chưa có server hoặc demo
       if (!SCRIPT_URL) {
         localStorage.setItem("IT_HELPDESK_LOCAL_TICKETS", JSON.stringify(currentTickets));
       }
@@ -1046,14 +1063,21 @@
       btn.disabled = false;
       btn.innerHTML = originalHtml;
 
-      // Cập nhật bảng
+      // Cập nhật bảng và số liệu
       updateStats();
       renderTickets();
 
       // Hiện popup thành công
-      document.getElementById("resTicketId").textContent = `#${tempId}`;
+      document.getElementById("resTicketId").textContent = `#${finalTicketId}`;
       document.getElementById("resMachine").textContent = payload.machineName;
       document.getElementById("modalSuccess").classList.remove("hidden");
+
+      // Nếu gửi server thành công, tự động tải lại danh sách chính thức từ Google Sheet
+      if (serverSuccess) {
+        setTimeout(() => {
+          fetchTickets(false);
+        }, 1200);
+      }
     }
 
     // 7. LẤY DỮ LIỆU TICKET TỪ GOOGLE SHEET
@@ -1067,8 +1091,12 @@
           const data = await res.json();
           if (data && data.success && Array.isArray(data.tickets)) {
             currentTickets = data.tickets;
+            try {
+              localStorage.setItem("IT_HELPDESK_LOCAL_TICKETS", JSON.stringify(currentTickets));
+            } catch(e){}
           }
         } catch (err) {
+          console.warn("Không kết nối được server, tải cache:", err);
           loadDemoTickets();
         }
       } else {

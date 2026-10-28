@@ -393,8 +393,17 @@ function doGet(e) {
     }
 
     // 4. FALLBACK GET
-    if (action === "createTicket" && params.data) {
-      const ticketData = JSON.parse(decodeURIComponent(params.data));
+    if (action === "createTicket") {
+      let ticketData = params;
+      if (params.data) {
+        try {
+          ticketData = typeof params.data === "string" ? JSON.parse(params.data) : params.data;
+        } catch (e1) {
+          try {
+            ticketData = JSON.parse(decodeURIComponent(params.data));
+          } catch (e2) {}
+        }
+      }
       return jsonResponse(handleCreateTicket(ticketData, ss));
     }
 
@@ -428,7 +437,16 @@ function doPost(e) {
       body = e.parameter;
     }
 
-    const action = body.action || "login";
+    let action = (body.action || "").toString().trim();
+    if (!action) {
+      if (body.description || body.errorMessage || body.category || body.machineName) {
+        action = "createTicket";
+      } else if (body.attendees || body.location || (body.date && body.time && body.content)) {
+        action = "register";
+      } else {
+        action = "login";
+      }
+    }
     const ss = SpreadsheetApp.getActiveSpreadsheet();
 
     // 0. ĐỒNG BỘ 1-CLICK TỪ XA
@@ -617,7 +635,7 @@ function handleLogin(identifier, password, ss) {
 }
 
 function handleAddSchedule(data, ss) {
-  const phone = (data.phone || "").toString().trim();
+  const phone = (data.phone || data.email || "").toString().trim();
   const name = (data.name || data.fullname || "").toString().trim();
   const date = (data.date || "").toString().trim();
   const dayOfWeek = (data.dayOfWeek || "").toString().trim();

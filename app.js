@@ -31,7 +31,8 @@ if (typeof window !== "undefined") {
     googleScriptUrl = url;
   };
 }
-let googleScriptUrl = localStorage.getItem(STORAGE_KEYS.SCRIPT_URL) || DEFAULT_SCRIPT_URL;
+const savedScriptUrl = localStorage.getItem(STORAGE_KEYS.SCRIPT_URL);
+let googleScriptUrl = (savedScriptUrl && savedScriptUrl.startsWith("https://script.google.com/macros/s/")) ? savedScriptUrl : DEFAULT_SCRIPT_URL;
 
 // Email Quản trị viên duy nhất được phép xem và cấu hình Server API
 const ADMIN_EMAIL = "quan.vpdk@gmail.com";
@@ -925,6 +926,11 @@ async function handleRegister(e) {
     return;
   }
 
+  // Xác định định danh và tên người gửi
+  const userIdentifier = currentUser ? (currentUser.phone || currentUser.cccd || currentUser.email || "") : "";
+  const userSenderName = getSenderDisplayName(currentUser);
+  const userEmail = currentUser ? (currentUser.email || userIdentifier) : "user@gmail.com";
+
   // Tạo đối tượng lịch đăng ký hoàn chỉnh
   const newScheduleItem = {
     id: "LT-" + Date.now(),
@@ -935,8 +941,10 @@ async function handleRegister(e) {
     content: regContent,
     attendees: regAttendees,
     location: regLocation,
-    email: currentUser ? currentUser.email : "user@gmail.com",
-    name: getSenderDisplayName(currentUser),
+    phone: userIdentifier,
+    email: userEmail,
+    name: userSenderName,
+    fullname: userSenderName,
     created_at: new Date().toISOString()
   };
 
@@ -961,6 +969,9 @@ async function handleRegister(e) {
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({
             action: "register",
+            phone: newScheduleItem.phone,
+            name: newScheduleItem.name,
+            fullname: newScheduleItem.fullname,
             email: newScheduleItem.email,
             date: newScheduleItem.date,
             dayOfWeek: newScheduleItem.dayOfWeek,
@@ -973,6 +984,9 @@ async function handleRegister(e) {
         const result = await response.json();
         if (result && result.success) {
           syncedToGoogle = true;
+          if (result.id) {
+            newScheduleItem.id = result.id;
+          }
         } else if (result && result.message) {
           syncErrorMsg = result.message;
         }
@@ -982,6 +996,9 @@ async function handleRegister(e) {
         try {
           const qParams = new URLSearchParams({
             action: "register",
+            phone: newScheduleItem.phone,
+            name: newScheduleItem.name,
+            fullname: newScheduleItem.fullname,
             email: newScheduleItem.email,
             date: newScheduleItem.date,
             dayOfWeek: newScheduleItem.dayOfWeek,
@@ -997,6 +1014,9 @@ async function handleRegister(e) {
           const resGetJson = await resGet.json();
           if (resGetJson && resGetJson.success) {
             syncedToGoogle = true;
+            if (resGetJson.id) {
+              newScheduleItem.id = resGetJson.id;
+            }
           } else if (resGetJson && resGetJson.message) {
             syncErrorMsg = resGetJson.message;
           }
@@ -1013,6 +1033,13 @@ async function handleRegister(e) {
 
     // Cập nhật lại giao diện bảng (tự động sort mới nhất lên đầu)
     renderScheduleTable(scheduleData);
+
+    // Đồng bộ lại dữ liệu đầy đủ từ server nếu gửi thành công
+    if (syncedToGoogle) {
+      setTimeout(() => {
+        loadScheduleList(false);
+      }, 1200);
+    }
 
     // Reset các ô nhập liệu (giữ lại ngày để người dùng tiện đăng ký tiếp buổi khác)
     if (window.startTimePicker) {
