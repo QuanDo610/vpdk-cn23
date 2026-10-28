@@ -178,7 +178,61 @@ body {
 .login-card {
   max-width: 480px;
   margin: 50px auto;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+/* Đảm bảo Tiêu đề và Mô tả luôn xếp DỌC (TRÊN DƯỚI), tuyệt đối không bị chia 2 cột */
+.login-card-header,
+.login-card .card-header {
+  padding: 28px 24px 20px 24px !important;
+  background-color: #f8fafc !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+.login-icon-box {
+  font-size: 2.5rem;
+  color: #1e40af;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.login-title,
+.login-card .card-header h2 {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 1.25rem !important;
+  font-weight: 800 !important;
+  color: #1e3a8a !important;
+  letter-spacing: -0.01em !important;
+  text-align: center !important;
+  width: 100% !important;
+  display: block !important;
+  line-height: 1.4 !important;
+}
+
+.login-subtitle,
+.login-card .card-header p {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 0.9rem !important;
+  color: #64748b !important;
+  text-align: center !important;
+  width: 100% !important;
+  display: block !important;
+  line-height: 1.4 !important;
 }
 
 .text-center {

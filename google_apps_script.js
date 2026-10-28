@@ -1142,6 +1142,13 @@ function doGet(e) {
       });
     }
 
+    // 0.1 XÁC THỰC ĐĂNG NHẬP TRỰC TIẾP TỪ GOOGLE SHEET (HỖ TRỢ GET)
+    if (action === "login") {
+      const phone = (params.phone || params.username || params.email || "").toString();
+      const password = (params.password || "").toString();
+      return jsonResponse(handleLogin(phone, password, ss));
+    }
+
     // 1. LẤY DANH SÁCH LỊCH TUẦN
     if (action === "getSchedule") {
       const sheet = getScheduleSheet(ss);
@@ -1327,57 +1334,11 @@ function doPost(e) {
       });
     }
 
-    // 1. XÁC THỰC ĐĂNG NHẬP
+    // 1. XÁC THỰC ĐĂNG NHẬP TRỰC TIẾP TỪ GOOGLE SHEET (HỖ TRỢ POST)
     if (action === "login") {
-      let phone = (body.phone || body.username || body.email || "").toString().trim().replace(/^'+/, "");
-      const password = (body.password || "").toString().trim();
-
-      if (!phone || !password) {
-        return jsonResponse({ success: false, message: "Vui lòng nhập đầy đủ Số điện thoại/Tài khoản và Mật khẩu!" });
-      }
-
-      if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
-
-      const sheetUsers = getUsersSheet(ss);
-      const data = sheetUsers.getDataRange().getDisplayValues();
-      let matchedUser = null;
-
-      for (let i = 1; i < data.length; i++) {
-        let rowIdentifier = (data[i][0] || "").toString().trim().replace(/^'+/, "");
-        if (rowIdentifier.length === 9 && !rowIdentifier.startsWith("0")) rowIdentifier = "0" + rowIdentifier;
-        const rowPass = (data[i][1] || "").toString().trim();
-
-        if (rowIdentifier.toLowerCase() === phone.toLowerCase() && rowPass === password) {
-          matchedUser = {
-            phone: rowIdentifier,
-            fullname: data[i][2],
-            position: data[i][3] || "",
-            department: data[i][4] || "Chi nhánh số 23",
-            cccd: (data[i][5] || "").replace(/^'+/, ""),
-            status: data[i][6] || "Đang làm việc",
-            role: (data[i][7] && data[i][7].toLowerCase().includes("admin")) ? "admin" : "user"
-          };
-          break;
-        }
-      }
-
-      if (!matchedUser) {
-        return jsonResponse({ success: false, message: "Số điện thoại hoặc mật khẩu không chính xác!" });
-      }
-
-      if (matchedUser.status === "Đã nghỉ") {
-        return jsonResponse({
-          success: false,
-          isRetired: true,
-          message: "Tài khoản của cán bộ (" + matchedUser.fullname + ") đã được ghi nhận trạng thái ĐÃ NGHỈ LÀM VIỆC tại Chi nhánh. Vui lòng liên hệ Tổ CNTT/HCTH nếu cần hỗ trợ!"
-        });
-      }
-
-      return jsonResponse({
-        success: true,
-        message: "Đăng nhập thành công!",
-        user: matchedUser
-      });
+      const phone = (body.phone || body.username || body.email || "").toString();
+      const password = (body.password || "").toString();
+      return jsonResponse(handleLogin(phone, password, ss));
     }
 
     // 2. ĐĂNG KÝ TÀI KHOẢN MỚI
@@ -1453,6 +1414,88 @@ function doPost(e) {
 /**
  * Xử lý thêm 1 mục Lịch Tuần
  */
+/**
+ * Hàm xác thực Đăng nhập trực tiếp từ Google Sheet
+ * Hỗ trợ tạo user mới bên Sheet hoặc đổi mật khẩu bên Sheet sẽ có hiệu lực ngay lập tức
+ */
+function handleLogin(phone, password, ss) {
+  try {
+    ss = ss || SpreadsheetApp.getActiveSpreadsheet();
+    phone = (phone || "").toString().trim().replace(/[\s\.\-]+/g, "").replace(/^'+/, "");
+    password = (password || "").toString().trim();
+
+    if (!phone || !password) {
+      return { success: false, message: "Vui lòng nhập đầy đủ Số điện thoại và Mật khẩu!" };
+    }
+
+    if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
+
+    const sheetUsers = getUsersSheet(ss);
+    const data = sheetUsers.getDataRange().getDisplayValues();
+    let matchedUser = null;
+    let phoneFound = false;
+
+    for (let i = 1; i < data.length; i++) {
+      let rowIdentifier = (data[i][0] || "").toString().trim().replace(/[\s\.\-]+/g, "").replace(/^'+/, "");
+      if (rowIdentifier.length === 9 && !rowIdentifier.startsWith("0")) rowIdentifier = "0" + rowIdentifier;
+      const rowPass = (data[i][1] || "").toString().trim();
+
+      if (rowIdentifier.toLowerCase() === phone.toLowerCase()) {
+        phoneFound = true;
+        if (rowPass === password) {
+          const fullname = (data[i][2] || "").trim() || ("Cán bộ " + rowIdentifier);
+          const position = (data[i][3] || "").trim() || "Cán bộ";
+          const department = (data[i][4] || "").trim() || "Chi nhánh số 23";
+          const cccd = (data[i][5] || "").replace(/^'+/, "").trim();
+          const status = (data[i][6] || "").trim() || "Đang làm việc";
+          const role = (data[i][7] && data[i][7].toLowerCase().includes("admin")) ? "admin" : "user";
+
+          matchedUser = {
+            phone: rowIdentifier,
+            fullname: fullname,
+            position: position,
+            department: department,
+            cccd: cccd,
+            status: status,
+            role: role
+          };
+          break;
+        }
+      }
+    }
+
+    if (!phoneFound) {
+      return {
+        success: false,
+        message: "Số điện thoại này chưa được đăng ký trong danh sách trên Google Sheet!"
+      };
+    }
+
+    if (!matchedUser) {
+      return {
+        success: false,
+        message: "Mật khẩu không chính xác! Vui lòng kiểm tra lại."
+      };
+    }
+
+    if (matchedUser.status === "Đã nghỉ") {
+      return {
+        success: false,
+        isRetired: true,
+        message: "Tài khoản cán bộ (" + matchedUser.fullname + ") đã được ghi nhận trạng thái ĐÃ NGHỈ LÀM VIỆC trên Google Sheet. Không thể đăng nhập!"
+      };
+    }
+
+    return {
+      success: true,
+      message: "Đăng nhập thành công!",
+      user: matchedUser
+    };
+  } catch (err) {
+    return { success: false, message: "Lỗi kiểm tra tài khoản: " + err.toString() };
+  }
+}
+
 function handleAddSchedule(data, ss) {
   const phone = (data.phone || "").toString().trim();
   const name = (data.name || data.fullname || "").toString().trim();
