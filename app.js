@@ -680,12 +680,6 @@ async function handleLogin(e) {
       if (emailInput === ADMIN_EMAIL) {
         role = "admin";
         name = "Đỗ Trọng Minh Quân";
-      } else if (emailInput.includes("tuyen") || emailInput.includes("admin")) {
-        role = "admin";
-        name = "Nguyễn Thị Bích Tuyền";
-      } else if (emailInput.includes("thang")) {
-        role = "user";
-        name = "Nguyễn Chiến Thắng";
       } else if (KNOWN_USERS_MAP[emailInput]) {
         name = KNOWN_USERS_MAP[emailInput];
       } else {
@@ -731,7 +725,9 @@ function onLoginSuccess(user, remember) {
 }
 
 function checkAutoLogin() {
-  const savedUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER) || sessionStorage.getItem(STORAGE_KEYS.CURRENT_USER) || localStorage.getItem("binhduong_user") || sessionStorage.getItem("binhduong_user");
+  // Dọn dẹp key rác cũ
+  localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+  const savedUser = sessionStorage.getItem("binhduong_user") || sessionStorage.getItem(STORAGE_KEYS.CURRENT_USER);
   if (savedUser) {
     try {
       const u = JSON.parse(savedUser);
@@ -747,8 +743,8 @@ function checkAutoLogin() {
       loadScheduleList();
       return;
     } catch (e) {
-      localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
-      localStorage.removeItem("binhduong_user");
+      sessionStorage.removeItem("binhduong_user");
+      sessionStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
     }
   }
   // Nếu chưa đăng nhập, tự động chuyển về Cổng Dịch Vụ

@@ -81,7 +81,7 @@
           <div class="form-check-group login-options-row">
             <label class="checkbox-label">
               <input type="checkbox" id="rememberMe" checked>
-              <span>Ghi nhớ đăng nhập</span>
+              <span>Ghi nhớ số CCCD</span>
             </label>
             <button type="button" id="btnForgotPassword" class="btn-forgot-password">Quên mật khẩu?</button>
           </div>
@@ -269,18 +269,33 @@
       document.getElementById("headerUserArea").style.display = "none";
     }
 
-    // Kiểm tra phiên đăng nhập đã lưu
+    // Kiểm tra phiên đăng nhập: Mở mới luôn yêu cầu đăng nhập, chỉ duy trì trong cùng phiên sessionStorage
     function checkSession() {
-      const raw = localStorage.getItem("binhduong_user") || sessionStorage.getItem("binhduong_user") || localStorage.getItem("vpdk_current_user");
+      // Dọn dẹp dứt điểm các key rác cũ từ phiên bản thử nghiệm trước (tránh auto-login ngoài ý muốn)
+      localStorage.removeItem("vpdk_current_user");
+      sessionStorage.removeItem("vpdk_current_user");
+      localStorage.removeItem("binhduong_user");
+
+      // Khôi phục số CCCD đã ghi nhớ (nếu có) để người dùng đỡ phải gõ lại
+      const rememberedCccd = localStorage.getItem("vpdk_remembered_cccd");
+      const cccdInput = document.getElementById("loginCccd");
+      if (rememberedCccd && cccdInput) {
+        cccdInput.value = rememberedCccd;
+      }
+
+      // Chỉ duy trì đăng nhập nếu người dùng đang trong cùng một phiên duyệt web (sessionStorage)
+      const raw = sessionStorage.getItem("binhduong_user");
       if (raw) {
         try {
           const user = JSON.parse(raw);
           showHub(user);
           return true;
         } catch (e) {
-          localStorage.removeItem("binhduong_user");
+          sessionStorage.removeItem("binhduong_user");
         }
       }
+
+      // Mặc định khi mở mới: Luôn luôn hiển thị màn hình ĐĂNG NHẬP để cán bộ nhập Mật khẩu
       showLogin();
       return false;
     }
@@ -289,10 +304,10 @@
     const btnLogout = document.getElementById("btnLogout");
     if (btnLogout) {
       btnLogout.addEventListener("click", () => {
-        localStorage.removeItem("binhduong_user");
         sessionStorage.removeItem("binhduong_user");
-        localStorage.removeItem("vpdk_current_user");
         sessionStorage.removeItem("vpdk_current_user");
+        localStorage.removeItem("binhduong_user");
+        localStorage.removeItem("vpdk_current_user");
         showToast("Đã đăng xuất khỏi hệ thống thành công.", "info");
         showLogin();
       });
@@ -364,13 +379,18 @@
               status: u.status || "Đang làm việc"
             };
 
+            // Ghi nhớ số CCCD nếu người dùng tích chọn
             if (remember) {
-              localStorage.setItem("binhduong_user", JSON.stringify(userObj));
-              localStorage.setItem("vpdk_current_user", JSON.stringify(userObj));
+              localStorage.setItem("vpdk_remembered_cccd", userObj.cccd || cccd);
             } else {
-              sessionStorage.setItem("binhduong_user", JSON.stringify(userObj));
-              sessionStorage.setItem("vpdk_current_user", JSON.stringify(userObj));
+              localStorage.removeItem("vpdk_remembered_cccd");
             }
+
+            // Phiên làm việc chỉ lưu trong sessionStorage để bảo mật, đóng trình duyệt là hết phiên
+            sessionStorage.setItem("binhduong_user", JSON.stringify(userObj));
+            sessionStorage.setItem("vpdk_current_user", JSON.stringify(userObj));
+            localStorage.removeItem("binhduong_user");
+            localStorage.removeItem("vpdk_current_user");
 
             showToast(`Xin chào ${userObj.fullname}! Đăng nhập thành công.`, "success");
             showHub(userObj);
