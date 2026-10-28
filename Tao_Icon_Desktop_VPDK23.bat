@@ -1,11 +1,11 @@
 ﻿@echo off
 :: ===============================================================================
-:: CÔNG CỤ TỰ ĐỘNG CÀI ĐẶT PHÍM TẮT CỔNG DỊCH VỤ NỘI BỘ - CHI NHÁNH SỐ 23
+:: CỔNG DỊCH VỤ NỘI BỘ - VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI CHI NHÁNH SỐ 23
 :: - Mở trực tiếp bằng Google Chrome hoặc Microsoft Edge
-:: - Biểu tượng Pikachu Vàng nổi bật nhất Desktop (Chống bấm nhầm, giao diện thân thiện)
+:: - Biểu tượng Pikachu Đeo Kính Vuông Nổi Bật (Chống bấm nhầm 100%)
 :: ===============================================================================
 chcp 65001 >nul
-title Cài đặt Phím tắt Cổng Dịch Vụ Pikachu Vàng - Chi Nhánh 23
+title Cài đặt Phím tắt Cổng Dịch Vụ Pikachu Kính Vuông - Chi Nhánh 23
 color 0E
 
 echo.
@@ -14,27 +14,28 @@ echo       CỔNG DỊCH VỤ NỘI BỘ - VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI CH
 echo               (Hệ thống Lịch Tuần & Tiếp nhận IT Helpdesk)
 echo ===============================================================================
 echo.
-echo [*] BƯỚC 1: Đang thiết lập Biểu tượng Pikachu Vàng nổi bật (chống bấm nhầm)...
+echo [*] BƯỚC 1: Đang thiết lập Biểu tượng Pikachu Đeo Kính Vuông nổi bật...
 
 :: Tạo thư mục lưu Icon ứng dụng trong LocalAppData của cán bộ
 set "APP_DIR=%LOCALAPPDATA%\VPDK23"
 if not exist "%APP_DIR%" mkdir "%APP_DIR%" 2>nul
-set "ICON_FILE=%APP_DIR%\pikachu.ico"
 
-:: Ưu tiên 1: Lấy icon pikachu.ico có sẵn trong cùng thư mục (khi giải nén zip)
-if exist "%~dp0pikachu.ico" (
-    copy /y "%~dp0pikachu.ico" "%ICON_FILE%" >nul 2>&1
+:: Ưu tiên 1: Icon Badge Pikachu Kính Vuông nền xanh viền vàng (Mẫu yêu thích)
+set "ICON_FILE=%APP_DIR%\pikachu_badge.ico"
+
+if exist "%~dp0pikachu_badge.ico" (
+    copy /y "%~dp0pikachu_badge.ico" "%ICON_FILE%" >nul 2>&1
 )
 
 :: Ưu tiên 2: Tải trực tiếp từ máy chủ GitHub chính thức
 if not exist "%ICON_FILE%" (
-    curl -s -L "https://raw.githubusercontent.com/QuanDo610/vpdk-cn23/main/pikachu.ico" -o "%ICON_FILE%" 2>nul
+    curl -s -L "https://raw.githubusercontent.com/QuanDo610/vpdk-cn23/main/pikachu_badge.ico" -o "%ICON_FILE%" 2>nul
 )
 
-:: Ưu tiên 3: Nếu có icon badge trong thư mục
+:: Ưu tiên 3: Icon pikachu.ico có sẵn
 if not exist "%ICON_FILE%" (
-    if exist "%~dp0pikachu_badge.ico" (
-        copy /y "%~dp0pikachu_badge.ico" "%ICON_FILE%" >nul 2>&1
+    if exist "%~dp0pikachu.ico" (
+        copy /y "%~dp0pikachu.ico" "%ICON_FILE%" >nul 2>&1
     )
 )
 
@@ -50,7 +51,7 @@ if not exist "%ICON_FILE%" (
     set "ICON_FILE=%SystemRoot%\System32\shell32.dll,220"
     echo   [!] Tạm thời dùng biểu tượng hệ thống Windows.
 ) else (
-    echo   [OK] Đã thiết lập thành công Biểu tượng Pikachu Vàng rực rỡ, sắc nét.
+    echo   [OK] Đã thiết lập thành công Biểu tượng Pikachu Đeo Kính Vuông sắc nét.
 )
 
 echo.
@@ -104,11 +105,10 @@ if not defined BROWSER_EXE (
 echo   [OK] Trình duyệt chuyên dụng: %BROWSER_NAME%
 
 echo.
-echo [*] BƯỚC 3: Đang khởi tạo Lối tắt (Shortcut .lnk) Pikachu ngoài Desktop...
+echo [*] BƯỚC 3: Đang khởi tạo Lối tắt (Shortcut .lnk) ngoài Desktop...
 
 set "TARGET_URL=https://quando610.github.io/vpdk-cn23/index.html"
 
-:: Gọi PowerShell tạo Shortcut chuẩn Windows LNK có Icon Pikachu
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$ws = New-Object -ComObject WScript.Shell; ^
    $desktop = [Environment]::GetFolderPath('Desktop'); ^
@@ -139,7 +139,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
 echo.
 echo ===============================================================================
 echo  [V] HOÀN TẤT THÀNH CÔNG!
-echo      - Biểu tượng Pikachu Vàng nổi bật đã được đặt ngoài Màn hình Desktop.
+echo      - Biểu tượng Pikachu Đeo Kính Vuông đã được cài ngoài Desktop.
 echo      - Cố định mở chuyên dụng qua: %BROWSER_NAME%.
 echo ===============================================================================
 echo.
@@ -149,7 +149,7 @@ start "" "%BROWSER_EXE%" "%TARGET_URL%"
 echo.
 echo -------------------------------------------------------------------------------
 echo  HƯỚNG DẪN DÀNH CHO CÁN BỘ:
-echo  1. Hằng ngày, cán bộ chỉ cần bấm đúp vào biểu tượng "Pikachu Vàng"
+echo  1. Hằng ngày, cán bộ chỉ cần bấm đúp vào biểu tượng "Pikachu Kính Vuông"
 echo     có tên "Cổng Dịch Vụ - Chi Nhánh 23" trên màn hình Desktop.
 echo  2. Đăng nhập bằng Số CCCD (12 số) và Mật khẩu được cấp.
 echo -------------------------------------------------------------------------------
