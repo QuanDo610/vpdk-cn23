@@ -587,7 +587,7 @@ function handleLogin(identifier, password, ss) {
     if (!identifierFound) {
       return {
         success: false,
-        message: "Số CCCD này chưa được đăng ký trong danh sách trên Google Sheet!"
+        message: "Số CCCD này chưa được đăng ký trong danh sách trên hệ thống!"
       };
     }
 
@@ -602,7 +602,7 @@ function handleLogin(identifier, password, ss) {
       return {
         success: false,
         isRetired: true,
-        message: "Tài khoản cán bộ (" + matchedUser.fullname + ") đã được ghi nhận trạng thái ĐÃ NGHỈ LÀM VIỆC trên Google Sheet. Không thể đăng nhập!"
+        message: "Tài khoản cán bộ (" + matchedUser.fullname + ") đã được ghi nhận trạng thái ĐÃ NGHỈ LÀM VIỆC trên hệ thống nội bộ. Không thể đăng nhập!"
       };
     }
 

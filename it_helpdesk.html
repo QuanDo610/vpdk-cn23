@@ -50,9 +50,15 @@
     /* Workspace 2-Column Grid (Kế nhau trên PC, xếp dọc trên điện thoại) */
     .workspace-grid {
       display: grid;
-      grid-template-columns: 440px 1fr;
-      gap: 24px;
+      grid-template-columns: 380px 1fr;
+      gap: 20px;
       align-items: start;
+    }
+    @media (min-width: 1536px) {
+      .workspace-grid {
+        grid-template-columns: 400px 1fr;
+        gap: 24px;
+      }
     }
     @media (max-width: 1080px) {
       .workspace-grid {
@@ -168,24 +174,38 @@
 
         <form id="ticketForm" onsubmit="handleSubmitTicket(event)" class="space-y-4">
 
-          <!-- Thông tin Cán bộ gửi yêu cầu (Tự động nhận diện từ phiên Đăng nhập) -->
-          <div class="p-3 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 flex items-center justify-between text-xs shadow-2xs">
-            <div class="flex items-center space-x-2.5">
-              <div class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center text-sm shadow-xs font-bold shrink-0">
+          <!-- Thông tin Cán bộ gửi yêu cầu (Đã xác thực qua CCCD, responsive hoàn hảo) -->
+          <div class="p-3.5 rounded-2xl bg-gradient-to-br from-blue-50/90 via-indigo-50/50 to-slate-50 border border-blue-200/80 shadow-2xs">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center space-x-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-[10px] font-bold text-blue-900 uppercase tracking-wider">Cán bộ gửi yêu cầu</span>
+              </div>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200 shrink-0">
+                <i class="fa-solid fa-circle-check mr-1 text-emerald-600"></i> Đã xác thực
+              </span>
+            </div>
+
+            <div class="flex items-start space-x-2.5">
+              <div class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center text-sm shadow-xs font-bold shrink-0 mt-0.5">
                 <i class="fa-solid fa-user-check"></i>
               </div>
-              <div class="truncate">
-                <div class="text-[10px] text-blue-600 font-semibold uppercase tracking-wider">Cán bộ yêu cầu</div>
-                <div class="font-bold text-slate-800 text-xs sm:text-sm truncate">
-                  <span id="requesterDisplayName">Đang tải...</span>
-                  <span class="text-slate-400 font-normal mx-1">•</span>
-                  <span id="requesterDisplayPhone" class="text-blue-700 font-mono">CCCD: ...</span>
+              <div class="flex-1 min-w-0">
+                <div class="font-bold text-slate-900 text-sm truncate" id="requesterDisplayName">
+                  Đang tải...
+                </div>
+                <div class="flex flex-wrap items-center gap-1.5 mt-1.5 text-[11px]">
+                  <span id="requesterCccdBadge" class="inline-flex items-center px-2 py-0.5 rounded-md bg-white text-blue-700 font-mono font-semibold border border-blue-200/80 shadow-2xs">
+                    <i class="fa-solid fa-id-card mr-1 text-blue-500 text-[10px]"></i>
+                    <span id="requesterDisplayCccd">CCCD: ...</span>
+                  </span>
+                  <span id="requesterPhoneBadge" class="inline-flex items-center px-2 py-0.5 rounded-md bg-white text-slate-700 font-mono font-medium border border-slate-200 shadow-2xs">
+                    <i class="fa-solid fa-phone mr-1 text-slate-400 text-[10px]"></i>
+                    <span id="requesterDisplayPhone">090xxxxxxx</span>
+                  </span>
                 </div>
               </div>
             </div>
-            <span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-semibold border border-blue-200 shrink-0 hidden sm:inline-block">
-              <i class="fa-solid fa-circle-check text-emerald-600 mr-0.5"></i> Đã xác thực
-            </span>
           </div>
 
           <!-- Hidden inputs lưu thông tin định danh -->
@@ -351,7 +371,7 @@
               </span>
               Bảng Theo Dõi & Hàng Đợi Xử Lý (Monitoring)
             </h2>
-            <p class="text-xs text-slate-500 mt-0.5">Tiến độ sửa máy theo thời gian thực từ Google Sheets</p>
+            <p class="text-xs text-slate-500 mt-0.5">Tiến độ tiếp nhận & khắc phục sự cố theo thời gian thực</p>
           </div>
 
           <button onclick="fetchTickets(true)" id="btnRefresh"
@@ -429,19 +449,19 @@
             <thead class="bg-slate-50 text-slate-700 uppercase font-bold text-[10px] tracking-wider border-b border-slate-200">
               <tr>
                 <th class="py-3 px-3 w-28 whitespace-nowrap">Mã Ticket</th>
-                <th class="py-3 px-3 w-44">Người gửi / Phòng ban</th>
-                <th class="py-3 px-3 w-36">Tên máy & Thiết bị</th>
-                <th class="py-3 px-3 min-w-[200px]">Nội dung & Câu thông báo lỗi</th>
-                <th class="py-3 px-3 w-20 text-center">Ảnh lỗi</th>
-                <th class="py-3 px-3 w-28 text-center">Trạng thái</th>
-                <th class="py-3 px-3 w-40">Ghi chú IT</th>
+                <th class="py-3 px-3 w-48 min-w-[180px]">Người gửi / Phòng ban</th>
+                <th class="py-3 px-3 w-36 min-w-[140px]">Tên máy & Thiết bị</th>
+                <th class="py-3 px-3 min-w-[180px]">Nội dung sự cố</th>
+                <th class="py-3 px-3 w-20 text-center whitespace-nowrap">Ảnh lỗi</th>
+                <th class="py-3 px-3 w-28 text-center whitespace-nowrap">Trạng thái</th>
+                <th class="py-3 px-3 w-16 text-center whitespace-nowrap">Chi tiết</th>
               </tr>
             </thead>
             <tbody id="ticketTableBody" class="divide-y divide-slate-100">
               <tr>
                 <td colspan="7" class="text-center py-10 text-slate-400">
                   <i class="fa-solid fa-spinner fa-spin text-lg mb-2 text-blue-600"></i>
-                  <div>Đang tải dữ liệu từ Google Sheets...</div>
+                  <div>Đang tải dữ liệu từ máy chủ...</div>
                 </td>
               </tr>
             </tbody>
@@ -452,7 +472,7 @@
         <div id="ticketCardsMobile" class="block md:hidden space-y-3">
           <div class="text-center py-8 text-slate-400 bg-slate-50 rounded-2xl border border-slate-200">
             <i class="fa-solid fa-spinner fa-spin text-lg mb-2 text-blue-600"></i>
-            <div class="text-xs font-medium">Đang tải dữ liệu từ Google Sheets...</div>
+            <div class="text-xs font-medium">Đang tải dữ liệu từ máy chủ...</div>
           </div>
         </div>
 
@@ -469,6 +489,98 @@
 
     </div>
   </main>
+
+  <!-- ================= POPUP XEM CHI TIẾT TICKET (DETAIL MODAL) ================= -->
+  <div id="modalTicketDetail" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-xs hidden" onclick="if(event.target === this) closeTicketDetail()">
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-scale-in" onclick="event.stopPropagation()">
+      <!-- Modal Header -->
+      <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-xs">
+            <i class="fa-solid fa-ticket"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-sm sm:text-base font-extrabold text-slate-900 font-mono" id="detailTicketId">TK-xxxxxx-xxx</h3>
+              <span id="detailTicketStatus"></span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-0.5" id="detailTicketTime">Gửi lúc: ...</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeTicketDetail()" class="w-8 h-8 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-4 sm:p-6 overflow-y-auto space-y-4 text-xs">
+        <!-- Người gửi & Thiết bị -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Card Người gửi -->
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
+            <div class="text-[10px] font-bold text-blue-700 uppercase tracking-wider mb-1 flex items-center gap-1">
+              <i class="fa-solid fa-user"></i> Cán bộ gửi yêu cầu
+            </div>
+            <div class="font-bold text-slate-900 text-sm" id="detailFullname">-</div>
+            <div class="text-slate-600 mt-0.5 font-medium" id="detailDepartment">-</div>
+            <div class="text-blue-700 font-mono mt-1 font-semibold" id="detailPhone">-</div>
+          </div>
+
+          <!-- Card Thiết bị -->
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
+            <div class="text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1 flex items-center gap-1">
+              <i class="fa-solid fa-desktop"></i> Thiết bị & Phân loại
+            </div>
+            <div class="font-bold text-slate-900 text-sm" id="detailMachineName">-</div>
+            <div class="inline-block mt-1 px-2 py-0.5 rounded-md bg-blue-100/70 text-blue-800 font-semibold text-[10px]" id="detailCategory">-</div>
+            <div class="text-[10px] text-slate-400 mt-1 truncate" id="detailSpecs">-</div>
+          </div>
+        </div>
+
+        <!-- Thông báo lỗi tiếng Anh (nếu có) -->
+        <div id="detailErrorBox" class="hidden p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900">
+          <div class="text-[10px] font-bold text-rose-700 uppercase tracking-wider mb-1 flex items-center gap-1">
+            <i class="fa-solid fa-triangle-exclamation"></i> Thông báo lỗi hệ thống / Error Message
+          </div>
+          <div class="font-mono text-xs font-semibold break-words leading-relaxed" id="detailErrorMessage"></div>
+        </div>
+
+        <!-- Mô tả sự cố chi tiết -->
+        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
+          <div class="text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+            <i class="fa-solid fa-align-left"></i> Mô tả chi tiết hiện tượng sự cố
+          </div>
+          <div class="text-slate-800 leading-relaxed whitespace-pre-wrap text-xs" id="detailDescription">-</div>
+        </div>
+
+        <!-- Ảnh chụp đính kèm (nếu có) -->
+        <div id="detailImageBox" class="hidden p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
+          <div class="text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center justify-between">
+            <span class="flex items-center gap-1"><i class="fa-solid fa-image"></i> Ảnh chụp màn hình sự cố</span>
+            <span class="text-blue-600 text-[10px] font-normal">Bấm vào ảnh để phóng to</span>
+          </div>
+          <div class="text-center">
+            <img id="detailImagePreview" src="" alt="Ảnh lỗi" class="max-h-48 rounded-xl object-contain mx-auto cursor-pointer border border-slate-200 hover:opacity-90 shadow-2xs" onclick="openImageViewerFromDetail()">
+          </div>
+        </div>
+
+        <!-- Ghi chú IT -->
+        <div id="detailItNoteBox" class="p-3 rounded-2xl bg-sky-50 border border-sky-200 text-sky-900">
+          <div class="text-[10px] font-bold text-sky-700 uppercase tracking-wider mb-1 flex items-center gap-1">
+            <i class="fa-solid fa-wrench"></i> Tiến độ xử lý & Ghi chú IT
+          </div>
+          <div class="text-xs" id="detailItNote">Chưa có ghi chú xử lý từ IT.</div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-3 sm:p-4 border-t border-slate-100 flex justify-end bg-slate-50/50">
+        <button type="button" onclick="closeTicketDetail()" class="px-5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs transition">
+          Đóng
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- ================= POPUP XEM ẢNH PHÓNG TO (IMAGE VIEWER MODAL) ================= -->
   <div id="modalImageViewer" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm hidden" onclick="closeImageViewer()">
@@ -610,12 +722,21 @@
 
         const reqName = document.getElementById("requesterDisplayName");
         if (reqName) reqName.textContent = fnVal;
+        
+        const reqCccd = document.getElementById("requesterDisplayCccd");
+        if (reqCccd) {
+          reqCccd.textContent = cccdVal ? `CCCD: ${cccdVal}` : "Đã xác thực";
+        }
+
+        const reqPhoneBadge = document.getElementById("requesterPhoneBadge");
         const reqPhone = document.getElementById("requesterDisplayPhone");
         if (reqPhone) {
-          let displayTag = "";
-          if (cccdVal) displayTag += `CCCD: ${cccdVal}`;
-          if (phVal) displayTag += (displayTag ? " • SĐT: " : "") + phVal;
-          reqPhone.textContent = displayTag || "Đã xác thực";
+          if (phVal && phVal.trim()) {
+            reqPhone.textContent = phVal;
+            if (reqPhoneBadge) reqPhoneBadge.classList.remove("hidden");
+          } else {
+            if (reqPhoneBadge) reqPhoneBadge.classList.add("hidden");
+          }
         }
         const deptSelect = document.getElementById("department");
         if (deptSelect && user.department) {
@@ -1110,7 +1231,7 @@
 
       emptyState.classList.add("hidden");
 
-      // 1. RENDER CHẾ ĐỘ MÁY TÍNH / TABLET (TABLE)
+      // 1. RENDER CHẾ ĐỘ MÁY TÍNH / TABLET (TABLE) - RESPONSIVE HOÀN HẢO, KHÔNG RỚT CHỮ
       if (tbody) {
         tbody.innerHTML = filtered.map(item => {
           const statusBadge = getStatusBadgeHtml(item.status);
@@ -1119,7 +1240,7 @@
           let imageCell = '<span class="text-slate-300 text-[10px]">—</span>';
           if (item.imageUrl && item.imageUrl.trim() !== "") {
             imageCell = `
-              <button type="button" onclick="openImageViewer('${encodeURIComponent(item.imageUrl)}', '${encodeURIComponent(item.id)}')"
+              <button type="button" onclick="event.stopPropagation(); openImageViewer('${encodeURIComponent(item.imageUrl)}', '${encodeURIComponent(item.id)}')"
                 class="px-2 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 text-[10px] font-bold border border-blue-200 transition inline-flex items-center">
                 <i class="fa-solid fa-image mr-1"></i> Xem ảnh
               </button>
@@ -1127,56 +1248,64 @@
           }
 
           return `
-            <tr class="hover:bg-slate-50/80 transition">
+            <tr class="hover:bg-blue-50/40 transition cursor-pointer group" onclick="openTicketDetail('${item.id}')" title="Bấm vào để xem đầy đủ chi tiết ticket #${item.id}">
               <!-- Mã Ticket & Thời gian -->
               <td class="py-3 px-3 align-top whitespace-nowrap">
                 <div class="font-mono font-bold text-blue-900">${item.id}</div>
                 <div class="text-[10px] text-slate-400 mt-0.5">${item.timestamp}</div>
               </td>
 
-              <!-- Người gửi & Phòng ban -->
+              <!-- Người gửi & Phòng ban (Giữ trên 1 dòng, không rớt chữ lộn xộn) -->
               <td class="py-3 px-3 align-top">
-                <div class="font-bold text-slate-900">${item.fullname}</div>
-                <div class="text-[11px] text-slate-500">${item.department}</div>
-                ${cleanPhone ? `<div class="text-[10px] text-blue-700 font-medium mt-0.5"><a href="tel:${cleanPhone}" class="hover:underline inline-flex items-center"><i class="fa-solid fa-phone text-[9px] mr-1"></i> ${cleanPhone}</a></div>` : ''}
+                <div class="font-bold text-slate-900 whitespace-nowrap overflow-hidden text-ellipsis max-w-[180px]" title="${item.fullname}">${item.fullname}</div>
+                <div class="text-[11px] text-slate-500 whitespace-nowrap overflow-hidden text-ellipsis max-w-[180px] mt-0.5" title="${item.department}">${item.department}</div>
+                ${cleanPhone ? `<div class="text-[10px] text-blue-700 font-mono font-medium mt-0.5 whitespace-nowrap"><i class="fa-solid fa-phone text-[9px] mr-1"></i>${cleanPhone}</div>` : ''}
               </td>
 
-              <!-- Tên máy & Thiết bị -->
+              <!-- Tên máy & Thiết bị (Không rớt chữ) -->
               <td class="py-3 px-3 align-top">
-                <div class="font-semibold text-slate-800 text-[11px]">${item.machineName || 'Chưa rõ'}</div>
-                <span class="inline-block mt-0.5 px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 text-[10px] border border-slate-200">
+                <div class="font-semibold text-slate-800 text-[11px] whitespace-nowrap overflow-hidden text-ellipsis max-w-[140px]" title="${item.machineName || 'Chưa rõ'}">
+                  <i class="fa-solid fa-desktop text-slate-400 text-[10px] mr-1"></i>${item.machineName || 'PC nội bộ'}
+                </div>
+                <span class="inline-block mt-0.5 px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] border border-slate-200 whitespace-nowrap overflow-hidden text-ellipsis max-w-[140px]">
                   ${item.category}
                 </span>
               </td>
 
-              <!-- Nội dung & Câu thông báo lỗi tiếng Anh -->
+              <!-- Nội dung & Câu thông báo lỗi (Tối đa 2 dòng kèm '...', bấm vào xem popup) -->
               <td class="py-3 px-3 align-top">
                 ${item.errorMessage ? `
-                  <div class="mb-1 p-1.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 font-mono text-[11px] font-semibold flex items-start gap-1">
-                    <i class="fa-solid fa-triangle-exclamation text-rose-500 mt-0.5 text-[10px]"></i>
-                    <span>${item.errorMessage}</span>
+                  <div class="mb-1 px-1.5 py-0.5 rounded bg-rose-50 border border-rose-200 text-rose-800 font-mono text-[10px] font-semibold truncate max-w-[240px]" title="${item.errorMessage}">
+                    <i class="fa-solid fa-triangle-exclamation text-rose-500 mr-1 text-[9px]"></i>${item.errorMessage}
                   </div>
                 ` : ''}
-                <div class="text-slate-700 leading-relaxed text-[11px]">${item.description}</div>
+                <div class="text-slate-700 leading-relaxed text-[11px] line-clamp-2" title="${item.description}">
+                  ${item.description}
+                </div>
+                ${(item.description && item.description.length > 50) || item.errorMessage ? `
+                  <span class="text-blue-600 group-hover:text-blue-800 text-[10px] font-semibold mt-0.5 inline-flex items-center gap-0.5">
+                    Xem thêm <i class="fa-solid fa-chevron-right text-[8px]"></i>
+                  </span>
+                ` : ''}
               </td>
 
               <!-- Ảnh chụp lỗi -->
-              <td class="py-3 px-3 align-top text-center">
+              <td class="py-3 px-3 align-top text-center" onclick="event.stopPropagation()">
                 ${imageCell}
               </td>
 
               <!-- Trạng thái -->
               <td class="py-3 px-3 align-top text-center whitespace-nowrap">
                 ${statusBadge}
+                ${item.itNote ? `<div class="text-[9px] text-sky-700 mt-1 font-semibold truncate max-w-[100px]" title="IT: ${item.itNote}"><i class="fa-solid fa-comment-dots mr-0.5"></i>Có ghi chú</div>` : ''}
               </td>
 
-              <!-- Ghi chú IT -->
-              <td class="py-3 px-3 align-top text-[11px]">
-                ${item.itNote ? `
-                  <div class="p-1.5 rounded-lg bg-sky-50 border border-sky-200 text-sky-900">
-                    <span class="font-bold">IT:</span> ${item.itNote}
-                  </div>
-                ` : '<span class="text-slate-400 italic text-[10px]">Chưa có ghi chú</span>'}
+              <!-- Chi tiết -->
+              <td class="py-3 px-3 align-top text-center whitespace-nowrap" onclick="event.stopPropagation()">
+                <button type="button" onclick="openTicketDetail('${item.id}')"
+                  class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-blue-100 text-slate-600 hover:text-blue-700 inline-flex items-center justify-center text-xs transition" title="Xem chi tiết ticket">
+                  <i class="fa-regular fa-eye"></i>
+                </button>
               </td>
             </tr>
           `;
@@ -1200,7 +1329,7 @@
           }
 
           return `
-            <div class="bg-slate-50/90 rounded-2xl border border-slate-200 p-3 space-y-2 shadow-xs">
+            <div class="bg-slate-50/90 hover:bg-blue-50/30 rounded-2xl border border-slate-200 p-3.5 space-y-2.5 shadow-xs cursor-pointer transition" onclick="openTicketDetail('${item.id}')">
               <div class="flex items-center justify-between pb-2 border-b border-slate-200/60 gap-1.5">
                 <div class="flex items-center space-x-1.5">
                   <span class="font-mono font-bold text-xs bg-white text-blue-900 px-2 py-0.5 rounded border border-slate-200">${item.id}</span>
@@ -1215,7 +1344,7 @@
                   <div class="text-[11px] text-slate-500">${item.department}</div>
                 </div>
                 ${cleanPhone ? `
-                  <a href="tel:${cleanPhone}" class="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded-xl border border-blue-200 shrink-0 active:scale-95 transition">
+                  <a href="tel:${cleanPhone}" onclick="event.stopPropagation()" class="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded-xl border border-blue-200 shrink-0 active:scale-95 transition">
                     <i class="fa-solid fa-phone text-[9px]"></i> ${cleanPhone}
                   </a>` : ''}
               </div>
@@ -1236,14 +1365,20 @@
                 </div>
               ` : ''}
 
-              <div class="text-xs text-slate-700 leading-relaxed font-normal">${item.description}</div>
+              <div class="text-xs text-slate-700 leading-relaxed font-normal line-clamp-2">${item.description}</div>
 
-              <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-100">
-                ${imageButtonMobile}
+              <div class="flex items-center justify-between gap-2 pt-1.5 border-t border-slate-100" onclick="event.stopPropagation()">
+                <div class="flex items-center gap-1.5">
+                  ${imageButtonMobile}
+                  <button type="button" onclick="openTicketDetail('${item.id}')"
+                    class="px-2 py-1 rounded-xl bg-slate-100 text-slate-700 text-[11px] font-semibold hover:bg-slate-200 transition inline-flex items-center gap-1">
+                    <i class="fa-regular fa-eye"></i> Chi tiết
+                  </button>
+                </div>
                 ${item.itNote ? `
-                  <div class="text-[11px] text-sky-900 bg-sky-50 px-2 py-0.5 rounded-lg border border-sky-200 flex-1 truncate">
+                  <div class="text-[10px] text-sky-900 bg-sky-50 px-2 py-0.5 rounded-lg border border-sky-200 max-w-[140px] truncate" title="IT: ${item.itNote}">
                     <span class="font-bold text-sky-700">IT:</span> ${item.itNote}
-                  </div>` : '<div class="text-[10px] text-slate-400 italic">Chưa có ghi chú IT</div>'}
+                  </div>` : '<div class="text-[10px] text-slate-400 italic">Chưa có ghi chú</div>'}
               </div>
             </div>
           `;
@@ -1267,6 +1402,66 @@
       document.getElementById("statPending").textContent = pending;
       document.getElementById("statProcessing").textContent = processing;
       document.getElementById("statCompleted").textContent = completed;
+    }
+
+    // 9.1 MODAL XEM CHI TIẾT TICKET TOÀN DIỆN
+    let currentDetailTicket = null;
+
+    function openTicketDetail(ticketId) {
+      const ticket = currentTickets.find(t => t.id === ticketId);
+      if (!ticket) return;
+      currentDetailTicket = ticket;
+
+      document.getElementById("detailTicketId").textContent = ticket.id;
+      document.getElementById("detailTicketStatus").innerHTML = getStatusBadgeHtml(ticket.status);
+      document.getElementById("detailTicketTime").textContent = `Gửi lúc: ${ticket.timestamp}`;
+      document.getElementById("detailFullname").textContent = ticket.fullname || "Cán bộ";
+      document.getElementById("detailDepartment").textContent = ticket.department || "Chi nhánh số 23";
+      document.getElementById("detailPhone").textContent = ticket.phone ? `SĐT: ${ticket.phone}` : "Chưa có SĐT";
+      document.getElementById("detailMachineName").textContent = ticket.machineName || "PC nội bộ";
+      document.getElementById("detailCategory").textContent = ticket.category || "Sự cố tin học";
+      document.getElementById("detailSpecs").textContent = ticket.clientSpecs || "";
+
+      // Error message
+      const errBox = document.getElementById("detailErrorBox");
+      const errText = document.getElementById("detailErrorMessage");
+      if (ticket.errorMessage && ticket.errorMessage.trim()) {
+        errText.textContent = ticket.errorMessage;
+        errBox.classList.remove("hidden");
+      } else {
+        errBox.classList.add("hidden");
+      }
+
+      // Description
+      document.getElementById("detailDescription").textContent = ticket.description || "(Không có mô tả chi tiết)";
+
+      // Image preview
+      const imgBox = document.getElementById("detailImageBox");
+      const imgPrev = document.getElementById("detailImagePreview");
+      if (ticket.imageUrl && ticket.imageUrl.trim() && ticket.imageUrl !== "Xem ảnh chụp lỗi") {
+        imgPrev.src = ticket.imageUrl;
+        imgBox.classList.remove("hidden");
+      } else {
+        imgBox.classList.add("hidden");
+        imgPrev.src = "";
+      }
+
+      // IT Note
+      const noteEl = document.getElementById("detailItNote");
+      noteEl.textContent = ticket.itNote && ticket.itNote.trim() ? ticket.itNote : "Chưa có ghi chú xử lý từ IT.";
+
+      document.getElementById("modalTicketDetail").classList.remove("hidden");
+    }
+
+    function closeTicketDetail() {
+      document.getElementById("modalTicketDetail").classList.add("hidden");
+      currentDetailTicket = null;
+    }
+
+    function openImageViewerFromDetail() {
+      if (currentDetailTicket && currentDetailTicket.imageUrl) {
+        openImageViewer(encodeURIComponent(currentDetailTicket.imageUrl), encodeURIComponent(currentDetailTicket.id));
+      }
     }
 
     // 10. MODAL XEM ẢNH PHÓNG TO

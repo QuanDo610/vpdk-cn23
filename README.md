@@ -12,11 +12,9 @@ Toàn bộ hệ thống hoạt động theo mô hình **Serverless** (lưu trữ
 ## 🌟 Tính Năng Nổi Bật
 
 ### 1. Quản Lý Tài Khoản & Đăng Nhập
-- **Tên đăng nhập**: Sử dụng **Số điện thoại** của cán bộ (chuẩn 10 chữ số).
-- **Mật khẩu an toàn**: Khởi tạo chuẩn 8 ký tự bao gồm chữ hoa, chữ thường, chữ số và ký tự đặc biệt (`@`, `#`, `$`, `%`, `&`, `*`, `!`).
-- **Phân loại trạng thái**: Tự động nhận diện cán bộ đang làm việc và cán bộ đã nghỉ việc (ngăn chặn đăng nhập kèm thông báo lịch sự).
-- **Màn hình Đăng ký mới**: Cho phép cán bộ mới đăng ký tài khoản nhanh chóng vào hệ thống.
-- **Tiện ích kiểm thử nhanh**: Tích hợp sẵn menu chọn cán bộ mẫu trên màn hình đăng nhập để tự động điền SĐT & Mật khẩu test tức thì.
+- **Tên đăng nhập**: Sử dụng **Số CCCD** của cán bộ (12 chữ số).
+- **Mật khẩu an toàn**: Mật khẩu được cấp và quản lý tập trung trên hệ thống.
+- **Phân loại trạng thái**: Tự động nhận diện cán bộ đang làm việc và cán bộ đã nghỉ việc (ngăn chặn đăng nhập kèm thông báo bảo mật).
 
 ### 2. Trang Chủ Điều Hướng (Portal Hub)
 - Lời chào cá nhân hóa theo tên cán bộ, hiển thị chức vụ, số điện thoại và ngày làm việc hiện tại.
@@ -43,27 +41,14 @@ Toàn bộ hệ thống hoạt động theo mô hình **Serverless** (lưu trữ
 
 ```text
 A_THANG/
-├── index.html                   # Giao diện chính (Login, Register, Hub, Lịch tuần, IT Helpdesk)
-├── style.css                    # CSS hệ thống hợp nhất, responsive PC và di động
-├── app.js                       # Toàn bộ logic frontend, điều hướng, docx export, IT monitoring
-├── google_apps_script.js        # Script Google Apps Script gộp duy nhất quản lý 3 Sheet
-├── danh_sach_tai_khoan_cn23.json # File JSON danh sách 70 cán bộ Chi nhánh 23
-├── DANH_SACH_TAI_KHOAN_CN23.md  # File Markdown tra cứu 70 tài khoản cán bộ Chi nhánh 23
-├── HD_TRIEN_KHAI.md             # Hướng dẫn chi tiết tạo Google Sheet 3 tabs & deploy
+├── index.html                   # Cổng dịch vụ chính (Đăng nhập bằng CCCD, Hub điều hướng)
+├── style.css                    # CSS giao diện chuẩn, tương thích máy tính và di động
+├── app.js                       # Logic Lịch tuần & xuất văn bản Word chuẩn Nghị định 30
+├── it_helpdesk.html             # Phân hệ IT Helpdesk tiếp nhận & theo dõi sự cố
+├── lich_tuan.html               # Phân hệ Đăng ký Lịch công tác tuần
+├── google_apps_script.js        # Script Google Apps Script quản lý hệ thống
+├── Tao_Icon_Desktop_VPDK23.bat  # Công cụ tạo phím tắt mở trực tiếp bằng Chrome/Edge
+├── Tao_Icon_Desktop_VPDK23.zip  # File nén cài đặt phím tắt kèm Icon huy hiệu
+├── vpdk23.ico                   # Icon Huy hiệu Chi Nhánh 23 độ phân giải cao
 └── README.md                    # Tài liệu tổng quan hệ thống
 ```
-
----
-
-## 📋 Tài Khoản Mẫu Để Kiểm Thử Ngay
-
-| Cán bộ | Số ĐT (Username) | Mật khẩu | Chức vụ / Tổ | Trạng thái |
-| :--- | :---: | :---: | :--- | :---: |
-| **Nguyễn Thị Bích Tuyền** | `0909736435` | `uivBB%3L` | Tổ trưởng Tổ HCTH (Admin) | Đang làm việc |
-| **Nguyễn Thành Như Bảo** | `0907259775` | `6#xMqhhe` | Tổ phó Tổ ĐKCGCN | Đang làm việc |
-| **Trần Thanh Triết** | `0919266474` | `N@52S2&n` | Tổ trưởng Tổ KTĐC và LT | Đang làm việc |
-| **Nguyễn Thị Thùy Trang** | `0945859956` | `3h@JB&rt` | Tổ Trưởng Tổ ĐKCGCN | Đang làm việc |
-| **Nguyễn Duy Tấn** | `0942245858` | `SaCmQ3*m` | Nhân viên | Đang làm việc |
-| **Nguyễn Thị Lệ Hằng** | `0918606045` | `V#5h84m4` | Phó giám đốc | **Đã nghỉ** (Test cảnh báo) |
-
-*(Xem toàn bộ 70 tài khoản chi tiết tại file [DANH_SACH_TAI_KHOAN_CN23.md](file:///Users/admin/Desktop/BINHDUONG/A_THANG/DANH_SACH_TAI_KHOAN_CN23.md)).*

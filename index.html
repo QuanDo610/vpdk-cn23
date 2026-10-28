@@ -64,7 +64,7 @@
             <div class="password-input-group">
               <input type="text" id="loginCccd" class="form-control" placeholder="Nhập 12 số Căn cước công dân" required autocomplete="username" inputmode="numeric" maxlength="20">
             </div>
-            <small class="field-hint">Nhập đúng số CCCD / CMND đã được nạp trên Google Sheet</small>
+            <small class="field-hint">Nhập đúng số CCCD / CMND đã được cấp trên hệ thống</small>
           </div>
 
           <div class="form-group">
@@ -75,7 +75,7 @@
                 <i class="fa-regular fa-eye"></i>
               </button>
             </div>
-            <small class="field-hint">Mật khẩu được cấp hoặc sửa đổi trực tiếp từ Google Sheet</small>
+            <small class="field-hint">Mật khẩu được cấp bởi quản trị viên hệ thống</small>
           </div>
 
           <div class="form-check-group login-options-row">
@@ -141,7 +141,7 @@
           <div class="hub-card-tags">
             <span class="hub-card-tag"><i class="fa-solid fa-file-word text-blue-600 mr-1"></i> Chuẩn NĐ 30/2020</span>
             <span class="hub-card-tag"><i class="fa-solid fa-clock mr-1"></i> Tự động tính Thứ</span>
-            <span class="hub-card-tag"><i class="fa-solid fa-cloud mr-1"></i> Google Sheets</span>
+            <span class="hub-card-tag"><i class="fa-solid fa-shield-halved mr-1"></i> Lưu trữ bảo mật</span>
           </div>
           <div class="hub-card-footer">
             <a href="lich_tuan.html" class="btn-enter-system" id="btnHubGoSchedule">
@@ -223,7 +223,7 @@
     const btnForgot = document.getElementById("btnForgotPassword");
     if (btnForgot) {
       btnForgot.addEventListener("click", () => {
-        alert("THÔNG BÁO QUÊN MẬT KHẨU:\n\nVui lòng liên hệ Tổ Hành chính - Tổng hợp (Đ/c Tuyền - SĐT: 0909736435) hoặc Quản trị viên để được kiểm tra và cấp lại mật khẩu trực tiếp trên Google Sheet.");
+        alert("THÔNG BÁO QUÊN MẬT KHẨU:\n\nVui lòng liên hệ Tổ Hành chính - Tổng hợp (Đ/c Tuyền - SĐT: 0909736435) hoặc Quản trị viên để được cấp lại mật khẩu đăng nhập.");
       });
     }
 
@@ -329,11 +329,11 @@
 
         const btnLogin = document.getElementById("btnLogin");
         btnLogin.disabled = true;
-        btnLogin.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang xác thực từ Google Sheet...';
+        btnLogin.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang xác thực...';
 
         let result = null;
 
-        // 1. Gửi trực tiếp lên Google Sheet qua POST (text/plain để không bị CORS preflight)
+        // 1. Gửi trực tiếp lên máy chủ qua POST
         try {
           const res = await fetch(DEFAULT_SCRIPT_URL, {
             method: "POST",
@@ -363,7 +363,7 @@
           if (result.success && result.user) {
             const u = result.user;
             if (u.status === "Đã nghỉ") {
-              alert(`❌ CẢNH BÁO TRUY CẬP:\n\nCán bộ ${u.fullname} đã được ghi nhận trạng thái ĐÃ NGHỈ LÀM VIỆC trên Google Sheet.\nTài khoản đã bị vô hiệu hóa.`);
+              alert(`❌ CẢNH BÁO TRUY CẬP:\n\nCán bộ ${u.fullname} đã được ghi nhận trạng thái ĐÃ NGHỈ LÀM VIỆC trên hệ thống nội bộ.\nTài khoản đã bị vô hiệu hóa.`);
               return;
             }
 
@@ -392,7 +392,6 @@
             localStorage.removeItem("binhduong_user");
             localStorage.removeItem("vpdk_current_user");
 
-            showToast(`Xin chào ${userObj.fullname}! Đăng nhập thành công.`, "success");
             showHub(userObj);
             return;
           } else {
@@ -405,7 +404,7 @@
           }
         } else {
           // Lỗi mất kết nối Internet hoàn toàn
-          showToast("Không thể kết nối đến máy chủ Google Sheet! Vui lòng kiểm tra lại đường truyền mạng.", "error");
+          showToast("Không thể kết nối đến máy chủ hệ thống! Vui lòng kiểm tra lại đường truyền mạng.", "error");
         }
       });
     }
