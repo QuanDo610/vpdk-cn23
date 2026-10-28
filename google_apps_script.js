@@ -11,7 +11,7 @@
  * =========================================================================
  */
 
-// Tên các Sheet (Hỗ trợ linh hoạt cả tên cũ và tên mới)
+// Tên các Sheet
 const SHEET_SCHEDULE_NAME = "LichTuan";
 const SHEET_USERS_NAME = "TaiKhoan";
 const SHEET_SUPPORT_NAME = "Tickets";
@@ -791,49 +791,111 @@ const INITIAL_ACCOUNTS = [
   ]
 ];
 
+// Danh sách 4 ticket sự cố từ IT Helpdesk cũ chuyển sang
+const INITIAL_TICKETS = [
+  [
+    "TK-261027-004",
+    "27/10/2026 15:41:51",
+    "Phan Trọng Hiệp",
+    "0949309399",
+    "Tổ Đăng ký và Cấp GCN",
+    "macOS (pc-kcq70e7",
+    "Máy in / Scan",
+    "",
+    "Chưa cài máy in",
+    "",
+    "Đã hoàn thành",
+    "",
+    "IP: 113.185.75.145 | macOS • 4 Cores • 390x844"
+  ],
+  [
+    "TK-261027-006",
+    "27/10/2026 09:44:35",
+    "Nguyễn Thị Ngọc Thảo",
+    "0903523534",
+    "Tổ Đăng ký và Cấp GCN",
+    "Win 10/11 (PC-60208D)",
+    "Máy in / Scan",
+    "",
+    "k kết nối dc máy in",
+    "",
+    "Đã hoàn thành",
+    "",
+    "IP: 14.191.68.193 | Win 10/11 • 8GB RAM • 4 Cores • 1600x1200"
+  ],
+  [
+    "TK-261026-005",
+    "26/10/2026 16:26:00",
+    "PHẠM THỊ YẾN NHI",
+    "0918047179",
+    "Tổ Đăng ký và Cấp GCN",
+    "Tổ Đăng ký và Cấp GCN",
+    "Máy in / Scan",
+    "",
+    "KẾT NÓI MÁY TÍNH VÔ MÁY IN",
+    "",
+    "Chờ xử lý",
+    "",
+    "IP: 14.191.68.189 | Win 10/11 • 8GB RAM • 4 Cores • 1280x1024"
+  ],
+  [
+    "TK-261026-004",
+    "26/10/2026 10:56:47",
+    "ĐỖ THỊ YẾN",
+    "0387805470",
+    "Tổ Đăng ký và Cấp GCN",
+    "Win 10/11 (PC-73F50E)",
+    "Khác / Cần hỗ trợ",
+    "",
+    "không vào được ổ chung",
+    "https://drive.google.com/file/d/1-hyuXZ-Bh1NvdfyR_AN1DubsBjz6j6ko/view",
+    "Đang xử lý",
+    "",
+    "IP: 14.191.68.189 | Win 10/11 • 8GB RAM • 4 Cores • 1920x1080"
+  ]
+];
+
 /**
  * Tự động tạo menu tiện ích "⭐ BINHDUONG23" trên thanh công cụ của Google Sheet
- * khi mở file tính.
  */
 function onOpen() {
   try {
     SpreadsheetApp.getUi()
       .createMenu("⭐ BINHDUONG23")
-      .addItem("▶️ 1-Click: Nạp 70 Tài Khoản CN23 + Tạo Tab Tickets", "setupBinhDuong23")
+      .addItem("▶️ 1-Click: Nạp 70 Tài Khoản CN23 + Chuyển 4 Ticket IT Sang", "setupBinhDuong23")
       .addSeparator()
       .addItem("👥 Chỉ nạp lại 70 Tài Khoản vào sheet TaiKhoan", "seedAccountsOnly")
-      .addItem("🎫 Chỉ tạo mới / Định dạng sheet Tickets (IT Helpdesk)", "setupTicketsOnly")
+      .addItem("🎫 Chỉ chuyển các Ticket IT vào sheet Tickets", "seedTicketsOnly")
       .addToUi();
   } catch (e) {}
 }
 
 /**
- * Hàm 1-Click: Tự động nâng cấp Google Sheet hiện tại thành hệ thống BINHDUONG23
+ * Hàm 1-Click: Tự động nâng cấp và đồng bộ toàn diện vào Google Sheet
  */
 function setupBinhDuong23() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   
-  // 1. Kiểm tra & đảm bảo tab Lịch Tuần an toàn
+  // 1. Đảm bảo tab Lịch Tuần an toàn
   getScheduleSheet(ss);
 
   // 2. Nạp 70 tài khoản vào tab TaiKhoan
   seedAccountsOnly();
 
-  // 3. Khởi tạo tab Tickets
-  setupTicketsOnly();
+  // 3. Khởi tạo tab Tickets & nạp 4 ticket cũ sang
+  seedTicketsOnly();
 
   SpreadsheetApp.getUi().alert(
-    "✅ THÀNH CÔNG!\n\n" +
-    "Đã hoàn tất cấu hình hệ thống BINHDUONG23:\n" +
-    "1. Sheet 'LichTuan': Giữ nguyên dữ liệu an toàn.\n" +
+    "✅ ĐỒNG BỘ THÀNH CÔNG!\n\n" +
+    "1. Sheet 'LichTuan': Giữ nguyên toàn bộ dữ liệu lịch tuần cũ.\n" +
     "2. Sheet 'TaiKhoan': Đã nạp đủ 70 cán bộ Chi nhánh 23.\n" +
-    "3. Sheet 'Tickets': Đã tạo sẵn sàng tiếp nhận sự cố IT.\n\n" +
-    "Bạn có thể vào Triển khai (Deploy) -> Quản lý bản triển khai để cập nhật phiên bản mới nhất!"
+    "3. Sheet 'Tickets': Đã chuyển 4 ticket sự cố từ IT Helpdesk cũ sang!\n\n" +
+    "Hệ thống đã sẵn sàng 100%!"
   );
 }
 
 /**
- * Nạp / ghi đè danh sách 70 tài khoản vào sheet TaiKhoan
+ * Nạp danh sách 70 tài khoản vào sheet TaiKhoan
  */
 function seedAccountsOnly() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -842,7 +904,7 @@ function seedAccountsOnly() {
   if (!sheetUsers) {
     sheetUsers = ss.insertSheet(SHEET_USERS_NAME);
   } else {
-    sheetUsers.clear(); // Làm sạch để cập nhật chuẩn cột mới
+    sheetUsers.clear();
   }
 
   const headers = [
@@ -858,18 +920,15 @@ function seedAccountsOnly() {
   ];
   sheetUsers.appendRow(headers);
 
-  // Định dạng dòng tiêu đề
   const headerRange = sheetUsers.getRange(1, 1, 1, headers.length);
   headerRange.setFontWeight("bold").setBackground("#1e40af").setFontColor("#ffffff");
   headerRange.setHorizontalAlignment("center");
   sheetUsers.setRowHeight(1, 35);
   sheetUsers.setFrozenRows(1);
 
-  // Cột Số ĐT và CCCD định dạng Text thuần '@' để không bao giờ mất số 0
   sheetUsers.getRange("A:A").setNumberFormat("@");
   sheetUsers.getRange("F:F").setNumberFormat("@");
 
-  // Nạp 70 tài khoản
   for (let i = 0; i < INITIAL_ACCOUNTS.length; i++) {
     const acc = INITIAL_ACCOUNTS[i];
     sheetUsers.appendRow([
@@ -889,41 +948,85 @@ function seedAccountsOnly() {
 }
 
 /**
- * Khởi tạo / Định dạng tab Tickets dành cho IT Helpdesk
+ * Khởi tạo tab Tickets & chuyển các ticket IT sang
  */
-function setupTicketsOnly() {
+function seedTicketsOnly() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheetSupport = getSupportSheet(ss);
+  let sheetSupport = ss.getSheetByName(SHEET_SUPPORT_NAME) || ss.getSheetByName("DangKySupport");
   
-  if (sheetSupport.getLastRow() === 0) {
-    const headers = [
-      "Mã Ticket",
-      "Thời gian gửi",
-      "Họ và tên",
-      "Số ĐT / Zalo",
-      "Phòng ban",
-      "Tên máy / Thiết bị",
-      "Loại sự cố",
-      "Thông báo lỗi (Tiếng Anh)",
-      "Mô tả hiện tượng",
-      "Ảnh chụp lỗi (Link)",
-      "Trạng thái",
-      "Ghi chú IT",
-      "IP & Cấu hình máy"
-    ];
-    sheetSupport.appendRow(headers);
-    const headerRange = sheetSupport.getRange(1, 1, 1, headers.length);
-    headerRange.setFontWeight("bold").setBackground("#b45309").setFontColor("#ffffff");
-    headerRange.setHorizontalAlignment("center");
-    sheetSupport.setRowHeight(1, 35);
-    sheetSupport.setFrozenRows(1);
-    sheetSupport.getRange("D:D").setNumberFormat("@");
-    sheetSupport.autoResizeColumns(1, 13);
+  if (!sheetSupport) {
+    sheetSupport = ss.insertSheet(SHEET_SUPPORT_NAME);
+  } else {
+    sheetSupport.clear();
   }
+
+  const headers = [
+    "Mã Ticket",
+    "Thời gian gửi",
+    "Họ và tên",
+    "Số ĐT / Zalo",
+    "Phòng ban",
+    "Tên máy / Thiết bị",
+    "Loại sự cố",
+    "Thông báo lỗi (Tiếng Anh)",
+    "Mô tả hiện tượng",
+    "Ảnh chụp lỗi (Link)",
+    "Trạng thái",
+    "Ghi chú IT",
+    "IP & Cấu hình máy"
+  ];
+  sheetSupport.appendRow(headers);
+  const headerRange = sheetSupport.getRange(1, 1, 1, headers.length);
+  headerRange.setFontWeight("bold").setBackground("#b45309").setFontColor("#ffffff");
+  headerRange.setHorizontalAlignment("center");
+  sheetSupport.setRowHeight(1, 35);
+  sheetSupport.setFrozenRows(1);
+  sheetSupport.getRange("D:D").setNumberFormat("@");
+
+  // Nạp 4 tickets cũ
+  for (let i = 0; i < INITIAL_TICKETS.length; i++) {
+    const t = INITIAL_TICKETS[i];
+    sheetSupport.appendRow([
+      t[0],
+      t[1],
+      t[2],
+      "'" + t[3],
+      t[4],
+      t[5],
+      t[6],
+      t[7],
+      t[8],
+      t[9],
+      t[10],
+      t[11],
+      t[12]
+    ]);
+
+    const rIdx = sheetSupport.getLastRow();
+    sheetSupport.getRange(rIdx, 1).setHorizontalAlignment("center").setFontWeight("bold");
+    sheetSupport.getRange(rIdx, 2).setHorizontalAlignment("center");
+    sheetSupport.getRange(rIdx, 4).setNumberFormat("@").setHorizontalAlignment("center");
+
+    const stCell = sheetSupport.getRange(rIdx, 11);
+    stCell.setHorizontalAlignment("center").setFontWeight("bold");
+    if (t[10] === "Đã hoàn thành") {
+      stCell.setBackground("#dcfce7").setFontColor("#15803d");
+    } else if (t[10] === "Đang xử lý") {
+      stCell.setBackground("#e0f2fe").setFontColor("#0369a1");
+    } else {
+      stCell.setBackground("#fef3c7").setFontColor("#b45309");
+    }
+
+    if (t[9] && t[9].indexOf("http") === 0) {
+      sheetSupport.getRange(rIdx, 10).setValue(t[9]).setFontColor("#1d4ed8").setFontUnderline(true);
+    }
+  }
+
+  sheetSupport.autoResizeColumns(1, 13);
 }
 
 /**
- * Lấy sheet Lịch Tuần (Hỗ trợ linh hoạt LichTuan hoặc DangKyLichTuan)
+ * Lấy sheet Lịch Tuần
  */
 function getScheduleSheet(ss) {
   ss = ss || SpreadsheetApp.getActiveSpreadsheet();
@@ -971,7 +1074,8 @@ function getSupportSheet(ss) {
   ss = ss || SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName(SHEET_SUPPORT_NAME) || ss.getSheetByName("DangKySupport");
   if (!sheet) {
-    sheet = ss.insertSheet(SHEET_SUPPORT_NAME);
+    seedTicketsOnly();
+    sheet = ss.getSheetByName(SHEET_SUPPORT_NAME);
   }
   return sheet;
 }
@@ -1026,6 +1130,18 @@ function doGet(e) {
     const params = (e && e.parameter) ? e.parameter : {};
     const action = params.action || "getSchedule";
 
+    // 0. ĐỒNG BỘ 1-CLICK TỪ XA QUA API (SYNC ALL DATA)
+    if (action === "syncAllData" || action === "seedSystem") {
+      seedAccountsOnly();
+      seedTicketsOnly();
+      return jsonResponse({
+        success: true,
+        message: "Đã đồng bộ thành công 70 tài khoản CN23 và 4 tickets sự cố sang Google Sheet!",
+        totalAccounts: 70,
+        totalTickets: 4
+      });
+    }
+
     // 1. LẤY DANH SÁCH LỊCH TUẦN
     if (action === "getSchedule") {
       const sheet = getScheduleSheet(ss);
@@ -1034,7 +1150,6 @@ function doGet(e) {
         return jsonResponse({ success: true, data: [] });
       }
 
-      // Đọc map tài khoản để bổ sung tên nếu là schema cũ (chỉ có Email)
       const userMap = {};
       const sheetUsers = ss.getSheetByName(SHEET_USERS_NAME);
       if (sheetUsers) {
@@ -1047,7 +1162,7 @@ function doGet(e) {
       }
 
       const rows = [];
-      const hasNameCol = data[0].length >= 10; // Cột 4 là Họ và tên trong schema mới
+      const hasNameCol = data[0].length >= 10;
 
       for (let i = 1; i < data.length; i++) {
         const r = data[i];
@@ -1066,7 +1181,6 @@ function doGet(e) {
           attVal = r[8] || "";
           locVal = r[9] || "";
         } else {
-          // Schema cũ 9 cột
           name = userMap[phoneOrEmail.toLowerCase()] || "";
           dateVal = r[3] || "";
           dayVal = r[4] || "";
@@ -1162,7 +1276,7 @@ function doGet(e) {
       return jsonResponse({ success: true, data: users });
     }
 
-    // 4. FALLBACK GET NẾU CẦN
+    // 4. FALLBACK GET
     if (action === "createTicket" && params.data) {
       const ticketData = JSON.parse(decodeURIComponent(params.data));
       return jsonResponse(handleCreateTicket(ticketData, ss));
@@ -1200,6 +1314,18 @@ function doPost(e) {
 
     const action = body.action || "login";
     const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+    // 0. ĐỒNG BỘ 1-CLICK TỪ XA
+    if (action === "syncAllData" || action === "seedSystem") {
+      seedAccountsOnly();
+      seedTicketsOnly();
+      return jsonResponse({
+        success: true,
+        message: "Đã đồng bộ thành công 70 tài khoản CN23 và 4 tickets sự cố sang Google Sheet!",
+        totalAccounts: 70,
+        totalTickets: 4
+      });
+    }
 
     // 1. XÁC THỰC ĐĂNG NHẬP
     if (action === "login") {
@@ -1325,7 +1451,7 @@ function doPost(e) {
 }
 
 /**
- * Xử lý thêm 1 mục Lịch Tuần vào sheet LichTuan
+ * Xử lý thêm 1 mục Lịch Tuần
  */
 function handleAddSchedule(data, ss) {
   const phone = (data.phone || "").toString().trim();
@@ -1350,9 +1476,7 @@ function handleAddSchedule(data, ss) {
   const id = "LT-" + now.getTime();
   const timestamp = Utilities.formatDate(now, "Asia/Ho_Chi_Minh", "dd/MM/yyyy HH:mm:ss");
 
-  // Kiểm tra số lượng cột hiện tại của sheet Lịch Tuần để thêm dòng tương thích
   const hasNameCol = sheet.getLastColumn() >= 10;
-
   if (hasNameCol) {
     sheet.appendRow([
       id,
@@ -1367,7 +1491,6 @@ function handleAddSchedule(data, ss) {
       location
     ]);
   } else {
-    // Tương thích ngược với bảng 9 cột cũ
     sheet.appendRow([
       id,
       timestamp,
@@ -1392,7 +1515,6 @@ function handleAddSchedule(data, ss) {
  * Xử lý tiếp nhận 1 Ticket IT Support & Upload ảnh Drive
  */
 function handleCreateTicket(data, ss) {
-  setupTicketsOnly(); // Đảm bảo tab Tickets đã có tiêu đề cột
   const sheet = getSupportSheet(ss);
   const now = new Date();
 
@@ -1440,7 +1562,6 @@ function handleCreateTicket(data, ss) {
   sheet.getRange(newRow, 2).setHorizontalAlignment("center");
   sheet.getRange(newRow, 4).setNumberFormat("@").setHorizontalAlignment("center");
 
-  // Format trạng thái mặc định: Chờ xử lý (màu vàng cam)
   const statusCell = sheet.getRange(newRow, 11);
   statusCell.setValue("Chờ xử lý").setHorizontalAlignment("center").setFontWeight("bold")
             .setBackground("#fef3c7").setFontColor("#b45309");
