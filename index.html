@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cổng Dịch Vụ Nội Bộ - VPĐK Chi Nhánh 23 (Lịch Tuần & IT Helpdesk)</title>
+  
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Thư viện chọn ngày chuẩn Ngày/Tháng/Năm (DD/MM/YYYY) -->
+  <link rel="stylesheet" href="flatpickr.min.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="flatpickr.min.js"></script>
+  
+  <!-- Thư viện tạo file Word (.docx) chuẩn Nghị định 30/2020/NĐ-CP -->
+  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</head>
+<body>
+
+  <!-- ==================== HEADER HỆ THỐNG ==================== -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="header-title-box">
+        <span class="agency-name">VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI THÀNH PHỐ HỒ CHÍ MINH</span>
+        <h1 class="system-title">CỔNG DỊCH VỤ NỘI BỘ (LỊCH CÔNG TÁC & IT HELPDESK)</h1>
+        <span class="sub-agency">CHI NHÁNH SỐ 23</span>
+      </div>
+
+      <!-- Navigation Tabs (Chỉ hiện khi đã đăng nhập) -->
+      <nav class="header-nav-tabs" id="headerNavTabs" style="display: none;">
+        <button type="button" class="nav-tab-btn active" id="navTabHub" title="Trang chủ chọn phân hệ">
+          <i class="fa-solid fa-house"></i>
+          <span>Trang Chủ</span>
+        </button>
+        <button type="button" class="nav-tab-btn" id="navTabSchedule" title="Hệ thống đăng ký lịch công tác tuần">
+          <i class="fa-solid fa-calendar-week"></i>
+          <span>Lịch Tuần</span>
+        </button>
+        <button type="button" class="nav-tab-btn" id="navTabHelpdesk" title="Hệ thống tiếp nhận sự cố IT Helpdesk">
+          <i class="fa-solid fa-headset"></i>
+          <span>IT Helpdesk</span>
+        </button>
+      </nav>
+
+      <!-- Khu vực thông tin cán bộ đăng nhập -->
+      <div class="header-action-box" id="headerUserArea" style="display: none;">
+        <div class="user-badge">
+          <span class="user-icon-svg-box">
+            <i class="fa-solid fa-user-tie"></i>
+          </span>
+          <div class="user-info-text">
+            <strong id="displayUserName">Cán bộ</strong>
+            <small id="displayUserInfo">090xxxxxxx</small>
+          </div>
+        </div>
+        <button id="btnAdminServerConfig" class="btn btn-admin-config btn-sm" style="display: none;" title="Cài đặt Server API (Chỉ Quản trị viên)">
+          <i class="fa-solid fa-gear"></i> Server
+        </button>
+        <button id="btnLogout" class="btn btn-header-logout btn-sm" title="Đăng xuất khỏi hệ thống">
+          <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Thông báo Toast Notification -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Cảnh báo trạng thái kết nối Server -->
+  <div id="syncWarningBanner" class="sync-warning-banner" style="display: none;">
+    <div class="sync-banner-content">
+      <span class="sync-banner-icon">⚠️</span>
+      <div class="sync-banner-text">
+        <strong>Hệ thống đang hoạt động ở chế độ Offline / Demo!</strong>
+        <p>Dữ liệu lịch đăng ký và ticket IT đang được lưu trữ an toàn trên trình duyệt máy tính này. Bấm <strong>Kết nối ngay</strong> để cấu hình liên kết Google Sheet online tập trung.</p>
+      </div>
+    </div>
+    <button type="button" id="btnBannerConfig" class="btn btn-warning-contrast btn-sm">⚙️ Cấu hình Sheet</button>
+  </div>
+
+  <main class="main-content">
+
+    <!-- ==================== 1. MÀN HÌNH ĐĂNG NHẬP ==================== -->
+    <section id="loginSection" class="card login-card">
+      <div class="card-header text-center">
+        <div style="font-size: 2.2rem; color: #1e40af; margin-bottom: 6px;">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h2>ĐĂNG NHẬP HỆ THỐNG NỘI BỘ</h2>
+        <p class="text-muted">Cổng tiện ích Đăng ký Lịch tuần & Báo sự cố IT - Chi nhánh 23</p>
+      </div>
+      <div class="card-body">
+        <form id="loginForm" autocomplete="on">
+          <div class="form-group">
+            <label for="loginPhone">Số điện thoại (Tên đăng nhập): <span class="required">*</span></label>
+            <div class="password-input-group">
+              <input type="tel" id="loginPhone" class="form-control" placeholder="Ví dụ: 0907259775 hoặc 0918606045" required autocomplete="username">
+            </div>
+            <small class="field-hint">Nhập đúng 10 chữ số điện thoại của cán bộ</small>
+          </div>
+
+          <div class="form-group">
+            <label for="loginPassword">Mật khẩu: <span class="required">*</span></label>
+            <div class="password-input-group">
+              <input type="password" id="loginPassword" class="form-control" placeholder="Nhập mật khẩu (8 ký tự)" required autocomplete="current-password">
+              <button type="button" class="btn-toggle-password" id="btnToggleLoginPassword" title="Hiện/ẩn mật khẩu">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+            <small class="field-hint">Mật khẩu gồm 8 ký tự (chữ hoa, chữ thường, số, ký tự đặc biệt)</small>
+          </div>
+
+          <div class="form-check-group login-options-row">
+            <label class="checkbox-label">
+              <input type="checkbox" id="rememberMe" checked>
+              <span>Ghi nhớ đăng nhập</span>
+            </label>
+            <button type="button" id="btnForgotPassword" class="btn-forgot-password">Quên mật khẩu?</button>
+          </div>
+
+          <button type="submit" id="btnLogin" class="btn btn-primary btn-block">
+            <i class="fa-solid fa-arrow-right-to-bracket mr-1"></i>
+            <span class="btn-text">Đăng Nhập Vào Hệ Thống</span>
+          </button>
+        </form>
+
+        <div class="switch-auth-link">
+          Chưa có tài khoản cán bộ? <button type="button" id="btnGoToRegister">Đăng ký tài khoản mới</button>
+        </div>
+
+        <!-- Menu chọn nhanh tài khoản kiểm thử cho người dùng -->
+        <div class="quick-accounts-box">
+          <div class="quick-accounts-title">
+            <i class="fa-solid fa-vial-circle-check text-blue-600"></i>
+            <span>Chọn nhanh tài khoản kiểm thử (Demo):</span>
+          </div>
+          <select id="quickAccountSelect" class="quick-accounts-select">
+            <option value="">-- Chọn cán bộ mẫu để tự động điền SĐT & Mật khẩu --</option>
+            <option value="0909736435|uivBB%3L">Nguyễn Thị Bích Tuyền (Tổ trưởng Tổ HCTH - Admin)</option>
+            <option value="0907259775|6#xMqhhe">Nguyễn Thành Như Bảo (Tổ phó Tổ ĐKCGCN)</option>
+            <option value="0919266474|N@52S2&n">Trần Thanh Triết (Tổ trưởng Tổ KTĐC và LT)</option>
+            <option value="0945859956|3h@JB&rt">Nguyễn Thị Thùy Trang (Tổ trưởng Tổ ĐKCGCN)</option>
+            <option value="0942245858|SaCmQ3*m">Nguyễn Duy Tấn (Nhân viên)</option>
+            <option value="0918606045|V#5h84m4">Nguyễn Thị Lệ Hằng (Cán bộ Đã nghỉ - Test cảnh báo)</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 2. MÀN HÌNH ĐĂNG KÝ TÀI KHOẢN MỚI ==================== -->
+    <section id="registerSection" class="card register-card" style="display: none;">
+      <div class="card-header text-center">
+        <div style="font-size: 2.2rem; color: #15803d; margin-bottom: 6px;">
+          <i class="fa-solid fa-user-plus"></i>
+        </div>
+        <h2>ĐĂNG KÝ TÀI KHOẢN CÁN BỘ</h2>
+        <p class="text-muted">Dành cho viên chức, người lao động Chi nhánh số 23</p>
+      </div>
+      <div class="card-body">
+        <form id="registerUserForm" autocomplete="off">
+          <div class="form-row">
+            <div class="form-group col-half">
+              <label for="regFullname">Họ và tên cán bộ: <span class="required">*</span></label>
+              <input type="text" id="regFullname" class="form-control" placeholder="Ví dụ: Nguyễn Văn An" required>
+            </div>
+            <div class="form-group col-half">
+              <label for="regPhone">Số điện thoại (10 chữ số): <span class="required">*</span></label>
+              <input type="tel" id="regPhone" class="form-control" placeholder="Ví dụ: 0912345678" maxlength="10" required>
+              <small class="field-hint">Số điện thoại này sẽ dùng làm Tên đăng nhập</small>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-half">
+              <label for="regPosition">Chức danh / Chức vụ: <span class="required">*</span></label>
+              <input type="text" id="regPosition" class="form-control" placeholder="Ví dụ: Chuyên viên, Nhân viên..." required>
+            </div>
+            <div class="form-group col-half">
+              <label for="regGroup">Nhóm đối tượng: <span class="required">*</span></label>
+              <select id="regGroup" class="form-control" required>
+                <option value="Viên chức">Viên chức</option>
+                <option value="Người lao động" selected>Người lao động</option>
+                <option value="Công chức">Công chức</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-half">
+              <label for="regDepartment">Tổ / Bộ phận công tác: <span class="required">*</span></label>
+              <select id="regDepartment" class="form-control" required>
+                <option value="Tổ Hành chính - Tổng hợp">Tổ Hành chính - Tổng hợp</option>
+                <option value="Tổ Đăng ký và Cấp GCN">Tổ Đăng ký và Cấp GCN</option>
+                <option value="Tổ Kỹ thuật Địa chính và Lưu trữ">Tổ Kỹ thuật Địa chính và Lưu trữ</option>
+                <option value="Bộ phận Một Cửa">Bộ phận Một Cửa</option>
+                <option value="Ban Giám Đốc">Ban Giám Đốc</option>
+                <option value="Chi nhánh số 23">Chi nhánh số 23 (Chung)</option>
+              </select>
+            </div>
+            <div class="form-group col-half">
+              <label for="regCccd">Số CCCD (12 số):</label>
+              <input type="text" id="regCccd" class="form-control" placeholder="Ví dụ: 074xxxxxxxx" maxlength="12">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-half">
+              <label for="regPassword">Mật khẩu khởi tạo: <span class="required">*</span></label>
+              <div class="password-input-group">
+                <input type="password" id="regPassword" class="form-control" placeholder="Tối thiểu 8 ký tự" required>
+                <button type="button" class="btn-toggle-password" id="btnToggleRegPassword" title="Hiện/ẩn mật khẩu">
+                  <i class="fa-regular fa-eye"></i>
+                </button>
+              </div>
+            </div>
+            <div class="form-group col-half">
+              <label for="regPasswordConfirm">Xác nhận lại mật khẩu: <span class="required">*</span></label>
+              <div class="password-input-group">
+                <input type="password" id="regPasswordConfirm" class="form-control" placeholder="Nhập lại đúng mật khẩu" required>
+                <button type="button" class="btn-toggle-password" id="btnToggleRegPasswordConfirm" title="Hiện/ẩn mật khẩu">
+                  <i class="fa-regular fa-eye"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <p class="password-rules-note">
+            <i class="fa-solid fa-circle-info text-blue-600 mr-1"></i>
+            <strong>Quy chuẩn bảo mật:</strong> Mật khẩu dài ít nhất 8 ký tự, bắt buộc bao gồm đồng thời chữ hoa (A-Z), chữ thường (a-z), chữ số (0-9) và ký tự đặc biệt (@, #, $, %, &, *, !).
+          </p>
+
+          <div class="form-actions" style="margin-top: 18px;">
+            <button type="submit" id="btnSubmitRegisterUser" class="btn btn-success btn-lg btn-block">
+              <i class="fa-solid fa-check mr-1"></i>
+              <span class="btn-text">Hoàn Tất Đăng Ký Tài Khoản</span>
+            </button>
+          </div>
+        </form>
+
+        <div class="switch-auth-link">
+          Đã có tài khoản cán bộ? <button type="button" id="btnBackToLogin">Quay lại Đăng nhập</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 3. TRANG CHỦ / PORTAL HUB ==================== -->
+    <section id="portalHubSection" class="hub-section" style="display: none;">
+      <!-- Hero Banner -->
+      <div class="hub-hero-banner">
+        <div class="hub-hero-content">
+          <h2>Xin chào, <span id="hubGreetingName">Đồng chí</span>!</h2>
+          <p>Chào mừng bạn đến với Cổng Dịch Vụ Nội Bộ Chi nhánh số 23. Vui lòng lựa chọn phân hệ làm việc bên dưới:</p>
+          <div class="hub-hero-meta">
+            <div class="hub-hero-meta-item">
+              <i class="fa-solid fa-building-user"></i>
+              <span>Đơn vị: <strong>Chi nhánh số 23</strong></span>
+            </div>
+            <div class="hub-hero-meta-item">
+              <i class="fa-solid fa-id-badge"></i>
+              <span id="hubUserRole">Chức vụ: <strong>Cán bộ</strong></span>
+            </div>
+            <div class="hub-hero-meta-item">
+              <i class="fa-solid fa-phone"></i>
+              <span id="hubUserPhone">SĐT: <strong>090xxxxxxx</strong></span>
+            </div>
+            <div class="hub-hero-meta-item">
+              <i class="fa-solid fa-calendar-day"></i>
+              <span id="hubCurrentDate">Thứ ..., ngày ../../2026</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid 2 Card Phân Hệ -->
+      <div class="hub-cards-grid">
+        <!-- Phân hệ 1: Lịch Công Tác Tuần -->
+        <div class="hub-selection-card card-schedule" id="cardSelectSchedule">
+          <div class="hub-card-header">
+            <div class="hub-card-icon">
+              <i class="fa-solid fa-calendar-days"></i>
+            </div>
+            <div class="hub-card-titles">
+              <span class="hub-card-subtitle">Hành chính & Quản lý điều hành</span>
+              <h3>ĐĂNG KÝ LỊCH CÔNG TÁC TUẦN</h3>
+            </div>
+          </div>
+          <div class="hub-card-desc">
+            Đăng ký và tổng hợp lịch họp giao ban, tiếp công dân, kiểm tra hiện trạng thực địa và các cuộc họp tuần của Ban Giám đốc và các Tổ chuyên môn. Xuất văn bản Word (.docx) chuẩn thể thức Nghị định 30/2020/NĐ-CP.
+          </div>
+          <div class="hub-card-tags">
+            <span class="hub-card-tag"><i class="fa-solid fa-file-word text-blue-600 mr-1"></i> Chuẩn NĐ 30/2020</span>
+            <span class="hub-card-tag"><i class="fa-solid fa-clock mr-1"></i> Tự động tính Thứ</span>
+            <span class="hub-card-tag"><i class="fa-solid fa-cloud mr-1"></i> Google Sheets</span>
+          </div>
+          <div class="hub-card-footer">
+            <div class="hub-card-stat">
+              Lịch đã đăng ký: <strong id="hubCountSchedule">0</strong> mục
+            </div>
+            <button type="button" class="btn-enter-system" id="btnHubGoSchedule">
+              <span>Vào Phân Hệ Lịch Tuần</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Phân hệ 2: IT Helpdesk Sự Cố Máy Tính -->
+        <div class="hub-selection-card card-it" id="cardSelectHelpdesk">
+          <div class="hub-card-header">
+            <div class="hub-card-icon">
+              <i class="fa-solid fa-headset"></i>
+            </div>
+            <div class="hub-card-titles">
+              <span class="hub-card-subtitle">Công nghệ thông tin & Thiết bị</span>
+              <h3>IT HELPDESK & BÁO SỰ CỐ MÁY TÍNH</h3>
+            </div>
+          </div>
+          <div class="hub-card-desc">
+            Tiếp nhận và chẩn đoán nhanh sự cố thiết bị tin học (máy tính, máy in, mạng LAN/Internet, phần mềm nghiệp vụ, chữ ký số). Tự động nhận diện cấu hình máy, dán ảnh chụp màn hình phím tắt Ctrl+V và theo dõi hàng đợi xử lý trực tiếp.
+          </div>
+          <div class="hub-card-tags">
+            <span class="hub-card-tag"><i class="fa-solid fa-microchip text-amber-600 mr-1"></i> Tự nhận diện cấu hình</span>
+            <span class="hub-card-tag"><i class="fa-solid fa-paste mr-1"></i> Dán ảnh Ctrl + V</span>
+            <span class="hub-card-tag"><i class="fa-solid fa-satellite-dish mr-1"></i> Monitoring Live</span>
+          </div>
+          <div class="hub-card-footer">
+            <div class="hub-card-stat">
+              Sự cố chờ giải quyết: <strong id="hubCountPendingTickets" style="color: #b45309;">0</strong> mục
+            </div>
+            <button type="button" class="btn-enter-system" id="btnHubGoHelpdesk">
+              <span>Vào Phân Hệ IT Helpdesk</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Thanh Tiện Ích Phụ -->
+      <div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 10px;">
+        <a href="https://drive.google.com/drive/folders/1T2LVJKymM-52KBLNeabYxtAT4zfXneND" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration: none;">
+          <i class="fa-solid fa-folder-open text-amber-500 mr-1"></i> Mở Kho Phần Mềm Cài Đặt (Google Drive)
+        </a>
+        <a href="DANH_SACH_TAI_KHOAN_CN23.md" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration: none;">
+          <i class="fa-solid fa-address-book text-blue-500 mr-1"></i> Xem Danh Sách 70 Tài Khoản CN23 (MD)
+        </a>
+      </div>
+    </section>
+
+    <!-- ==================== 4. PHÂN HỆ ĐĂNG KÝ LỊCH TUẦN ==================== -->
+    <section id="weeklyScheduleWorkspace" style="display: none;">
+      <!-- Thanh điều hướng lùi về Hub -->
+      <div class="subsystem-topbar">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button type="button" class="btn-back-hub" id="btnBackFromSchedule">
+            <i class="fa-solid fa-arrow-left"></i> Quay lại Trang Chủ Hub
+          </button>
+          <span class="subsystem-breadcrumb">Cổng Nội Bộ &gt; <strong>Đăng Ký Lịch Tuần</strong></span>
+        </div>
+        <div style="font-size: 0.82rem; color: #15803d; font-weight: 700;">
+          <i class="fa-solid fa-circle-check"></i> Chuẩn Nghị định 30/2020/NĐ-CP
+        </div>
+      </div>
+
+      <div class="workspace-grid">
+        <!-- CỘT TRÁI: FORM ĐĂNG KÝ LỊCH -->
+        <section class="card form-card">
+          <div class="card-header">
+            <h2>📝 Thông Tin Đăng Ký Lịch</h2>
+            <span class="badge badge-info">Dành cho cá nhân</span>
+          </div>
+          <div class="card-body">
+            <form id="registerForm">
+              <!-- Hàng 1: Ngày và Thứ -->
+              <div class="form-row">
+                <div class="form-group col-half">
+                  <label for="regDate">Ngày / Tháng / Năm: <span class="required">*</span></label>
+                  <input type="text" id="regDate" class="form-control date-input-calendar" placeholder="Chọn ngày (DD/MM/YYYY)" readonly required>
+                  <small class="field-hint" id="formattedDateText">Định dạng: DD/MM/YYYY</small>
+                </div>
+                <div class="form-group col-half">
+                  <label for="regDayOfWeek">Thứ: <span class="badge-auto">Tự động</span></label>
+                  <input type="text" id="regDayOfWeek" class="form-control auto-filled" readonly placeholder="Sẽ tự động điền...">
+                </div>
+              </div>
+
+              <!-- Hàng 2: Thời gian bắt đầu và kết thúc -->
+              <div class="form-row">
+                <div class="form-group col-half">
+                  <label for="regStartTime">⏰ Bắt đầu: <span class="required">*</span></label>
+                  <input type="text" id="regStartTime" class="form-control time-input-clock" placeholder="07:30" readonly required>
+                  <small class="field-hint">Giờ bắt đầu (Hệ 24h)</small>
+                </div>
+                <div class="form-group col-half">
+                  <label for="regEndTime">🏁 Kết thúc: <span class="required">*</span></label>
+                  <input type="text" id="regEndTime" class="form-control time-input-clock" placeholder="09:30" readonly required>
+                  <small class="field-hint">Giờ kết thúc (Hệ 24h)</small>
+                </div>
+              </div>
+
+              <!-- Hàng 3: Nội dung -->
+              <div class="form-group">
+                <div class="label-with-counter">
+                  <label for="regContent">Nội dung làm việc: <span class="required">*</span></label>
+                  <span class="char-counter" id="contentCounter">0 / 500 ký tự</span>
+                </div>
+                <textarea id="regContent" class="form-control" rows="3" maxlength="500" placeholder="Nhập tóm tắt nội dung cuộc họp, công việc, hội nghị..." required></textarea>
+              </div>
+
+              <!-- Hàng 4: Thành phần -->
+              <div class="form-group">
+                <div class="label-with-counter">
+                  <label for="regAttendees">Thành phần tham dự: <span class="required">*</span></label>
+                  <span class="char-counter" id="attendeesCounter">0 / 500 ký tự</span>
+                </div>
+                <textarea id="regAttendees" class="form-control" rows="2" maxlength="500" placeholder="Ví dụ: BGĐ, Lãnh đạo các Phòng, Chi nhánh số 23, Ông Nguyễn Văn A..." required></textarea>
+              </div>
+
+              <!-- Hàng 5: Địa điểm -->
+              <div class="form-group">
+                <div class="label-with-counter">
+                  <label for="regLocation">Địa điểm: <span class="required">*</span></label>
+                  <span class="char-counter" id="locationCounter">0 / 500 ký tự</span>
+                </div>
+                <input type="text" id="regLocation" class="form-control" maxlength="500" placeholder="Ví dụ: Phòng họp số 1 - Trụ sở VPĐK, Hội trường tầng 3..." required>
+              </div>
+
+              <!-- Nút hành động -->
+              <div class="form-actions">
+                <button type="submit" id="btnSubmitRegister" class="btn btn-register btn-lg btn-block">
+                  <i class="fa-solid fa-circle-plus mr-1"></i>
+                  <span class="btn-text">Đăng Ký Lịch Này</span>
+                </button>
+                <button type="reset" id="btnResetForm" class="btn btn-reset btn-block">
+                  <i class="fa-solid fa-rotate-left mr-1"></i>
+                  <span class="btn-text">Làm mới biểu mẫu</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- CỘT PHẢI: BẢNG LỊCH TUẦN & XUẤT WORD -->
+        <section class="card table-card">
+          <div class="card-header table-header-flex">
+            <div>
+              <h2>📋 Lịch Đã Đăng Ký Trong Tuần</h2>
+              <p class="text-muted">Tổng hợp danh sách các cá nhân đã đăng ký</p>
+            </div>
+            <div class="table-actions">
+              <button id="btnRefreshList" class="btn btn-refresh btn-sm" title="Tải dữ liệu từ server về">
+                <i class="fa-solid fa-arrows-rotate"></i>
+                <span>Tải từ server</span>
+              </button>
+              <button id="btnExportWord" class="btn btn-success" title="Xuất file Lịch tuần chuẩn Nghị định 30">
+                <i class="fa-solid fa-file-word"></i>
+                <span><strong>Xuất Lịch tuần Word</strong></span>
+              </button>
+            </div>
+          </div>
+
+          <div class="card-body table-responsive">
+            <div class="table-filter-bar">
+              <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="🔍 Tìm kiếm nội dung, người đăng ký, địa điểm...">
+              <span class="total-count-badge" id="totalScheduleCount">0 mục</span>
+            </div>
+
+            <table class="schedule-table" id="scheduleTable">
+              <thead>
+                <tr>
+                  <th style="width: 120px; white-space: nowrap;">Thứ / Ngày</th>
+                  <th style="width: 145px; white-space: nowrap;">Thời gian</th>
+                  <th style="min-width: 260px;">Nội dung làm việc</th>
+                  <th style="width: 180px;">Thành phần</th>
+                  <th style="width: 160px;">Địa điểm</th>
+                  <th style="width: 150px; white-space: nowrap;">Người gửi</th>
+                </tr>
+              </thead>
+              <tbody id="scheduleTableBody">
+                <tr>
+                  <td colspan="6" class="text-center empty-state">Đang tải dữ liệu lịch...</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Phân trang -->
+            <div class="pagination-bar" id="paginationBar">
+              <div class="pagination-info" id="paginationInfo">
+                Hiển thị <strong>0 - 0</strong> trên tổng số <strong>0</strong> lịch
+              </div>
+              <div class="pagination-controls" id="paginationControls"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- ==================== 5. PHÂN HỆ IT HELPDESK ==================== -->
+    <section id="itHelpdeskWorkspace" style="display: none;">
+      <!-- Thanh điều hướng lùi về Hub -->
+      <div class="subsystem-topbar">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button type="button" class="btn-back-hub" id="btnBackFromHelpdesk">
+            <i class="fa-solid fa-arrow-left"></i> Quay lại Trang Chủ Hub
+          </button>
+          <span class="subsystem-breadcrumb">Cổng Nội Bộ &gt; <strong>IT Helpdesk & Tiếp Nhận Sự Cố</strong></span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <a href="https://drive.google.com/drive/folders/1T2LVJKymM-52KBLNeabYxtAT4zfXneND" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration: none;">
+            <i class="fa-solid fa-cloud-arrow-down text-amber-500 mr-1"></i> Kho Cài Đặt (Drive)
+          </a>
+        </div>
+      </div>
+
+      <div class="it-grid-container">
+        <!-- CỘT TRÁI: FORM GỬI YÊU CẦU IT SUPPORT -->
+        <section class="card form-card">
+          <div class="card-header">
+            <h2>💻 Báo Cáo Sự Cố Thiết Bị & Tin Học</h2>
+            <span class="badge badge-warning" style="background: #fef3c7; color: #b45309;">Tổ CNTT Tiếp Nhận</span>
+          </div>
+          <div class="card-body">
+            <!-- Thẻ nhận diện máy tự động -->
+            <div class="specs-detection-box" id="detectedSpecText">
+              <i class="fa-solid fa-desktop"></i>
+              <span>Đang nhận diện cấu hình máy & địa chỉ IP...</span>
+            </div>
+
+            <form id="itTicketForm">
+              <!-- Họ tên & SĐT (Đã điền tự động) -->
+              <div class="form-row">
+                <div class="form-group col-half">
+                  <label for="itFullname">Họ và tên: <span class="required">*</span></label>
+                  <input type="text" id="itFullname" class="form-control auto-filled" required>
+                </div>
+                <div class="form-group col-half">
+                  <label for="itPhone">Số ĐT / Zalo: <span class="required">*</span></label>
+                  <input type="tel" id="itPhone" class="form-control auto-filled" required>
+                </div>
+              </div>
+
+              <!-- Phòng ban & Tên máy -->
+              <div class="form-row">
+                <div class="form-group col-half">
+                  <label for="itDepartment">Tổ / Phòng ban: <span class="required">*</span></label>
+                  <input type="text" id="itDepartment" class="form-control auto-filled" required>
+                </div>
+                <div class="form-group col-half">
+                  <label for="itMachineName">Tên máy / Mã thiết bị:</label>
+                  <input type="text" id="itMachineName" class="form-control" placeholder="Tự nhận diện">
+                </div>
+              </div>
+
+              <!-- Phân loại sự cố (Chips) -->
+              <div class="form-group">
+                <label>Loại sự cố gặp phải: <span class="required">*</span></label>
+                <div class="issue-category-grid">
+                  <label class="category-radio-chip selected">
+                    <input type="radio" name="itCategory" value="Máy tính / PC" checked>
+                    <span>🖥️ Máy tính / PC</span>
+                  </label>
+                  <label class="category-radio-chip">
+                    <input type="radio" name="itCategory" value="Máy in / Scan">
+                    <span>🖨️ Máy in / Scan</span>
+                  </label>
+                  <label class="category-radio-chip">
+                    <input type="radio" name="itCategory" value="Mạng Internet / Wifi">
+                    <span>🌐 Mạng / Internet</span>
+                  </label>
+                  <label class="category-radio-chip">
+                    <input type="radio" name="itCategory" value="Phần mềm nghiệp vụ">
+                    <span>📂 PM Nghiệp Vụ</span>
+                  </label>
+                  <label class="category-radio-chip">
+                    <input type="radio" name="itCategory" value="Chữ ký số / Cổng DVC">
+                    <span>🔑 Chữ ký số / Token</span>
+                  </label>
+                  <label class="category-radio-chip">
+                    <input type="radio" name="itCategory" value="Sự cố khác">
+                    <span>⚠️ Sự cố khác</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Câu thông báo lỗi tiếng Anh -->
+              <div class="form-group">
+                <label for="itErrorMessage">
+                  Thông báo lỗi hệ thống hiển thị (Nếu có):
+                </label>
+                <input type="text" id="itErrorMessage" class="form-control" placeholder="Ví dụ: Paper Jam, Access Denied, Printer Offline, No Internet...">
+                <small class="field-hint">Gõ nguyên văn chữ tiếng Anh máy tính báo để IT xử lý từ xa nhanh hơn</small>
+              </div>
+
+              <!-- Mô tả chi tiết hiện tượng -->
+              <div class="form-group">
+                <label for="itDescription">Mô tả hiện tượng sự cố: <span class="required">*</span></label>
+                <textarea id="itDescription" class="form-control" rows="3" placeholder="Mô tả cụ thể máy bị hiện tượng gì, đã bấm thử những gì..." required></textarea>
+              </div>
+
+              <!-- Vùng dán ảnh chụp màn hình Ctrl+V / Kéo thả -->
+              <div class="form-group">
+                <label>Ảnh chụp màn hình lỗi (Không bắt buộc):</label>
+                <div class="it-dropzone" id="itDropZone">
+                  <div class="dropzone-prompt" id="itDropPrompt">
+                    <i class="fa-regular fa-image"></i>
+                    <div>
+                      Bấm vào đây để chọn ảnh hoặc chỉ cần chụp rồi bấm <kbd>Ctrl + V</kbd> để dán ảnh
+                    </div>
+                    <small style="color: #94a3b8;">Hỗ trợ dán trực tiếp từ Zalo, Snipping Tool, Paint...</small>
+                  </div>
+
+                  <div class="it-image-preview-box" id="itPreviewBox" style="display: none;">
+                    <img id="itPreviewImg" src="" alt="Ảnh lỗi">
+                    <button type="button" class="btn-remove-preview-img" id="btnRemoveItImg" title="Xóa ảnh này">&times;</button>
+                    <div id="itImageSizeNote" style="font-size: 0.75rem; color: #15803d; margin-top: 4px; font-weight: 600;"></div>
+                  </div>
+                  <input type="file" id="itFileInput" accept="image/*" style="display: none;">
+                </div>
+              </div>
+
+              <!-- Nút Gửi Ticket -->
+              <div class="form-actions" style="margin-top: 14px;">
+                <button type="submit" id="btnSubmitItTicket" class="btn btn-primary btn-lg btn-block" style="background: #1e3a8a;">
+                  <i class="fa-solid fa-paper-plane mr-1"></i>
+                  <span class="btn-text">Gửi Yêu Cầu Hỗ Trợ IT</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- CỘT PHẢI: BẢNG MONITORING TICKET THỜI GIAN THỰC -->
+        <section class="card table-card">
+          <div class="card-header table-header-flex">
+            <div>
+              <h2>📡 Hàng Đợi Xử Lý Sự Cố (Monitoring)</h2>
+              <p class="text-muted">Theo dõi tiến độ IT tiếp nhận và sửa chữa</p>
+            </div>
+            <div class="table-actions">
+              <button id="btnRefreshItTickets" class="btn btn-refresh btn-sm" title="Làm mới danh sách ticket">
+                <i class="fa-solid fa-arrows-rotate" id="itRefreshIcon"></i>
+                <span>Làm mới</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <!-- 4 Thẻ Thống Kê -->
+            <div class="it-stats-grid">
+              <div class="it-stat-card stat-total">
+                <div>
+                  <div class="it-stat-label">Tổng ticket</div>
+                  <div class="it-stat-value" id="itStatTotal">0</div>
+                </div>
+                <i class="fa-solid fa-list-check" style="font-size: 1.5rem; color: #94a3b8;"></i>
+              </div>
+              <div class="it-stat-card stat-pending">
+                <div>
+                  <div class="it-stat-label">Chờ xử lý</div>
+                  <div class="it-stat-value" id="itStatPending" style="color: #b45309;">0</div>
+                </div>
+                <i class="fa-regular fa-clock" style="font-size: 1.5rem; color: #f59e0b;"></i>
+              </div>
+              <div class="it-stat-card stat-processing">
+                <div>
+                  <div class="it-stat-label">Đang xử lý</div>
+                  <div class="it-stat-value" id="itStatProcessing" style="color: #0284c7;">0</div>
+                </div>
+                <i class="fa-solid fa-screwdriver-wrench" style="font-size: 1.5rem; color: #0284c7;"></i>
+              </div>
+              <div class="it-stat-card stat-completed">
+                <div>
+                  <div class="it-stat-label">Đã hoàn thành</div>
+                  <div class="it-stat-value" id="itStatCompleted" style="color: #10b981;">0</div>
+                </div>
+                <i class="fa-solid fa-circle-check" style="font-size: 1.5rem; color: #10b981;"></i>
+              </div>
+            </div>
+
+            <!-- Thanh Lọc & Tìm Kiếm -->
+            <div class="table-filter-bar" style="margin-bottom: 12px;">
+              <input type="text" id="itSearchInput" class="form-control form-control-sm" placeholder="🔍 Tìm theo mã ticket, tên cán bộ, phòng ban, lỗi...">
+              <select id="itStatusFilter" class="form-control form-control-sm" style="max-width: 170px;">
+                <option value="ALL">Tất cả trạng thái</option>
+                <option value="Chờ xử lý">Chờ xử lý</option>
+                <option value="Đang xử lý">Đang xử lý</option>
+                <option value="Đã hoàn thành">Đã hoàn thành</option>
+              </select>
+            </div>
+
+            <!-- Bảng Danh Sách Ticket (Desktop) -->
+            <div class="table-responsive">
+              <table class="ticket-table">
+                <thead>
+                  <tr>
+                    <th style="width: 110px;">Mã / Giờ</th>
+                    <th style="width: 140px;">Cán bộ / Tổ</th>
+                    <th style="width: 130px;">Tên máy / Loại</th>
+                    <th style="min-width: 220px;">Nội dung sự cố</th>
+                    <th style="width: 90px; text-align: center;">Ảnh lỗi</th>
+                    <th style="width: 120px; text-align: center;">Trạng thái</th>
+                    <th style="width: 140px;">Ghi chú IT</th>
+                  </tr>
+                </thead>
+                <tbody id="itTicketTableBody">
+                  <tr>
+                    <td colspan="7" class="text-center empty-state">Đang tải danh sách sự cố...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Chế độ Thẻ (Mobile) -->
+            <div id="itTicketCardsMobile" style="display: none; flex-direction: column; gap: 10px; margin-top: 10px;"></div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== MODAL XUẤT LỊCH TUẦN WORD (.DOCX) ==================== -->
+  <div id="exportWordModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card modal-export-card">
+      <div class="modal-header">
+        <div class="detail-header-title">
+          <span class="detail-badge-day" style="background-color: #dcfce7; color: #15803d;">📄 Văn bản Word</span>
+          <h3>Tùy Chọn Xuất Lịch Công Tác</h3>
+        </div>
+        <button id="btnCloseExportModal" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="export-subtitle">Chọn phạm vi dữ liệu bạn muốn xuất văn bản theo chuẩn <strong>Nghị định 30/2020/NĐ-CP</strong>:</p>
+
+        <div class="export-options-group">
+          <!-- Tùy chọn 1: Xuất toàn bộ -->
+          <label class="export-radio-card active" id="labelExportAll">
+            <input type="radio" name="exportScope" id="scopeAll" value="all" checked>
+            <div class="radio-card-content">
+              <strong>📑 Xuất toàn bộ lịch hiện có</strong>
+              <small>Xuất tất cả các lịch đăng ký trong hệ thống</small>
+            </div>
+          </label>
+
+          <!-- Tùy chọn 2: Xuất theo khoảng ngày -->
+          <label class="export-radio-card" id="labelExportRange">
+            <input type="radio" name="exportScope" id="scopeRange" value="range">
+            <div class="radio-card-content">
+              <strong>📅 Xuất theo khoảng ngày (Từ ngày &rarr; Đến ngày)</strong>
+              <small>Lọc và xuất chính xác các cuộc họp trong khoảng thời gian tùy chọn</small>
+            </div>
+          </label>
+        </div>
+
+        <!-- Khung chọn khoảng ngày (chỉ hiện khi chọn 'range') -->
+        <div id="exportDateRangeBox" class="export-range-box" style="display: none;">
+          <div class="form-row">
+            <div class="form-group col-half">
+              <label for="exportFromDate">Từ ngày: <span class="required">*</span></label>
+              <input type="text" id="exportFromDate" class="form-control date-input-calendar" placeholder="DD/MM/YYYY" readonly>
+            </div>
+            <div class="form-group col-half">
+              <label for="exportToDate">Đến ngày: <span class="required">*</span></label>
+              <input type="text" id="exportToDate" class="form-control date-input-calendar" placeholder="DD/MM/YYYY" readonly>
+            </div>
+          </div>
+          <div class="quick-date-buttons">
+            <button type="button" class="btn-quick-date" id="btnQuickThisWeek">Tuần này</button>
+            <button type="button" class="btn-quick-date" id="btnQuickNextWeek">Tuần sau</button>
+            <button type="button" class="btn-quick-date" id="btnQuickThisMonth">Tháng này</button>
+          </div>
+        </div>
+
+        <div class="export-preview-info" id="exportPreviewInfo">
+          Đang chọn: <strong>Tất cả lịch</strong> (<span id="exportCountPreview">0</span> mục)
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn btn-secondary" id="btnCancelExportModal">Hủy bỏ</button>
+        <button type="button" class="btn btn-success" id="btnConfirmExportWord">
+          <i class="fa-solid fa-file-arrow-down mr-1"></i>
+          <span>Tải file Word (.docx)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL XEM CHI TIẾT LỊCH TUẦN ==================== -->
+  <div id="scheduleDetailModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card modal-detail-card">
+      <div class="modal-header">
+        <div class="detail-header-title">
+          <span class="detail-badge-day" id="detailDayBadge">Thứ</span>
+          <h3 id="detailModalTitle">Chi Tiết Lịch Công Tác</h3>
+        </div>
+        <button id="btnCloseDetailModal" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body detail-modal-body">
+        <div class="detail-meta-grid">
+          <div class="detail-meta-item">
+            <span class="meta-label">📅 Ngày làm việc:</span>
+            <strong id="detailDateText">--/--/----</strong>
+          </div>
+          <div class="detail-meta-item">
+            <span class="meta-label">⏰ Thời điểm làm việc:</span>
+            <strong id="detailTimeText" class="time-highlight">--:--</strong>
+          </div>
+          <div class="detail-meta-item full-width">
+            <span class="meta-label">👤 Cán bộ đăng ký:</span>
+            <span id="detailUserText">--</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <label class="section-label">📝 Nội dung làm việc:</label>
+          <div class="detail-box content-box" id="detailContentText"></div>
+        </div>
+
+        <div class="detail-section">
+          <label class="section-label">👥 Thành phần tham dự:</label>
+          <div class="detail-box attendees-box" id="detailAttendeesText"></div>
+        </div>
+
+        <div class="detail-section">
+          <label class="section-label">📍 Địa điểm:</label>
+          <div class="detail-box location-box" id="detailLocationText"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btnCloseDetailBtn" class="btn btn-secondary">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL QUÊN MẬT KHẨU ==================== -->
+  <div id="forgotPasswordModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card modal-forgot-card">
+      <div class="modal-header">
+        <h3>🔑 Hỗ Trợ Cấp Lại Mật Khẩu</h3>
+        <button id="btnCloseForgotModal" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body text-center">
+        <div class="forgot-icon-box">
+          <i class="fa-solid fa-key" style="font-size: 2.2rem; color: #1e40af;"></i>
+        </div>
+        <h4 style="margin: 10px 0 6px; color: #0f172a; font-size: 1.1rem;">Quên Mật Khẩu Đăng Nhập?</h4>
+        <p style="color: #475569; font-size: 0.9rem; line-height: 1.5; margin-bottom: 16px;">
+          Để bảo mật dữ liệu công tác của cơ quan, vui lòng liên hệ Tổ Quản Trị Hệ Thống / Quản trị viên để được cấp lại mật khẩu:
+        </p>
+        <div class="admin-contact-card">
+          <div class="admin-contact-name">👤 <strong>Đỗ Trọng Minh Quân</strong> (Quản trị viên Hệ thống)</div>
+          <div class="admin-contact-zalo">
+            💬 Hỗ trợ kỹ thuật: <strong>Tổ CNTT - Chi nhánh 23</strong>
+          </div>
+        </div>
+        <div style="margin-top: 18px;">
+          <button type="button" onclick="alert('Đã ghi nhận yêu cầu! Bạn có thể kiểm tra danh sách tài khoản trong file DANH_SACH_TAI_KHOAN_CN23.md hoặc liên hệ trực tiếp Quản trị viên.');" class="btn btn-primary btn-block">
+            <i class="fa-solid fa-phone mr-1"></i> Liên Hệ Tổ CNTT Chi Nhánh 23
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btnCloseForgotBtn" class="btn btn-secondary">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL CẤU HÌNH SERVER API ==================== -->
+  <div id="configModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>⚙️ Cấu Hình Máy Chủ Dữ Liệu (Google Apps Script URL)</h3>
+        <button id="btnCloseModal" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted">
+          Dán đường link <strong>Web App URL</strong> từ Google Apps Script để kết nối và đồng bộ cả 3 sheet (Tài khoản, Lịch tuần, IT Helpdesk).
+        </p>
+        <div class="form-group">
+          <label for="googleScriptUrlInput"><strong>Đường link Server API URL:</strong></label>
+          <input type="url" id="googleScriptUrlInput" class="form-control" placeholder="https://script.google.com/macros/s/.../exec">
+        </div>
+        <div class="status-box" id="connectionStatusBox">
+          <span class="status-indicator" id="statusDot"></span>
+          <span id="statusText">Chưa kiểm tra kết nối</span>
+        </div>
+        <div class="alert alert-info">
+          <small>
+            📌 <em>Hệ thống đã tích hợp sẵn máy chủ mặc định và lưu trữ an toàn trong bộ nhớ máy tính. Dữ liệu lịch và ticket luôn được giữ an toàn để bạn làm việc.</em>
+          </small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnTestConnection" class="btn btn-secondary">Kiểm tra kết nối</button>
+        <button id="btnSaveConfig" class="btn btn-primary">Lưu cấu hình</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL XEM ẢNH LỖI PHÓNG TO (IT HELPDESK) ==================== -->
+  <div id="itImageViewerModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card img-viewer-card">
+      <div class="modal-header">
+        <h3 id="itModalImgTitle"><i class="fa-solid fa-image text-blue-600 mr-2"></i>Ảnh Chụp Lỗi Sự Cố</h3>
+        <button id="btnCloseItImgModal" class="modal-close">&times;</button>
+      </div>
+      <div class="img-viewer-body">
+        <div id="itModalImgLoading" style="color: #ffffff; padding: 40px;">
+          <i class="fa-solid fa-spinner fa-spin text-2xl"></i> Đang tải ảnh...
+        </div>
+        <img id="itModalFullImg" src="" alt="Ảnh chụp màn hình lỗi" style="display: none;" onload="document.getElementById('itModalImgLoading').style.display='none'; this.style.display='inline-block';">
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <a id="itModalDriveLink" href="#" target="_blank" class="btn btn-secondary btn-sm" style="display: none;">
+          <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> Mở trên Google Drive
+        </a>
+        <button type="button" id="btnCloseItImgBtn" class="btn btn-secondary">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL BÁO THÀNH CÔNG GỬI TICKET IT ==================== -->
+  <div id="itSuccessModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 480px; text-align: center;">
+      <div class="modal-body" style="padding: 30px 20px;">
+        <div style="width: 60px; height: 60px; border-radius: 50%; background: #dcfce7; color: #15803d; font-size: 2rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        <h3 style="font-size: 1.3rem; font-weight: 800; color: #0f172a; margin-bottom: 8px;">Đã Gửi Yêu Cầu Hỗ Trợ IT!</h3>
+        <p style="color: #475569; font-size: 0.9rem; line-height: 1.5; margin-bottom: 16px;">
+          Yêu cầu sự cố của bạn đã được ghi nhận vào hệ thống với mã ticket:
+        </p>
+        <div style="background: #f1f5f9; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 20px;">
+          <div style="font-size: 1.3rem; font-family: monospace; font-weight: 800; color: #1e40af;" id="itSuccessTicketId">TK-xxxxxx</div>
+          <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;" id="itSuccessMachineName">Máy: --</div>
+        </div>
+        <p style="font-size: 0.84rem; color: #64748b; margin-bottom: 20px;">
+          Cán bộ IT Chi nhánh 23 sẽ kiểm tra và đến khắc phục trực tiếp tại bàn làm việc theo thứ tự ưu tiên.
+        </p>
+        <button type="button" id="btnOkItSuccess" class="btn btn-primary btn-block">Đã Hiểu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <p class="footer-copy">© 2026 Văn phòng Đăng ký đất đai TP.HCM - Chi nhánh số 23. Chuẩn thể thức Nghị định 30/2020/NĐ-CP.</p>
+    <p class="footer-credit">Cổng Tiện Ích Nội Bộ (Lịch Tuần &amp; IT Helpdesk) &bull; Quản trị kỹ thuật: <strong>Tổ CNTT - Đỗ Trọng Minh Quân</strong></p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
