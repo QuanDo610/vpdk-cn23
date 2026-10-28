@@ -3,24 +3,25 @@
 :: CỔNG DỊCH VỤ NỘI BỘ - VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI CHI NHÁNH SỐ 23
 :: - Mở trực tiếp bằng Google Chrome hoặc Microsoft Edge
 :: - Biểu tượng Pikachu Đeo Kính Vuông Nổi Bật (Chống bấm nhầm 100%)
+:: - Tên Shortcut Desktop: "Family CN23"
 :: ===============================================================================
 chcp 65001 >nul
-title Cài đặt Phím tắt Cổng Dịch Vụ Pikachu Kính Vuông - Chi Nhánh 23
+title Cài đặt Phím tắt "Family CN23" Pikachu Kính Vuông
 color 0E
 
 echo.
 echo ===============================================================================
-echo       CỔNG DỊCH VỤ NỘI BỘ - VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI CHI NHÁNH SỐ 23
-echo               (Hệ thống Lịch Tuần & Tiếp nhận IT Helpdesk)
+echo            FAMILY CN23 - VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI CHI NHÁNH SỐ 23
+echo                 (Hệ thống Lịch Tuần & Tiếp nhận IT Helpdesk)
 echo ===============================================================================
 echo.
-echo [*] BƯỚC 1: Đang thiết lập Biểu tượng Pikachu Đeo Kính Vuông nổi bật...
+echo [*] BƯỚC 1: Đang thiết lập Biểu tượng Pikachu Kính Vuông nổi bật...
 
 :: Tạo thư mục lưu Icon ứng dụng trong LocalAppData của cán bộ
 set "APP_DIR=%LOCALAPPDATA%\VPDK23"
 if not exist "%APP_DIR%" mkdir "%APP_DIR%" 2>nul
 
-:: Ưu tiên 1: Icon Badge Pikachu Kính Vuông nền xanh viền vàng (Mẫu yêu thích)
+:: Ưu tiên 1: Icon Badge Pikachu Kính Vuông nền xanh viền vàng (Mẫu chính thức)
 set "ICON_FILE=%APP_DIR%\pikachu_badge.ico"
 
 if exist "%~dp0pikachu_badge.ico" (
@@ -105,26 +106,26 @@ if not defined BROWSER_EXE (
 echo   [OK] Trình duyệt chuyên dụng: %BROWSER_NAME%
 
 echo.
-echo [*] BƯỚC 3: Đang khởi tạo Lối tắt (Shortcut .lnk) ngoài Desktop...
+echo [*] BƯỚC 3: Đang khởi tạo Lối tắt "Family CN23" ngoài Desktop...
 
 set "TARGET_URL=https://quando610.github.io/vpdk-cn23/index.html"
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$ws = New-Object -ComObject WScript.Shell; ^
    $desktop = [Environment]::GetFolderPath('Desktop'); ^
-   $name = 'Cổng Dịch Vụ - Chi Nhánh 23.lnk'; ^
+   $name = 'Family CN23.lnk'; ^
    $p1 = Join-Path $desktop $name; ^
    function MakeLnk($dest) { ^
        $s = $ws.CreateShortcut($dest); ^
        $s.TargetPath = '%BROWSER_EXE%'; ^
        $s.Arguments = '%TARGET_URL%'; ^
        $s.IconLocation = '%ICON_FILE%'; ^
-       $s.Description = 'Cổng Dịch Vụ Nội Bộ - Văn Phòng Đăng Ký Đất Đai Chi Nhánh 23'; ^
+       $s.Description = 'Family CN23 - Cổng Dịch Vụ Nội Bộ Chi Nhánh 23'; ^
        $s.WorkingDirectory = [System.IO.Path]::GetDirectoryName('%BROWSER_EXE%'); ^
        $s.Save(); ^
    }; ^
    MakeLnk($p1); ^
-   Write-Host '   -> Da tao Shortcut Pikachu thanh cong tai:' $p1 -ForegroundColor Yellow; ^
+   Write-Host '   -> Da tao Shortcut [Family CN23] thanh cong tai:' $p1 -ForegroundColor Yellow; ^
    if (Test-Path "$env:USERPROFILE\Desktop") { ^
        $p2 = Join-Path "$env:USERPROFILE\Desktop" $name; ^
        if ($p2 -ne $p1) { MakeLnk($p2); } ^
@@ -133,24 +134,26 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
        $p3 = Join-Path "$env:USERPROFILE\OneDrive\Desktop" $name; ^
        if ($p3 -ne $p1) { MakeLnk($p3); } ^
    }; ^
+   Remove-Item "$desktop\Cổng Dịch Vụ - Chi Nhánh 23.lnk" -ErrorAction SilentlyContinue; ^
    Remove-Item "$desktop\Cổng Dịch Vụ - Chi Nhánh 23.url" -ErrorAction SilentlyContinue; ^
-   Remove-Item "$desktop\Cong Dich Vu - Chi Nhanh 23.url" -ErrorAction SilentlyContinue;"
+   Remove-Item "$desktop\Cong Dich Vu - Chi Nhanh 23.url" -ErrorAction SilentlyContinue; ^
+   Remove-Item "$desktop\Family CN23.url" -ErrorAction SilentlyContinue;"
 
 echo.
 echo ===============================================================================
 echo  [V] HOÀN TẤT THÀNH CÔNG!
-echo      - Biểu tượng Pikachu Đeo Kính Vuông đã được cài ngoài Desktop.
+echo      - Lối tắt [Family CN23] với icon Pikachu Kính Vuông đã được cài ngoài Desktop.
 echo      - Cố định mở chuyên dụng qua: %BROWSER_NAME%.
 echo ===============================================================================
 echo.
-echo [*] Đang tự động mở Cổng dịch vụ lần đầu bằng %BROWSER_NAME%...
+echo [*] Đang tự động mở Family CN23 lần đầu bằng %BROWSER_NAME%...
 start "" "%BROWSER_EXE%" "%TARGET_URL%"
 
 echo.
 echo -------------------------------------------------------------------------------
 echo  HƯỚNG DẪN DÀNH CHO CÁN BỘ:
-echo  1. Hằng ngày, cán bộ chỉ cần bấm đúp vào biểu tượng "Pikachu Kính Vuông"
-echo     có tên "Cổng Dịch Vụ - Chi Nhánh 23" trên màn hình Desktop.
+echo  1. Hằng ngày, cán bộ chỉ cần bấm đúp vào biểu tượng Pikachu "Family CN23"
+echo     ngay trên màn hình Desktop.
 echo  2. Đăng nhập bằng Số CCCD (12 số) và Mật khẩu được cấp.
 echo -------------------------------------------------------------------------------
 echo.
