@@ -17,71 +17,8 @@ const SHEET_USERS_NAME = "TaiKhoan";
 const SHEET_SUPPORT_NAME = "Tickets";
 const DRIVE_FOLDER_NAME = "IT_Helpdesk_Uploads";
 
-// Danh sách 4 ticket sự cố từ IT Helpdesk cũ chuyển sang
-const INITIAL_TICKETS = [
-  [
-    "TK-261027-004",
-    "27/10/2026 15:41:51",
-    "Phan Trọng Hiệp",
-    "0949309399",
-    "Tổ Đăng ký và Cấp GCN",
-    "macOS (pc-kcq70e7",
-    "Máy in / Scan",
-    "",
-    "Chưa cài máy in",
-    "",
-    "Đã hoàn thành",
-    "",
-    "IP: 113.185.75.145 | macOS • 4 Cores • 390x844"
-  ],
-  [
-    "TK-261027-006",
-    "27/10/2026 09:44:35",
-    "Nguyễn Thị Ngọc Thảo",
-    "0903523534",
-    "Tổ Đăng ký và Cấp GCN",
-    "Win 10/11 (PC-60208D)",
-    "Máy in / Scan",
-    "",
-    "k kết nối dc máy in",
-    "",
-    "Đã hoàn thành",
-    "",
-    "IP: 14.191.68.193 | Win 10/11 • 8GB RAM • 4 Cores • 1600x1200"
-  ],
-  [
-    "TK-261026-005",
-    "26/10/2026 16:26:00",
-    "PHẠM THỊ YẾN NHI",
-    "0918047179",
-    "Tổ Đăng ký và Cấp GCN",
-    "Tổ Đăng ký và Cấp GCN",
-    "Máy in / Scan",
-    "",
-    "KẾT NÓI MÁY TÍNH VÔ MÁY IN",
-    "",
-    "Chờ xử lý",
-    "",
-    "IP: 14.191.68.189 | Win 10/11 • 8GB RAM • 4 Cores • 1280x1024"
-  ],
-  [
-    "TK-261026-004",
-    "26/10/2026 10:56:47",
-    "ĐỖ THỊ YẾN",
-    "0387805470",
-    "Tổ Đăng ký và Cấp GCN",
-    "Win 10/11 (PC-73F50E)",
-    "Khác / Cần hỗ trợ",
-    "",
-    "không vào được ổ chung",
-    "https://drive.google.com/file/d/1-hyuXZ-Bh1NvdfyR_AN1DubsBjz6j6ko/view",
-    "Đang xử lý",
-    "",
-    "IP: 14.191.68.189 | Win 10/11 • 8GB RAM • 4 Cores • 1920x1080"
-  ]
-];
-
 /**
+ * Tự động tạo menu tiện ích/**
  * Tự động tạo menu tiện ích "⭐ BINHDUONG23" trên thanh công cụ của Google Sheet
  */
 function onOpen() {
@@ -91,7 +28,7 @@ function onOpen() {
       .addItem("▶️ 1-Click: Cấu hình chuẩn hệ thống BINHDUONG23", "setupBinhDuong23")
       .addSeparator()
       .addItem("👥 Định dạng tab TaiKhoan (Tài khoản lưu trên Sheet)", "seedAccountsOnly")
-      .addItem("🎫 Chỉ chuyển các Ticket IT vào sheet Tickets", "seedTicketsOnly")
+      .addItem("🎫 Định dạng tab Tickets (Sự cố IT lưu trên Sheet)", "seedTicketsOnly")
       .addToUi();
   } catch (e) {}
 }
@@ -115,7 +52,7 @@ function setupBinhDuong23() {
     "✅ HỆ THỐNG BINHDUONG23 ĐÃ SẴN SÀNG!\n\n" +
     "1. Sheet 'LichTuan': Giữ nguyên toàn bộ dữ liệu lịch tuần.\n" +
     "2. Sheet 'TaiKhoan': Đã định dạng chuẩn (quản lý trực tiếp trên Sheet).\n" +
-    "3. Sheet 'Tickets': Đã chuyển 4 ticket sự cố từ IT Helpdesk cũ sang!\n\n" +
+    "3. Sheet 'Tickets': Đã định dạng chuẩn (quản lý trực tiếp trên Sheet).\n\n" +
     "Hệ thống đã sẵn sàng 100%!"
   );
 }
@@ -167,73 +104,34 @@ function seedTicketsOnly() {
   
   if (!sheetSupport) {
     sheetSupport = ss.insertSheet(SHEET_SUPPORT_NAME);
-  } else {
-    sheetSupport.clear();
   }
 
-  const headers = [
-    "Mã Ticket",
-    "Thời gian gửi",
-    "Họ và tên",
-    "Số ĐT / Zalo",
-    "Phòng ban",
-    "Tên máy / Thiết bị",
-    "Loại sự cố",
-    "Thông báo lỗi (Tiếng Anh)",
-    "Mô tả hiện tượng",
-    "Ảnh chụp lỗi (Link)",
-    "Trạng thái",
-    "Ghi chú IT",
-    "IP & Cấu hình máy"
-  ];
-  sheetSupport.appendRow(headers);
-  const headerRange = sheetSupport.getRange(1, 1, 1, headers.length);
-  headerRange.setFontWeight("bold").setBackground("#b45309").setFontColor("#ffffff");
-  headerRange.setHorizontalAlignment("center");
-  sheetSupport.setRowHeight(1, 35);
-  sheetSupport.setFrozenRows(1);
-  sheetSupport.getRange("D:D").setNumberFormat("@");
-
-  // Nạp 4 tickets cũ
-  for (let i = 0; i < INITIAL_TICKETS.length; i++) {
-    const t = INITIAL_TICKETS[i];
-    sheetSupport.appendRow([
-      t[0],
-      t[1],
-      t[2],
-      "'" + t[3],
-      t[4],
-      t[5],
-      t[6],
-      t[7],
-      t[8],
-      t[9],
-      t[10],
-      t[11],
-      t[12]
-    ]);
-
-    const rIdx = sheetSupport.getLastRow();
-    sheetSupport.getRange(rIdx, 1).setHorizontalAlignment("center").setFontWeight("bold");
-    sheetSupport.getRange(rIdx, 2).setHorizontalAlignment("center");
-    sheetSupport.getRange(rIdx, 4).setNumberFormat("@").setHorizontalAlignment("center");
-
-    const stCell = sheetSupport.getRange(rIdx, 11);
-    stCell.setHorizontalAlignment("center").setFontWeight("bold");
-    if (t[10] === "Đã hoàn thành") {
-      stCell.setBackground("#dcfce7").setFontColor("#15803d");
-    } else if (t[10] === "Đang xử lý") {
-      stCell.setBackground("#e0f2fe").setFontColor("#0369a1");
-    } else {
-      stCell.setBackground("#fef3c7").setFontColor("#b45309");
-    }
-
-    if (t[9] && t[9].indexOf("http") === 0) {
-      sheetSupport.getRange(rIdx, 10).setValue(t[9]).setFontColor("#1d4ed8").setFontUnderline(true);
-    }
+  // Nếu sheet mới tạo hoặc trống, khởi tạo hàng tiêu đề chuẩn
+  if (sheetSupport.getLastRow() === 0) {
+    const headers = [
+      "Mã Ticket",
+      "Thời gian gửi",
+      "Họ và tên",
+      "Số ĐT / Zalo",
+      "Phòng ban",
+      "Tên máy / Thiết bị",
+      "Loại sự cố",
+      "Thông báo lỗi (Tiếng Anh)",
+      "Mô tả hiện tượng",
+      "Ảnh chụp lỗi (Link)",
+      "Trạng thái",
+      "Ghi chú IT",
+      "IP & Cấu hình máy"
+    ];
+    sheetSupport.appendRow(headers);
+    const headerRange = sheetSupport.getRange(1, 1, 1, headers.length);
+    headerRange.setFontWeight("bold").setBackground("#b45309").setFontColor("#ffffff");
+    headerRange.setHorizontalAlignment("center");
+    sheetSupport.setRowHeight(1, 35);
+    sheetSupport.setFrozenRows(1);
+    sheetSupport.getRange("D:D").setNumberFormat("@");
+    sheetSupport.autoResizeColumns(1, 13);
   }
-
-  sheetSupport.autoResizeColumns(1, 13);
 }
 
 /**
