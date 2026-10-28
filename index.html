@@ -60,11 +60,11 @@
       <div class="card-body">
         <form id="loginForm" autocomplete="on">
           <div class="form-group">
-            <label for="loginPhone">Số điện thoại (Tên đăng nhập): <span class="required">*</span></label>
+            <label for="loginCccd">Số CCCD (Căn cước công dân): <span class="required">*</span></label>
             <div class="password-input-group">
-              <input type="tel" id="loginPhone" class="form-control" placeholder="Nhập số điện thoại cán bộ" required autocomplete="username">
+              <input type="text" id="loginCccd" class="form-control" placeholder="Nhập 12 số Căn cước công dân" required autocomplete="username" inputmode="numeric" maxlength="20">
             </div>
-            <small class="field-hint">Nhập đúng số điện thoại đã được nạp trên Google Sheet</small>
+            <small class="field-hint">Nhập đúng số CCCD / CMND đã được nạp trên Google Sheet</small>
           </div>
 
           <div class="form-group">
@@ -111,8 +111,8 @@
               <span id="hubUserRole">Chức vụ: <strong>Cán bộ</strong></span>
             </div>
             <div class="hub-hero-meta-item">
-              <i class="fa-solid fa-phone"></i>
-              <span id="hubUserPhone">SĐT: <strong>090xxxxxxx</strong></span>
+              <i class="fa-solid fa-address-card"></i>
+              <span id="hubUserCccd">CCCD: <strong>Đang tải...</strong></span>
             </div>
             <div class="hub-hero-meta-item">
               <i class="fa-solid fa-calendar-day"></i>
@@ -245,6 +245,7 @@
       document.getElementById("headerUserArea").style.display = "flex";
 
       const name = user.fullname || user.ho_ten || user.name || "Cán bộ";
+      const cccd = user.cccd || "";
       const phone = user.phone || user.so_dien_thoai || "";
       const role = user.position || user.chuc_vu || "Cán bộ";
 
@@ -252,7 +253,12 @@
       document.getElementById("displayUserRole").textContent = role;
       document.getElementById("hubGreetingName").textContent = name;
       document.getElementById("hubUserRole").innerHTML = `Chức vụ: <strong>${role}</strong>`;
-      document.getElementById("hubUserPhone").innerHTML = `SĐT: <strong>${phone}</strong>`;
+      const cccdEl = document.getElementById("hubUserCccd");
+      if (cccdEl) {
+        let displayStr = cccd;
+        if (phone) displayStr += ` • SĐT: ${phone}`;
+        cccdEl.innerHTML = `CCCD: <strong>${displayStr || "Đã xác thực"}</strong>`;
+      }
       updateCurrentDate();
     }
 
@@ -292,21 +298,19 @@
       });
     }
 
-    // XỬ LÝ ĐĂNG NHẬP: LUÔN KIỂM TRA TRỰC TIẾP TỪ GOOGLE SHEET THEO THỜI GIAN THỰC
+    // XỬ LÝ ĐĂNG NHẬP BẰNG CCCD: LUÔN KIỂM TRA TRỰC TIẾP TỪ GOOGLE SHEET THEO THỜI GIAN THỰC
     const loginForm = document.getElementById("loginForm");
     if (loginForm) {
       loginForm.addEventListener("submit", async (e) => {
         e.preventDefault();
-        let phone = (document.getElementById("loginPhone").value || "").trim().replace(/[\s\.\-]+/g, "").replace(/^'+/, "");
+        let cccd = (document.getElementById("loginCccd").value || "").trim().replace(/[\s\.\-]+/g, "").replace(/^'+/, "");
         const password = (document.getElementById("loginPassword").value || "").trim();
         const remember = document.getElementById("rememberMe").checked;
 
-        if (!phone || !password) {
-          showToast("Vui lòng nhập đầy đủ Số điện thoại và Mật khẩu!", "error");
+        if (!cccd || !password) {
+          showToast("Vui lòng nhập đầy đủ Số CCCD và Mật khẩu!", "error");
           return;
         }
-
-        if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
 
         const btnLogin = document.getElementById("btnLogin");
         btnLogin.disabled = true;
@@ -319,7 +323,7 @@
           const res = await fetch(DEFAULT_SCRIPT_URL, {
             method: "POST",
             headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({ action: "login", phone: phone, password: password })
+            body: JSON.stringify({ action: "login", cccd: cccd, username: cccd, password: password })
           });
           result = await res.json();
         } catch (postErr) {
@@ -329,7 +333,7 @@
         // 2. Dự phòng qua GET nếu POST bị mạng chặn
         if (!result) {
           try {
-            const getUrl = `${DEFAULT_SCRIPT_URL}?action=login&phone=${encodeURIComponent(phone)}&password=${encodeURIComponent(password)}&t=${Date.now()}`;
+            const getUrl = `${DEFAULT_SCRIPT_URL}?action=login&cccd=${encodeURIComponent(cccd)}&username=${encodeURIComponent(cccd)}&password=${encodeURIComponent(password)}&t=${Date.now()}`;
             const resGet = await fetch(getUrl);
             result = await resGet.json();
           } catch (getErr) {
@@ -349,10 +353,11 @@
             }
 
             const userObj = {
-              fullname: u.fullname || ("Cán bộ " + phone),
-              name: u.fullname || ("Cán bộ " + phone),
-              phone: u.phone || phone,
-              email: u.phone || phone,
+              fullname: u.fullname || ("Cán bộ " + (u.cccd || cccd)),
+              name: u.fullname || ("Cán bộ " + (u.cccd || cccd)),
+              cccd: u.cccd || cccd,
+              phone: u.phone || "",
+              email: u.email || u.cccd || cccd,
               position: u.position || "Cán bộ",
               department: u.department || "Chi nhánh số 23",
               role: u.role || "user",
@@ -374,7 +379,7 @@
             if (result.isRetired) {
               alert(`❌ CẢNH BÁO TRUY CẬP:\n\n${result.message}`);
             } else {
-              showToast(result.message || "Số điện thoại hoặc Mật khẩu không chính xác!", "error");
+              showToast(result.message || "Số CCCD hoặc Mật khẩu không chính xác!", "error");
             }
             return;
           }

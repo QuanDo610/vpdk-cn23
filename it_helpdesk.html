@@ -179,7 +179,7 @@
                 <div class="font-bold text-slate-800 text-xs sm:text-sm truncate">
                   <span id="requesterDisplayName">Đang tải...</span>
                   <span class="text-slate-400 font-normal mx-1">•</span>
-                  <span id="requesterDisplayPhone" class="text-blue-700 font-mono">090xxxxxxx</span>
+                  <span id="requesterDisplayPhone" class="text-blue-700 font-mono">CCCD: ...</span>
                 </div>
               </div>
             </div>
@@ -597,18 +597,24 @@
         const badgeEl = document.getElementById("itUserBadge");
         if (badgeEl) badgeEl.classList.remove("hidden");
         
-        // Tự động gán Họ tên và SĐT vào form và hiển thị badge
+        // Tự động gán Họ tên và CCCD / SĐT vào form và hiển thị badge
         const fnVal = user.fullname || user.name || "Cán bộ";
+        const cccdVal = user.cccd || "";
         const phVal = user.phone || "";
         const fnInput = document.getElementById("fullname");
         if (fnInput) fnInput.value = fnVal;
         const phInput = document.getElementById("phone");
-        if (phInput) phInput.value = phVal;
+        if (phInput) phInput.value = phVal || cccdVal;
 
         const reqName = document.getElementById("requesterDisplayName");
         if (reqName) reqName.textContent = fnVal;
         const reqPhone = document.getElementById("requesterDisplayPhone");
-        if (reqPhone) reqPhone.textContent = phVal;
+        if (reqPhone) {
+          let displayTag = "";
+          if (cccdVal) displayTag += `CCCD: ${cccdVal}`;
+          if (phVal) displayTag += (displayTag ? " • SĐT: " : "") + phVal;
+          reqPhone.textContent = displayTag || "Đã xác thực";
+        }
         const deptSelect = document.getElementById("department");
         if (deptSelect && user.department) {
           for (let opt of deptSelect.options) {

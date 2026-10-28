@@ -736,8 +736,9 @@ function checkAutoLogin() {
     try {
       const u = JSON.parse(savedUser);
       currentUser = {
-        email: u.email || u.phone || u.so_dien_thoai || "user",
+        email: u.email || u.cccd || u.phone || u.so_dien_thoai || "user",
         name: u.name || u.fullname || u.ho_ten || "Cán bộ",
+        cccd: u.cccd || "",
         phone: u.phone || u.so_dien_thoai || "",
         department: u.department || u.don_vi || "Chi nhánh số 23",
         role: u.role || "user"
@@ -771,7 +772,7 @@ function showWorkspaceUI() {
 
   const displayName = getSenderDisplayName(currentUser);
   document.getElementById("displayUserName").textContent = displayName;
-  document.getElementById("displayUserEmail").textContent = currentUser.email;
+  document.getElementById("displayUserEmail").textContent = currentUser.cccd ? ("CCCD: " + currentUser.cccd) : currentUser.email;
 
   // Hiển thị nút Cấu hình Server DUY NHẤT cho Quản trị viên (quan.vpdk@gmail.com)
   const isAdmin = currentUser && currentUser.email.toLowerCase().trim() === ADMIN_EMAIL;
