@@ -1,2054 +1,269 @@
 /**
  * =========================================================================
- * APP.JS: CỔNG DỊCH VỤ NỘI BỘ VPĐK CHI NHÁNH 23
- * (ĐĂNG KÝ LỊCH CÔNG TÁC TUẦN & TIẾP NHẬN SỰ CỐ IT HELPDESK)
+ * APP.JS: LOGIC HỆ THỐNG ĐĂNG KÝ LỊCH TUẦN VPĐK
  * =========================================================================
  */
 
-// Key lưu trữ LocalStorage
+// Key lưu trữ trong trình duyệt
 const STORAGE_KEYS = {
   SCRIPT_URL: "vpdk_script_url",
   CURRENT_USER: "vpdk_current_user",
   LOCAL_SCHEDULE: "vpdk_local_schedule_data",
-  LOCAL_TICKETS: "vpdk_local_tickets_data",
-  LOCAL_USERS: "vpdk_local_registered_users",
-  REMEMBER_PHONE: "vpdk_remember_phone",
-  REMEMBER_PASS: "vpdk_remember_pass"
+  REMEMBER_EMAIL: "vpdk_remember_email"
 };
 
-// Danh sách 70 tài khoản cán bộ Chi nhánh 23 nạp sẵn (chạy offline / fallback tức thì)
-const DEFAULT_ACCOUNTS = [
-  {
-    "phone": "0918606045",
-    "password": "V#5h84m4",
-    "fullname": "Nguyễn Thị Lệ Hằng",
-    "position": "Phó giám đốc",
-    "department": "Chi nhánh số 23",
-    "cccd": "074182013514",
-    "status": "Đã nghỉ",
-    "role": "user"
-  },
-  {
-    "phone": "0913975579",
-    "password": "PYVCQ3w@",
-    "fullname": "Đặng Huy Cường",
-    "position": "Phó giám đốc",
-    "department": "Chi nhánh số 23",
-    "cccd": "074082001909",
-    "status": "Đã nghỉ",
-    "role": "user"
-  },
-  {
-    "phone": "0907259775",
-    "password": "6#xMqhhe",
-    "fullname": "Nguyễn Thành Như Bảo",
-    "position": "Tổ phó  Tổ Đăng ký Cấp GCN",
-    "department": "Chi nhánh số 23",
-    "cccd": "074184006938",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0907259775",
-    "password": "Q%TVr**2",
-    "fullname": "Đoàn Thị Hoàng An",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074185000312",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0942245858",
-    "password": "SaCmQ3*m",
-    "fullname": "Nguyễn Duy Tấn",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074089005525",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0985992556",
-    "password": "USf4g@%#",
-    "fullname": "Lê Ngọc Bảo Ngân",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074187000969",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0984506056",
-    "password": "cz6QB5X$",
-    "fullname": "Nguyễn Thị Mai",
-    "position": "nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "066187007583",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0903523534",
-    "password": "&q8xQDLg",
-    "fullname": "Nguyễn Thị Ngọc Thảo",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "079191004702",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0928517724",
-    "password": "TMun4$ma",
-    "fullname": "Trần Đình Siêu",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074202008455",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0982436448",
-    "password": "Hxj!EGR7",
-    "fullname": "Phạm Hoàng Oanh",
-    "position": "nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074186000948",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0911496161",
-    "password": "3qr$G3hy",
-    "fullname": "Nguyễn Thanh Điền",
-    "position": "nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074090000994",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0918856839",
-    "password": "yt4&u!B&",
-    "fullname": "Nguyễn Văn Khánh",
-    "position": "nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "1084041275",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0927988753",
-    "password": "Hmr3PUA$",
-    "fullname": "Nguyễn Tiến Thịnh",
-    "position": "nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074097008452",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0813441815",
-    "password": "P@pH38Ax",
-    "fullname": "Nguyễn Hoàng Tiến",
-    "position": "nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074202004657",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0855572555",
-    "password": "iLT4#Q9C",
-    "fullname": "Nguyễn Trung Thành",
-    "position": "nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074088008228",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0909736435",
-    "password": "uivBB%3L",
-    "fullname": "Nguyễn Thị Bích Tuyền",
-    "position": "Tổ trưởng Tổ HCTH",
-    "department": "Chi nhánh số 23",
-    "cccd": "070182000478",
-    "status": "Đang làm việc",
-    "role": "admin"
-  },
-  {
-    "phone": "0356039473",
-    "password": "4&xCy#iG",
-    "fullname": "Hồ Lê Thanh Vũ",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074092001148",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0945859956",
-    "password": "3h@JB&rt",
-    "fullname": "Nguyễn Thị Thùy Trang",
-    "position": "Tổ Trưởng Tổ ĐKCGCN",
-    "department": "Chi nhánh số 23",
-    "cccd": "070181000414",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0919266474",
-    "password": "N@52S2&n",
-    "fullname": "Trần Thanh Triết",
-    "position": "Tổ trưởng  Tổ KTĐC và LT",
-    "department": "Chi nhánh số 23",
-    "cccd": "089081000484",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0909409961",
-    "password": "d%K3y%pG",
-    "fullname": "Nguyễn Bích Ngọc",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074184029295",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0933991003",
-    "password": "e3&F6JAn",
-    "fullname": "Phạm Nguyễn Lan Anh",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074186001229",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0937496139",
-    "password": "qY!pu26Y",
-    "fullname": "Nguyễn Thị Dáng",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "030183016846",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0387805470",
-    "password": "ABaT2!2i",
-    "fullname": "Đỗ Thị Yến",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "038193048288",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0918047179",
-    "password": "9yw3SQ*H",
-    "fullname": "Phạm Thị Yến Nhi",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074184007130",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0914645945",
-    "password": "gdGF7v!e",
-    "fullname": "Hoàng Minh Tú",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074093005624",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0917339468",
-    "password": "P5&Cv#qL",
-    "fullname": "Trần Thị Thùy Trang",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074190008803",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0916646669",
-    "password": "ws&DzU89",
-    "fullname": "Trần Nguyễn Hoài Lam",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074184005637",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0395780608",
-    "password": "EMh!Vz7G",
-    "fullname": "Nguyễn Anh Khôi",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074202003866",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0974118474",
-    "password": "%5tYdx3w",
-    "fullname": "Đoàn Văn Sang",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074086005188",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0906395984",
-    "password": "QHnCa!g9",
-    "fullname": "Hồ Thị Hồng Linh",
-    "position": "Tổ phó Tổ HCTH",
-    "department": "Chi nhánh số 23",
-    "cccd": "083184009837",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0945004594",
-    "password": "3$6&EyzN",
-    "fullname": "Vương Ánh Xuân",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074189007529",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0342242523",
-    "password": "*wd@xDG6",
-    "fullname": "Nguyễn Thảo Tuyết Nhi",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "070199005001",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0902373837",
-    "password": "6C&qG3V$",
-    "fullname": "Nguyễn Khánh Duy",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074097004501",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0917711148",
-    "password": "NT32jxf@",
-    "fullname": "Nguyễn Thị Thu Minh",
-    "position": "Tổ phó Tổ Đăng ký Cấp GCN",
-    "department": "Chi nhánh số 23",
-    "cccd": "060181004687",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0815433332",
-    "password": "*T6iPk23",
-    "fullname": "Huỳnh Thành Duy",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074092001090",
-    "status": "Đã nghỉ",
-    "role": "user"
-  },
-  {
-    "phone": "0786186199",
-    "password": "pFjsV3$!",
-    "fullname": "Nguyễn Trần Thảo Vy",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "079190029572",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0913789990",
-    "password": "Kg%2y%7V",
-    "fullname": "Nguyễn Hoàng Xuân",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074084026863",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0839676646",
-    "password": "fzsD3X3@",
-    "fullname": "Phạm Minh Trí",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074084003392",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0909364549",
-    "password": "F5*nY#CT",
-    "fullname": "Ngô Thị Cẩm Thúy",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074180001297",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0961395817",
-    "password": "R#$aUK46",
-    "fullname": "Trương Ngô Hồng Duyên",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074300000890",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0909195709",
-    "password": "X*q@bTV6",
-    "fullname": "Huỳnh Tấn Nguyên",
-    "position": "Tổ phó  Tổ Đăng ký & Cấp GCN",
-    "department": "Chi nhánh số 23",
-    "cccd": "074084006084",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0974751752",
-    "password": "B#mrWL3y",
-    "fullname": "Nguyễn Thị Lệ Thu",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "051181020203",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0795300995",
-    "password": "Nx7#%UJn",
-    "fullname": "Nguyễn Tuấn Anh",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074095007388",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0972888838",
-    "password": "TTh#xv4T",
-    "fullname": "Phạm Thành Vũ",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "089089005666",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0903052099",
-    "password": "73ZJm*!k",
-    "fullname": "Nguyễn Thị Ngọc Trản",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074182004180",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0335817578",
-    "password": "n!VC5kdk",
-    "fullname": "Quản Nguyễn Thảo Nguyên",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074300000239",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0909348840",
-    "password": "E36eBW@9",
-    "fullname": "Phạm Trần Hồng Như",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074180008326",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0917540409",
-    "password": "bZ4*a%Q8",
-    "fullname": "Trần Quốc Hưng",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074083003636",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0919037479",
-    "password": "@ewCSn2W",
-    "fullname": "Võ Phi Trúc",
-    "position": "Kế toán viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074178009735",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0983771739",
-    "password": "#2nN8WLm",
-    "fullname": "Nguyễn Thị Huỳnh Mai",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074184000428",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0334505304",
-    "password": "h#9z3YKS",
-    "fullname": "Đặng Thị Tuyết Trinh",
-    "position": "Tổ phó  Tổ KTĐC và Lưu trữ",
-    "department": "Chi nhánh số 23",
-    "cccd": "046194012557",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0918352101",
-    "password": "%5qN8%NV",
-    "fullname": "Nguyễn Hoàng Duy",
-    "position": "Người lao động",
-    "department": "Chi nhánh số 23",
-    "cccd": "074072008426",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0972709729",
-    "password": "Nv7GC@T7",
-    "fullname": "Lê Thị Phương Mai",
-    "position": "Người lao động",
-    "department": "Chi nhánh số 23",
-    "cccd": "074184000430",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0839655449",
-    "password": "Q3X$pHwG",
-    "fullname": "Nguyễn Nhật Quyền Trinh",
-    "position": "Người lao động",
-    "department": "Chi nhánh số 23",
-    "cccd": "074196001328",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0947810655",
-    "password": "gRJp#3N%",
-    "fullname": "Lê Sơn Thanh",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074189008338",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0964610889",
-    "password": "wA2W$%ws",
-    "fullname": "Huỳnh Thị Ái Nhi",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "052197013121",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0934043647",
-    "password": "8ZyVk@*4",
-    "fullname": "Lý Minh Tân",
-    "position": "Tổ phó  Tổ KTĐC và Lưu trữ",
-    "department": "Chi nhánh số 23",
-    "cccd": "074084008297",
-    "status": "Đã nghỉ",
-    "role": "user"
-  },
-  {
-    "phone": "0373445790",
-    "password": "&FxHi9Uj",
-    "fullname": "Đoàn Thanh Phong",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074096005075",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0918983455",
-    "password": "nMP@57jD",
-    "fullname": "Bùi Thị Minh Nguyệt",
-    "position": "Tổ phó Tổ HCTH",
-    "department": "Chi nhánh số 23",
-    "cccd": "074182013628",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0938940303",
-    "password": "3LUK$GhS",
-    "fullname": "Tạ Nguyễn Bích Trang",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074189001179",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0918949878",
-    "password": "%8K!uqFd",
-    "fullname": "Lê Quang Khoa",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "087093014630",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0949309399",
-    "password": "KEv2s!j9",
-    "fullname": "Phan Trọng Hiệp",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "040079007604",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0917624629",
-    "password": "n*TEJ2xS",
-    "fullname": "Nguyễn Thị Trúc Phương",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074189007600",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0978945739",
-    "password": "4u%xgY2b",
-    "fullname": "Ân Văn Tuấn",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074082007752",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0936688880",
-    "password": "S5$P9PNb",
-    "fullname": "Lê Thị Thùy Duyên",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074192006524",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0906488008",
-    "password": "%8HqjYNc",
-    "fullname": "Nguyễn Thanh Sang",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074082000355",
-    "status": "Đã nghỉ",
-    "role": "user"
-  },
-  {
-    "phone": "0963252038",
-    "password": "U%jiaS@2",
-    "fullname": "Nguyễn Quốc Danh",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074094004258",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0868644860",
-    "password": "!y8JKZ&U",
-    "fullname": "Nguyễn Tuấn Kiệt",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074097007620",
-    "status": "Đang làm việc",
-    "role": "user"
-  },
-  {
-    "phone": "0909912281",
-    "password": "gq$&gR%3",
-    "fullname": "Lưu Văn Tuấn",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074084010128",
-    "status": "Đã nghỉ",
-    "role": "user"
-  },
-  {
-    "phone": "0977000369",
-    "password": "5@65RZhj",
-    "fullname": "Phạm Minh Hoàng",
-    "position": "Nhân viên",
-    "department": "Chi nhánh số 23",
-    "cccd": "074086002733",
-    "status": "Đang làm việc",
-    "role": "user"
-  }
-];
+// Dữ liệu ban đầu rỗng, chỉ chạy dữ liệu thật
+const INITIAL_DEMO_SCHEDULE = [];
 
-// URL Google Apps Script mặc định của hệ thống
+// Đường link Google Apps Script chính thức mặc định của hệ thống
 const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLjARkYWp2TegCCdMcfVc3W6qQm6PmhFz71-y8zB_xFXxXbRXpsUhk6aPbJtqVqUHE/exec";
 
-// Trạng thái ứng dụng toàn cục
+// Trạng thái ứng dụng
 let currentUser = null;
-let currentView = "login"; // "login" | "register" | "hub" | "schedule" | "helpdesk"
 let scheduleData = [];
-let currentTickets = [];
+
+// Hỗ trợ kiểm thử tự động (Unit test)
+if (typeof window !== "undefined") {
+  window.setScheduleDataForTest = function(data) {
+    scheduleData = Array.isArray(data) ? [...data] : [];
+  };
+  window.setGoogleScriptUrlForTest = function(url) {
+    googleScriptUrl = url;
+  };
+}
 let googleScriptUrl = localStorage.getItem(STORAGE_KEYS.SCRIPT_URL) || DEFAULT_SCRIPT_URL;
 
-// Phân trang lịch tuần
-let currentPage = 1;
-const ITEMS_PER_PAGE = 10;
-let exportFromPicker = null;
-let exportToPicker = null;
+// Email Quản trị viên duy nhất được phép xem và cấu hình Server API
+const ADMIN_EMAIL = "quan.vpdk@gmail.com";
 
-// Thông số máy nhận diện tự động cho IT Helpdesk
-let detectedClient = {
-  ip: "Đang quét...",
-  os: "Windows",
-  machineName: "",
-  specs: "",
-  imageBase64: ""
+// Danh mục định danh người dùng: Hiển thị Họ và tên đầy đủ thay vì email thô
+const KNOWN_USERS_MAP = {
+  "0918606045": "Nguyễn Thị Lệ Hằng",
+  "0913975579": "Đặng Huy Cường",
+  "0907259775": "Nguyễn Thành Như Bảo",
+  "0907259775": "Đoàn Thị Hoàng An",
+  "0942245858": "Nguyễn Duy Tấn",
+  "0985992556": "Lê Ngọc Bảo Ngân",
+  "0984506056": "Nguyễn Thị Mai",
+  "0903523534": "Nguyễn Thị Ngọc Thảo",
+  "0928517724": "Trần Đình Siêu",
+  "0982436448": "Phạm Hoàng Oanh",
+  "0911496161": "Nguyễn Thanh Điền",
+  "0918856839": "Nguyễn Văn Khánh",
+  "0927988753": "Nguyễn Tiến Thịnh",
+  "0813441815": "Nguyễn Hoàng Tiến",
+  "0855572555": "Nguyễn Trung Thành",
+  "0909736435": "Nguyễn Thị Bích Tuyền",
+  "0356039473": "Hồ Lê Thanh Vũ",
+  "0945859956": "Nguyễn Thị Thùy Trang",
+  "0919266474": "Trần Thanh Triết",
+  "0909409961": "Nguyễn Bích Ngọc",
+  "0933991003": "Phạm Nguyễn Lan Anh",
+  "0937496139": "Nguyễn Thị Dáng",
+  "0387805470": "Đỗ Thị Yến",
+  "0918047179": "Phạm Thị Yến Nhi",
+  "0914645945": "Hoàng Minh Tú",
+  "0917339468": "Trần Thị Thùy Trang",
+  "0916646669": "Trần Nguyễn Hoài Lam",
+  "0395780608": "Nguyễn Anh Khôi",
+  "0974118474": "Đoàn Văn Sang",
+  "0906395984": "Hồ Thị Hồng Linh",
+  "0945004594": "Vương Ánh Xuân",
+  "0342242523": "Nguyễn Thảo Tuyết Nhi",
+  "0902373837": "Nguyễn Khánh Duy",
+  "0917711148": "Nguyễn Thị Thu Minh",
+  "0815433332": "Huỳnh Thành Duy",
+  "0786186199": "Nguyễn Trần Thảo Vy",
+  "0913789990": "Nguyễn Hoàng Xuân",
+  "0839676646": "Phạm Minh Trí",
+  "0909364549": "Ngô Thị Cẩm Thúy",
+  "0961395817": "Trương Ngô Hồng Duyên",
+  "0909195709": "Huỳnh Tấn Nguyên",
+  "0974751752": "Nguyễn Thị Lệ Thu",
+  "0795300995": "Nguyễn Tuấn Anh",
+  "0972888838": "Phạm Thành Vũ",
+  "0903052099": "Nguyễn Thị Ngọc Trản",
+  "0335817578": "Quản Nguyễn Thảo Nguyên",
+  "0909348840": "Phạm Trần Hồng Như",
+  "0917540409": "Trần Quốc Hưng",
+  "0919037479": "Võ Phi Trúc",
+  "0983771739": "Nguyễn Thị Huỳnh Mai",
+  "0334505304": "Đặng Thị Tuyết Trinh",
+  "0918352101": "Nguyễn Hoàng Duy",
+  "0972709729": "Lê Thị Phương Mai",
+  "0839655449": "Nguyễn Nhật Quyền Trinh",
+  "0947810655": "Lê Sơn Thanh",
+  "0964610889": "Huỳnh Thị Ái Nhi",
+  "0934043647": "Lý Minh Tân",
+  "0373445790": "Đoàn Thanh Phong",
+  "0918983455": "Bùi Thị Minh Nguyệt",
+  "0938940303": "Tạ Nguyễn Bích Trang",
+  "0918949878": "Lê Quang Khoa",
+  "0949309399": "Phan Trọng Hiệp",
+  "0917624629": "Nguyễn Thị Trúc Phương",
+  "0978945739": "Ân Văn Tuấn",
+  "0936688880": "Lê Thị Thùy Duyên",
+  "0906488008": "Nguyễn Thanh Sang",
+  "0963252038": "Nguyễn Quốc Danh",
+  "0868644860": "Nguyễn Tuấn Kiệt",
+  "0909912281": "Lưu Văn Tuấn",
+  "0977000369": "Phạm Minh Hoàng",
+  "quan.vpdk@gmail.com": "Đỗ Trọng Minh Quân",
+  "tuyen.vpdk@gmail.com": "Nguyễn Thị Bích Tuyền",
+  "trangntt.vpdk@gmail.com": "Nguyễn Thị Thùy Trang",
+  "thangnc.vpdk@gmail.com": "Nguyễn Chiến Thắng",
+  "thang.vpdk@gmail.com": "Nguyễn Chiến Thắng",
+  "nhanvien@gmail.com": "Nguyễn Văn An"
 };
 
-// Tra cứu tên hiển thị cán bộ
-const KNOWN_USERS_MAP = {};
-DEFAULT_ACCOUNTS.forEach(acc => {
-  if (acc.phone && acc.fullname) KNOWN_USERS_MAP[acc.phone] = acc.fullname;
-});
+// Nạp thêm danh mục người dùng đã được đồng bộ từ Sheet TaiKhoan lưu trong localStorage
 try {
-  const customUsers = JSON.parse(localStorage.getItem(STORAGE_KEYS.LOCAL_USERS) || "[]");
-  customUsers.forEach(u => {
-    if (u.phone && u.fullname) KNOWN_USERS_MAP[u.phone] = u.fullname;
-  });
+  const cachedUsers = localStorage.getItem("vpdk_known_users");
+  if (cachedUsers) {
+    Object.assign(KNOWN_USERS_MAP, JSON.parse(cachedUsers));
+  }
 } catch (e) {}
 
+/**
+ * Lấy họ và tên đầy đủ của người gửi
+ */
 function getSenderDisplayName(item) {
-  if (!item) return "Cán bộ";
-  const p = (item.phone || "").trim().replace(/^'+/, "");
-  if (p && KNOWN_USERS_MAP[p]) return KNOWN_USERS_MAP[p];
-  if (item.name && item.name.trim() && !item.name.includes("@")) return item.name.trim();
-  return item.name || p || "Cán bộ";
+  if (!item) return "Người dùng";
+  const emailLower = (item.email || "").toLowerCase().trim();
+  if (KNOWN_USERS_MAP[emailLower]) {
+    return KNOWN_USERS_MAP[emailLower];
+  }
+  if (item.name && item.name.trim() && !item.name.includes("@") && item.name !== "Người dùng" && item.name !== "Nhân viên" && !item.name.toLowerCase().includes("vpdk")) {
+    return item.name.trim();
+  }
+  if (emailLower) {
+    const prefix = emailLower.split("@")[0];
+    return prefix.split(".").map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
+  }
+  return item.name || "Người dùng";
 }
 
+/**
+ * Kiểm tra trạng thái cuộc họp real-time (Sắp diễn ra, Đang diễn ra, Đã diễn ra)
+ * Hỗ trợ bôi xám / làm mờ cuộc họp đã qua
+ */
 function getMeetingStatus(dateVal, timeVal) {
   try {
-    const cleanDate = formatDisplayDate(dateVal);
-    const cleanTime = formatDisplayTime(timeVal);
-    if (!cleanDate) return { status: "unknown", label: "Lịch tuần", badgeClass: "status-upcoming", isPast: false };
-    const parts = cleanDate.split("/");
-    if (parts.length !== 3) return { status: "unknown", label: "Lịch tuần", badgeClass: "status-upcoming", isPast: false };
-    const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10) - 1;
-    const year = parseInt(parts[2], 10);
-
-    let startHour = 8, startMin = 0;
-    let endHour = 10, endMin = 0;
-    let hasEnd = false;
-    if (cleanTime && cleanTime.includes(" - ")) {
-      const p = cleanTime.split(" - ");
-      const ps = (p[0]||"").trim().split(":");
-      const pe = (p[1]||"").trim().split(":");
-      if (ps.length >= 2) { startHour = parseInt(ps[0], 10)||0; startMin = parseInt(ps[1], 10)||0; }
-      if (pe.length >= 2) { endHour = parseInt(pe[0], 10)||0; endMin = parseInt(pe[1], 10)||0; hasEnd = true; }
-    } else if (cleanTime && cleanTime.includes(":")) {
-      const ps = cleanTime.split(":");
-      startHour = parseInt(ps[0], 10)||0; startMin = parseInt(ps[1], 10)||0;
+    const cleanDate = formatDisplayDate(dateVal); // dạng DD/MM/YYYY
+    const cleanTime = formatDisplayTime(timeVal); // dạng HH:mm hoặc HH:mm - HH:mm
+    if (!cleanDate) {
+      return { status: "unknown", label: "Lịch tuần", badgeClass: "status-upcoming", isPast: false };
     }
-    const startTime = new Date(year, month, day, startHour, startMin, 0).getTime();
-    const endTime = hasEnd ? new Date(year, month, day, endHour, endMin, 0).getTime() : (startTime + 2 * 3600 * 1000);
+
+    const dateParts = cleanDate.split("/");
+    if (dateParts.length !== 3) {
+      return { status: "unknown", label: "Lịch tuần", badgeClass: "status-upcoming", isPast: false };
+    }
+
+    const day = parseInt(dateParts[0], 10);
+    const month = parseInt(dateParts[1], 10) - 1;
+    const year = parseInt(dateParts[2], 10);
+
+    let startHour = 8, startMinute = 0;
+    let endHour = 10, endMinute = 0;
+    let hasCustomEnd = false;
+
+    if (cleanTime && cleanTime.includes(" - ")) {
+      const parts = cleanTime.split(" - ");
+      const pStart = (parts[0] || "").trim().split(":");
+      const pEnd = (parts[1] || "").trim().split(":");
+      if (pStart.length >= 2) {
+        startHour = parseInt(pStart[0], 10) || 0;
+        startMinute = parseInt(pStart[1], 10) || 0;
+      }
+      if (pEnd.length >= 2) {
+        endHour = parseInt(pEnd[0], 10) || 0;
+        endMinute = parseInt(pEnd[1], 10) || 0;
+        hasCustomEnd = true;
+      }
+    } else if (cleanTime && cleanTime.includes(":")) {
+      const timeParts = cleanTime.split(":");
+      startHour = parseInt(timeParts[0], 10) || 0;
+      startMinute = parseInt(timeParts[1], 10) || 0;
+    }
+
+    const startTime = new Date(year, month, day, startHour, startMinute, 0).getTime();
+    // Nếu có mốc kết thúc chính xác từ form thì dùng mốc đó, nếu không thì mặc định 2 tiếng
+    const endTime = hasCustomEnd
+      ? new Date(year, month, day, endHour, endMinute, 0).getTime()
+      : (startTime + (2 * 60 * 60 * 1000));
     const now = Date.now();
-    if (now > endTime) return { status: "past", label: "Đã diễn ra", badgeClass: "status-past", isPast: true };
-    if (now >= startTime && now <= endTime) return { status: "ongoing", label: "Đang diễn ra", badgeClass: "status-ongoing", isPast: false };
-    return { status: "upcoming", label: "Sắp diễn ra", badgeClass: "status-upcoming", isPast: false };
-  } catch(e) {
+
+    if (now > endTime) {
+      return {
+        status: "past",
+        label: "Đã diễn ra",
+        badgeClass: "status-past",
+        isPast: true
+      };
+    } else if (now >= startTime && now <= endTime) {
+      return {
+        status: "ongoing",
+        label: "Đang diễn ra",
+        badgeClass: "status-ongoing",
+        isPast: false
+      };
+    } else {
+      return {
+        status: "upcoming",
+        label: "Sắp diễn ra",
+        badgeClass: "status-upcoming",
+        isPast: false
+      };
+    }
+  } catch (err) {
     return { status: "unknown", label: "Lịch tuần", badgeClass: "status-upcoming", isPast: false };
   }
 }
 
-
-/* =========================================================================
-   1. ĐIỀU HƯỚNG VIEW (SWITCH VIEW CONTROLLER)
-   ========================================================================= */
-function switchView(viewName) {
-  currentView = viewName;
-
-  const loginSec = document.getElementById("loginSection");
-  const registerSec = document.getElementById("registerSection");
-  const hubSec = document.getElementById("portalHubSection");
-  const scheduleSec = document.getElementById("weeklyScheduleWorkspace");
-  const helpdeskSec = document.getElementById("itHelpdeskWorkspace");
-
-  const headerTabs = document.getElementById("headerNavTabs");
-  const headerUser = document.getElementById("headerUserArea");
-
-  // Ẩn tất cả section
-  if (loginSec) loginSec.style.display = "none";
-  if (registerSec) registerSec.style.display = "none";
-  if (hubSec) hubSec.style.display = "none";
-  if (scheduleSec) scheduleSec.style.display = "none";
-  if (helpdeskSec) helpdeskSec.style.display = "none";
-
-  // Cập nhật tabs
-  const tabHub = document.getElementById("navTabHub");
-  const tabSchedule = document.getElementById("navTabSchedule");
-  const tabHelpdesk = document.getElementById("navTabHelpdesk");
-
-  if (tabHub) tabHub.classList.remove("active");
-  if (tabSchedule) tabSchedule.classList.remove("active");
-  if (tabHelpdesk) tabHelpdesk.classList.remove("active");
-
-  if (viewName === "login") {
-    if (headerTabs) headerTabs.style.display = "none";
-    if (headerUser) headerUser.style.display = "none";
-    if (loginSec) loginSec.style.display = "block";
-    return;
-  }
-
-  if (viewName === "register") {
-    if (headerTabs) headerTabs.style.display = "none";
-    if (headerUser) headerUser.style.display = "none";
-    if (registerSec) registerSec.style.display = "block";
-    return;
-  }
-
-  // Nếu người dùng chưa đăng nhập mà vào các trang trong thì đẩy về login
-  if (!currentUser) {
-    switchView("login");
-    return;
-  }
-
-  // Đã đăng nhập: hiển thị thanh điều hướng trên Header
-  if (headerTabs) headerTabs.style.display = "flex";
-  if (headerUser) headerUser.style.display = "flex";
-  updateHeaderUserInfo();
-
-  if (viewName === "hub") {
-    if (tabHub) tabHub.classList.add("active");
-    if (hubSec) hubSec.style.display = "block";
-    updateHubData();
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    return;
-  }
-
-  if (viewName === "schedule") {
-    if (tabSchedule) tabSchedule.classList.add("active");
-    if (scheduleSec) scheduleSec.style.display = "block";
-    renderScheduleTable(scheduleData);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    return;
-  }
-
-  if (viewName === "helpdesk") {
-    if (tabHelpdesk) tabHelpdesk.classList.add("active");
-    if (helpdeskSec) helpdeskSec.style.display = "block";
-    prepareItHelpdeskForm();
-    fetchTickets();
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    return;
-  }
-}
-
-function updateHeaderUserInfo() {
-  if (!currentUser) return;
-  const nameEl = document.getElementById("displayUserName");
-  const infoEl = document.getElementById("displayUserInfo");
-  const btnConfig = document.getElementById("btnAdminServerConfig");
-
-  if (nameEl) nameEl.textContent = currentUser.fullname || "Cán bộ";
-  if (infoEl) infoEl.textContent = `${currentUser.phone} • ${currentUser.position || currentUser.department || "Chi nhánh 23"}`;
-  if (btnConfig) {
-    btnConfig.style.display = (currentUser.role === "admin") ? "inline-flex" : "none";
-  }
-}
-
-function updateHubData() {
-  if (!currentUser) return;
-  const greetingEl = document.getElementById("hubGreetingName");
-  const roleEl = document.getElementById("hubUserRole");
-  const phoneEl = document.getElementById("hubUserPhone");
-  const dateEl = document.getElementById("hubCurrentDate");
-  const countScheduleEl = document.getElementById("hubCountSchedule");
-  const countTicketsEl = document.getElementById("hubCountPendingTickets");
-
-  if (greetingEl) greetingEl.textContent = currentUser.fullname;
-  if (roleEl) roleEl.innerHTML = `Chức vụ: <strong>${currentUser.position || "Cán bộ"}</strong>`;
-  if (phoneEl) phoneEl.innerHTML = `SĐT: <strong>${currentUser.phone}</strong>`;
-
-  const now = new Date();
-  const days = ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"];
-  if (dateEl) {
-    dateEl.innerHTML = `<i class="fa-solid fa-calendar-day mr-1"></i> ${days[now.getDay()]}, ${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
-  }
-
-  if (countScheduleEl) countScheduleEl.textContent = scheduleData.length;
-
-  let pendingCount = 0;
-  currentTickets.forEach(t => {
-    const s = (t.status || "").toLowerCase();
-    if (!s.includes("hoàn thành") && !s.includes("xong")) pendingCount++;
-  });
-  if (countTicketsEl) countTicketsEl.textContent = pendingCount;
-}
-
-/* =========================================================================
-   2. XỬ LÝ XÁC THỰC: ĐĂNG NHẬP, ĐĂNG KÝ, ĐĂNG XUẤT
-   ========================================================================= */
-async function handleLogin(e) {
-  if (e) e.preventDefault();
-  let phone = (document.getElementById("loginPhone").value || "").trim().replace(/^'+/, "");
-  const password = (document.getElementById("loginPassword").value || "").trim();
-  const remember = document.getElementById("rememberMe")?.checked ?? true;
-
-  if (!phone || !password) {
-    showToast("Vui lòng nhập đầy đủ Số điện thoại và Mật khẩu!", "warning");
-    return;
-  }
-
-  if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
-
-  const btn = document.getElementById("btnLogin");
-  const origHtml = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang xác thực...`;
-
-  // 1. Thử xác thực trực tuyến qua Google Apps Script nếu có kết nối
-  let authSuccess = false;
-  let authUser = null;
-
-  if (googleScriptUrl && googleScriptUrl.trim() !== "") {
-    try {
-      const res = await fetch(googleScriptUrl, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action: "login", phone: phone, password: password })
-      });
-      const data = await res.json();
-      if (data && data.success && data.user) {
-        authSuccess = true;
-        authUser = data.user;
-      } else if (data && data.isRetired) {
-        btn.disabled = false;
-        btn.innerHTML = origHtml;
-        alert(data.message || "Tài khoản của cán bộ này đã được ghi nhận trạng thái ĐÃ NGHỈ LÀM VIỆC tại đơn vị!");
-        return;
-      }
-    } catch (netErr) {
-      console.warn("Không kết nối được server trực tuyến, chuyển sang kiểm tra bộ nhớ danh sách cán bộ:", netErr);
-    }
-  }
-
-  // 2. Fallback đối chiếu với 70 tài khoản Chi nhánh 23 nạp sẵn & tài khoản đăng ký mới
-  if (!authSuccess) {
-    // Tổng hợp danh sách tài khoản
-    let localUsers = [];
-    try {
-      localUsers = JSON.parse(localStorage.getItem(STORAGE_KEYS.LOCAL_USERS) || "[]");
-    } catch(e){}
-    const allAccounts = [...DEFAULT_ACCOUNTS, ...localUsers];
-
-    const matched = allAccounts.find(a => {
-      let aPhone = (a.phone || "").trim().replace(/^'+/, "");
-      if (aPhone.length === 9 && !aPhone.startsWith("0")) aPhone = "0" + aPhone;
-      return aPhone === phone && a.password === password;
-    });
-
-    if (matched) {
-      if (matched.status === "Đã nghỉ") {
-        btn.disabled = false;
-        btn.innerHTML = origHtml;
-        alert(`Tài khoản của cán bộ (${matched.fullname}) đã được ghi nhận trạng thái ĐÃ NGHỈ LÀM VIỆC tại Chi nhánh. Vui lòng liên hệ Tổ CNTT/HCTH nếu cần hỗ trợ!`);
-        return;
-      }
-      authSuccess = true;
-      authUser = {
-        phone: matched.phone,
-        fullname: matched.fullname,
-        position: matched.position,
-        department: matched.department || "Chi nhánh số 23",
-        cccd: matched.cccd || "",
-        status: matched.status || "Đang làm việc",
-        role: matched.role || (matched.fullname.toLowerCase().includes("quân") ? "admin" : "user")
-      };
-    }
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = origHtml;
-
-  if (authSuccess && authUser) {
-    currentUser = authUser;
-    localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
-
-    if (remember) {
-      localStorage.setItem(STORAGE_KEYS.REMEMBER_PHONE, phone);
-      localStorage.setItem(STORAGE_KEYS.REMEMBER_PASS, password);
-    } else {
-      localStorage.removeItem(STORAGE_KEYS.REMEMBER_PHONE);
-      localStorage.removeItem(STORAGE_KEYS.REMEMBER_PASS);
-    }
-
-    showToast(`Đăng nhập thành công! Xin chào đồng chí ${currentUser.fullname}.`, "success");
-    switchView("hub");
-  } else {
-    showToast("Số điện thoại hoặc mật khẩu không chính xác!", "danger");
-  }
-}
-
-async function handleRegisterUser(e) {
-  if (e) e.preventDefault();
-
-  const fullname = (document.getElementById("regFullname").value || "").trim();
-  let phone = (document.getElementById("regPhone").value || "").trim().replace(/^'+/, "");
-  const position = (document.getElementById("regPosition").value || "").trim();
-  const group = document.getElementById("regGroup").value;
-  const department = document.getElementById("regDepartment").value;
-  const cccd = (document.getElementById("regCccd").value || "").trim();
-  const password = (document.getElementById("regPassword").value || "").trim();
-  const passwordConfirm = (document.getElementById("regPasswordConfirm").value || "").trim();
-
-  if (!fullname || !phone || !position || !password) {
-    showToast("Vui lòng điền đầy đủ tất cả các trường bắt buộc (*)", "warning");
-    return;
-  }
-
-  if (phone.length === 9 && !phone.startsWith("0")) phone = "0" + phone;
-  if (!/^0\d{9}$/.test(phone)) {
-    showToast("Số điện thoại không hợp lệ! Vui lòng nhập đúng 10 chữ số (bắt đầu bằng 0).", "warning");
-    return;
-  }
-
-  if (password.length < 8) {
-    showToast("Mật khẩu phải có độ dài tối thiểu 8 ký tự!", "warning");
-    return;
-  }
-
-  // Kiểm tra độ mạnh mật khẩu: hoa, thường, số, ký tự đặc biệt
-  const hasUpper = /[A-Z]/.test(password);
-  const hasLower = /[a-z]/.test(password);
-  const hasDigit = /[0-9]/.test(password);
-  const hasSpecial = /[@#$%&*!]/.test(password);
-
-  if (!hasUpper || !hasLower || !hasDigit || !hasSpecial) {
-    showToast("Mật khẩu bắt buộc phải bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt (@, #, $, %, &, *, !)", "warning");
-    return;
-  }
-
-  if (password !== passwordConfirm) {
-    showToast("Mật khẩu và xác nhận mật khẩu không khớp!", "danger");
-    return;
-  }
-
-  const btn = document.getElementById("btnSubmitRegisterUser");
-  const origHtml = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang đăng ký...`;
-
-  const newUser = {
-    phone: phone,
-    password: password,
-    fullname: fullname,
-    position: position,
-    group: group,
-    department: department,
-    cccd: cccd,
-    status: "Đang làm việc",
-    role: "user"
-  };
-
-  // 1. Thử gửi lên Google Apps Script
-  if (googleScriptUrl && googleScriptUrl.trim() !== "") {
-    try {
-      await fetch(googleScriptUrl, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action: "registerUser", ...newUser })
-      });
-    } catch(err) {
-      console.warn("Lưu Google Sheet gặp lỗi, lưu dự phòng LocalStorage:", err);
-    }
-  }
-
-  // 2. Lưu vào LocalStorage
-  let localUsers = [];
-  try {
-    localUsers = JSON.parse(localStorage.getItem(STORAGE_KEYS.LOCAL_USERS) || "[]");
-  } catch(e){}
-  localUsers.push(newUser);
-  localStorage.setItem(STORAGE_KEYS.LOCAL_USERS, JSON.stringify(localUsers));
-  KNOWN_USERS_MAP[phone] = fullname;
-
-  btn.disabled = false;
-  btn.innerHTML = origHtml;
-
-  showToast("Đăng ký tài khoản thành công! Tự động đăng nhập vào Cổng...", "success");
-
-  currentUser = newUser;
-  localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(currentUser));
-  switchView("hub");
-}
-
-function handleLogout() {
-  if (confirm("Đồng chí có chắc chắn muốn đăng xuất khỏi Cổng Dịch Vụ Nội Bộ?")) {
-    currentUser = null;
-    localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
-    showToast("Đã đăng xuất an toàn.", "info");
-    switchView("login");
-  }
-}
-
-function checkAutoLogin() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
-    if (saved) {
-      currentUser = JSON.parse(saved);
-      if (currentUser && currentUser.phone) {
-        switchView("hub");
-        return;
-      }
-    }
-  } catch(e){}
-
-  // Điền nhớ mật khẩu
-  const rPhone = localStorage.getItem(STORAGE_KEYS.REMEMBER_PHONE);
-  const rPass = localStorage.getItem(STORAGE_KEYS.REMEMBER_PASS);
-  if (rPhone) {
-    const phoneInput = document.getElementById("loginPhone");
-    if (phoneInput) phoneInput.value = rPhone;
-  }
-  if (rPass) {
-    const passInput = document.getElementById("loginPassword");
-    if (passInput) passInput.value = rPass;
-  }
-  switchView("login");
-}
-
-/* =========================================================================
-   3. PHÂN HỆ IT HELPDESK (SỰ CỐ MÁY TÍNH & MONITORING)
-   ========================================================================= */
-function prepareItHelpdeskForm() {
-  if (!currentUser) return;
-  const fnInput = document.getElementById("itFullname");
-  const phoneInput = document.getElementById("itPhone");
-  const deptInput = document.getElementById("itDepartment");
-
-  if (fnInput) fnInput.value = currentUser.fullname || "";
-  if (phoneInput) phoneInput.value = currentUser.phone || "";
-  if (deptInput) deptInput.value = currentUser.department || "Chi nhánh số 23";
-
-  autoDetectMachineAndSpecs();
-}
-
-async function autoDetectMachineAndSpecs() {
-  let machineTag = localStorage.getItem("IT_LOCAL_MACHINE_TAG");
-  if (!machineTag) {
-    const hex = Math.floor(Math.random() * 0xFFFFFF).toString(16).toUpperCase().padStart(4, "0");
-    machineTag = `PC-${hex}`;
-    localStorage.setItem("IT_LOCAL_MACHINE_TAG", machineTag);
-  }
-
-  let os = "Windows";
-  const ua = navigator.userAgent;
-  if (ua.indexOf("Windows NT 10.0") !== -1) os = "Win 10/11";
-  else if (ua.indexOf("Mac") !== -1) os = "macOS";
-  else if (ua.indexOf("Linux") !== -1) os = "Linux";
-  else if (ua.indexOf("Android") !== -1) os = "Android";
-  else if (ua.indexOf("iPhone") !== -1 || ua.indexOf("iPad") !== -1) os = "iOS";
-  detectedClient.os = os;
-
-  const ram = navigator.deviceMemory ? `${navigator.deviceMemory}GB RAM` : "";
-  const cores = navigator.hardwareConcurrency ? `${navigator.hardwareConcurrency} Cores` : "";
-  const screenRes = `${window.screen.width}x${window.screen.height}`;
-  const specsSummary = [os, ram, cores, screenRes].filter(Boolean).join(" • ");
-  detectedClient.specs = specsSummary;
-
-  const autoName = `${os} (${machineTag})`;
-  detectedClient.machineName = autoName;
-
-  const machineInput = document.getElementById("itMachineName");
-  if (machineInput && !machineInput.value) {
-    machineInput.value = autoName;
-  }
-
-  const specText = document.getElementById("detectedSpecText");
-  if (specText) {
-    specText.innerHTML = `<i class="fa-solid fa-desktop mr-1 text-blue-600"></i> <span>Máy: <strong>${autoName}</strong> | ${specsSummary}</span>`;
-  }
-
-  try {
-    const res = await fetch("https://api.ipify.org?format=json");
-    const data = await res.json();
-    if (data && data.ip) {
-      detectedClient.ip = data.ip;
-      if (specText) {
-        specText.innerHTML = `<i class="fa-solid fa-desktop mr-1 text-blue-600"></i> <span>Máy: <strong>${autoName}</strong> | IP: <strong>${data.ip}</strong> (${specsSummary})</span>`;
-      }
-    }
-  } catch (e) {
-    detectedClient.ip = "LAN Nội Bộ";
-  }
-}
-
-function setupPasteEventListener() {
-  window.addEventListener("paste", (e) => {
-    if (currentView !== "helpdesk") return;
-    const items = (e.clipboardData || e.originalEvent?.clipboardData)?.items;
-    if (!items) return;
-    for (let item of items) {
-      if (item.type.indexOf("image") !== -1) {
-        const file = item.getAsFile();
-        if (file) {
-          compressAndPreviewImage(file);
-          break;
-        }
-      }
-    }
-  });
-}
-
-function setupDropZone() {
-  const dropZone = document.getElementById("itDropZone");
-  if (!dropZone) return;
-
-  ["dragenter", "dragover"].forEach(evt => {
-    dropZone.addEventListener(evt, (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      dropZone.classList.add("dragover");
-    }, false);
-  });
-
-  ["dragleave", "drop"].forEach(evt => {
-    dropZone.addEventListener(evt, (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      dropZone.classList.remove("dragover");
-    }, false);
-  });
-
-  dropZone.addEventListener("drop", (e) => {
-    const files = e.dataTransfer?.files;
-    if (files && files[0]) {
-      compressAndPreviewImage(files[0]);
-    }
-  }, false);
-
-  dropZone.addEventListener("click", (e) => {
-    if (e.target.id === "btnRemoveItImg") return;
-    const fileInput = document.getElementById("itFileInput");
-    if (fileInput) fileInput.click();
-  });
-
-  const fileInput = document.getElementById("itFileInput");
-  if (fileInput) {
-    fileInput.addEventListener("change", (e) => {
-      if (e.target.files && e.target.files[0]) {
-        compressAndPreviewImage(e.target.files[0]);
-      }
-    });
-  }
-
-  const btnRemove = document.getElementById("btnRemoveItImg");
-  if (btnRemove) {
-    btnRemove.addEventListener("click", (e) => {
-      e.stopPropagation();
-      removeItSelectedImage();
-    });
-  }
-}
-
-function compressAndPreviewImage(file) {
-  if (!file.type.match("image.*")) {
-    showToast("Vui lòng chỉ chọn file ảnh (PNG, JPG, JPEG)!", "warning");
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = (re) => {
-    const img = new Image();
-    img.onload = () => {
-      const maxDim = 1280;
-      let width = img.width;
-      let height = img.height;
-      if (width > height && width > maxDim) {
-        height = Math.round((height * maxDim) / width);
-        width = maxDim;
-      } else if (height > maxDim) {
-        width = Math.round((width * maxDim) / height);
-        height = maxDim;
-      }
-
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0, width, height);
-
-      const compressed = canvas.toDataURL("image/jpeg", 0.75);
-      detectedClient.imageBase64 = compressed;
-
-      const promptBox = document.getElementById("itDropPrompt");
-      const previewBox = document.getElementById("itPreviewBox");
-      const previewImg = document.getElementById("itPreviewImg");
-      const sizeNote = document.getElementById("itImageSizeNote");
-
-      if (promptBox) promptBox.style.display = "none";
-      if (previewBox) previewBox.style.display = "inline-block";
-      if (previewImg) previewImg.src = compressed;
-
-      const sizeKb = Math.round((compressed.length * 3 / 4) / 1024);
-      if (sizeNote) sizeNote.textContent = `Ảnh đã nén: ~${sizeKb} KB (Sẵn sàng gửi)`;
-    };
-    img.src = re.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-function removeItSelectedImage() {
-  detectedClient.imageBase64 = "";
-  const fileInput = document.getElementById("itFileInput");
-  if (fileInput) fileInput.value = "";
-  const promptBox = document.getElementById("itDropPrompt");
-  const previewBox = document.getElementById("itPreviewBox");
-  if (previewBox) previewBox.style.display = "none";
-  if (promptBox) promptBox.style.display = "flex";
-}
-
-async function handleSubmitTicket(e) {
-  if (e) e.preventDefault();
-
-  const btn = document.getElementById("btnSubmitItTicket");
-  const origHtml = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang tải lên và gửi...`;
-
-  const selectedCat = document.querySelector('input[name="itCategory"]:checked')?.value || "Máy tính / PC";
-  const machineVal = document.getElementById("itMachineName").value.trim() || detectedClient.machineName;
-
-  const payload = {
-    action: "createTicket",
-    fullname: document.getElementById("itFullname").value.trim(),
-    phone: document.getElementById("itPhone").value.trim(),
-    department: document.getElementById("itDepartment").value.trim(),
-    machineName: machineVal,
-    category: selectedCat,
-    errorMessage: document.getElementById("itErrorMessage").value.trim(),
-    description: document.getElementById("itDescription").value.trim(),
-    imageBase64: detectedClient.imageBase64,
-    ip: detectedClient.ip,
-    clientSpecs: `IP: ${detectedClient.ip} | ${detectedClient.specs}`
-  };
-
-  const now = new Date();
-  const dCode = `${String(now.getFullYear()).slice(2)}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
-  const tempId = `TK-${dCode}-${Math.floor(100 + Math.random() * 900)}`;
-  const timeStr = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-
-  let ticketUrl = "";
-  if (googleScriptUrl && googleScriptUrl.trim() !== "") {
-    try {
-      const res = await fetch(googleScriptUrl, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      if (data && data.ticketId) {
-        tempId = data.ticketId;
-        ticketUrl = data.imageUrl || "";
-      }
-    } catch(err) {
-      console.warn("Lỗi gửi POST Google Apps Script, chuyển fallback GET:", err);
-      try {
-        const clone = Object.assign({}, payload);
-        delete clone.imageBase64;
-        await fetch(`${googleScriptUrl}?action=createTicket&data=${encodeURIComponent(JSON.stringify(clone))}`, { mode: "no-cors" });
-      } catch(e2){}
-    }
-  }
-
-  const newTicket = {
-    id: tempId,
-    timestamp: timeStr,
-    fullname: payload.fullname,
-    phone: payload.phone,
-    department: payload.department,
-    machineName: payload.machineName,
-    category: payload.category,
-    errorMessage: payload.errorMessage,
-    description: payload.description,
-    imageUrl: ticketUrl || detectedClient.imageBase64,
-    status: "Chờ xử lý",
-    itNote: "",
-    clientSpecs: payload.clientSpecs
-  };
-
-  currentTickets.unshift(newTicket);
-  localStorage.setItem(STORAGE_KEYS.LOCAL_TICKETS, JSON.stringify(currentTickets));
-
-  // Reset các ô nhập lỗi và ảnh
-  document.getElementById("itErrorMessage").value = "";
-  document.getElementById("itDescription").value = "";
-  removeItSelectedImage();
-
-  btn.disabled = false;
-  btn.innerHTML = origHtml;
-
-  updateTicketStats();
-  renderTickets();
-  updateHubData();
-
-  // Mở popup thành công
-  document.getElementById("itSuccessTicketId").textContent = `#${tempId}`;
-  document.getElementById("itSuccessMachineName").textContent = `Máy: ${payload.machineName}`;
-  document.getElementById("itSuccessModal").style.display = "flex";
-}
-
-async function fetchTickets() {
-  const icon = document.getElementById("itRefreshIcon");
-  if (icon) icon.classList.add("fa-spin");
-
-  if (googleScriptUrl && googleScriptUrl.trim() !== "") {
-    try {
-      const res = await fetch(`${googleScriptUrl}?action=getTickets&t=${Date.now()}`);
-      const data = await res.json();
-      if (data && data.success && Array.isArray(data.tickets)) {
-        currentTickets = data.tickets;
-        localStorage.setItem(STORAGE_KEYS.LOCAL_TICKETS, JSON.stringify(currentTickets));
-      }
-    } catch(err) {
-      loadCachedTickets();
-    }
-  } else {
-    loadCachedTickets();
-  }
-
-  if (icon) icon.classList.remove("fa-spin");
-  updateTicketStats();
-  renderTickets();
-  updateHubData();
-}
-
-function loadCachedTickets() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEYS.LOCAL_TICKETS);
-    if (saved) {
-      currentTickets = JSON.parse(saved);
-      return;
-    }
-  } catch(e){}
-
-  // Vé mẫu demo nếu trống
-  currentTickets = [
-    {
-      id: "TK-261028-002",
-      timestamp: "28/10/2026 08:35:10",
-      fullname: "Nguyễn Thị Bích Tuyền",
-      phone: "0909736435",
-      department: "Tổ Hành chính - Tổng hợp",
-      machineName: "Win 10/11 (PC-48A2) - Bàn 01",
-      category: "Máy in / Scan",
-      errorMessage: "Paper Jam inside tray 2",
-      description: "Máy in kẹt giấy liên tục khi in báo cáo lịch tuần, đèn báo lỗi đỏ.",
-      imageUrl: "",
-      status: "Chờ xử lý",
-      itNote: "",
-      clientSpecs: "Win 10/11 • 8GB RAM"
-    },
-    {
-      id: "TK-261028-001",
-      timestamp: "28/10/2026 08:12:05",
-      fullname: "Nguyễn Thành Như Bảo",
-      phone: "0907259775",
-      department: "Tổ Đăng ký và Cấp GCN",
-      machineName: "Win 10/11 (PC-91F0) - Bàn 03",
-      category: "Chữ ký số / Cổng DVC",
-      errorMessage: "Cannot find valid certificate in token",
-      description: "Cắm USB Token ký số văn bản nhưng phần mềm báo không tìm thấy chứng thư.",
-      imageUrl: "",
-      status: "Đang xử lý",
-      itNote: "Đang cập nhật driver Token VNPT",
-      clientSpecs: "Win 10/11 • 16GB RAM"
-    }
-  ];
-}
-
-function updateTicketStats() {
-  const total = currentTickets.length;
-  let pending = 0, processing = 0, completed = 0;
-  currentTickets.forEach(t => {
-    const s = (t.status || "").toLowerCase();
-    if (s.includes("hoàn thành") || s.includes("xong") || s.includes("done")) completed++;
-    else if (s.includes("đang")) processing++;
-    else pending++;
-  });
-
-  const elTot = document.getElementById("itStatTotal");
-  const elPen = document.getElementById("itStatPending");
-  const elPro = document.getElementById("itStatProcessing");
-  const elCom = document.getElementById("itStatCompleted");
-
-  if (elTot) elTot.textContent = total;
-  if (elPen) elPen.textContent = pending;
-  if (elPro) elPro.textContent = processing;
-  if (elCom) elCom.textContent = completed;
-}
-
-function getStatusRank(status) {
-  const s = (status || "").toLowerCase();
-  if (s.includes("đang")) return 1;
-  if (s.includes("hoàn thành") || s.includes("xong")) return 3;
-  return 2;
-}
-
-function renderTickets() {
-  const tbody = document.getElementById("itTicketTableBody");
-  const search = (document.getElementById("itSearchInput")?.value || "").toLowerCase().trim();
-  const stFilter = document.getElementById("itStatusFilter")?.value || "ALL";
-
-  if (!tbody) return;
-
-  const filtered = currentTickets.filter(t => {
-    if (stFilter !== "ALL") {
-      const s = (t.status || "").toLowerCase();
-      if (s !== stFilter.toLowerCase()) return false;
-    }
-    if (search) {
-      const txt = `${t.id} ${t.fullname} ${t.phone} ${t.department} ${t.machineName} ${t.errorMessage} ${t.description}`.toLowerCase();
-      if (!txt.includes(search)) return false;
-    }
-    return true;
-  });
-
-  filtered.sort((a, b) => getStatusRank(a.status) - getStatusRank(b.status));
-
-  if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="text-center empty-state">Không có sự cố nào phù hợp bộ lọc.</td></tr>`;
-    return;
-  }
-
-  tbody.innerHTML = filtered.map(t => {
-    let badgeClass = "status-pending";
-    const s = (t.status || "").toLowerCase();
-    if (s.includes("hoàn thành") || s.includes("xong")) badgeClass = "status-completed";
-    else if (s.includes("đang")) badgeClass = "status-processing";
-
-    const cleanPhone = String(t.phone || "").replace(/^'+/, "");
-    let imgBtn = `<span style="color: #cbd5e1;">—</span>`;
-    if (t.imageUrl && t.imageUrl.trim() !== "") {
-      imgBtn = `<button type="button" class="btn btn-secondary btn-sm" onclick="openItImageViewer('${encodeURIComponent(t.imageUrl)}', '${encodeURIComponent(t.id)}')">
-        <i class="fa-solid fa-image text-blue-600 mr-1"></i> Xem
-      </button>`;
-    }
-
-    return `
-      <tr>
-        <td>
-          <strong style="color: #1e3a8a; font-family: monospace;">${t.id}</strong>
-          <div style="font-size: 0.74rem; color: #64748b; margin-top: 2px;">${t.timestamp}</div>
-        </td>
-        <td>
-          <strong>${t.fullname}</strong>
-          <div style="font-size: 0.76rem; color: #475569;">${t.department}</div>
-          ${cleanPhone ? `<div style="font-size: 0.74rem; color: #1e40af;"><a href="tel:${cleanPhone}"><i class="fa-solid fa-phone text-[10px] mr-1"></i>${cleanPhone}</a></div>` : ''}
-        </td>
-        <td>
-          <div style="font-size: 0.8rem; font-weight: 600;">${t.machineName || "Chưa rõ máy"}</div>
-          <span style="display: inline-block; font-size: 0.72rem; padding: 1px 6px; background: #e2e8f0; border-radius: 4px; margin-top: 2px;">${t.category}</span>
-        </td>
-        <td>
-          ${t.errorMessage ? `<div class="error-tag-box"><i class="fa-solid fa-triangle-exclamation mr-1"></i>${escapeHtml(t.errorMessage)}</div>` : ''}
-          <div style="color: #334155; line-height: 1.4;">${escapeHtml(t.description)}</div>
-        </td>
-        <td style="text-align: center;">${imgBtn}</td>
-        <td style="text-align: center;">
-          <span class="badge-status ${badgeClass}">
-            ${badgeClass === 'status-completed' ? '<i class="fa-solid fa-check"></i>' : (badgeClass === 'status-processing' ? '<i class="fa-solid fa-spinner fa-spin"></i>' : '<i class="fa-regular fa-clock"></i>')}
-            ${t.status || "Chờ xử lý"}
-          </span>
-        </td>
-        <td style="font-size: 0.78rem;">
-          ${t.itNote ? `<div style="background: #e0f2fe; padding: 4px 6px; border-radius: 4px; color: #0369a1;"><strong>IT:</strong> ${escapeHtml(t.itNote)}</div>` : '<span style="color: #94a3b8; font-style: italic;">Chưa có ghi chú</span>'}
-        </td>
-      </tr>
-    `;
-  }).join('');
-}
-
-function openItImageViewer(encodedUrl, encodedId) {
-  const rawUrl = decodeURIComponent(encodedUrl || "").trim();
-  const id = decodeURIComponent(encodedId || "").trim();
-
-  document.getElementById("itModalImgTitle").innerHTML = `<i class="fa-solid fa-image text-blue-600 mr-2"></i>Ảnh Lỗi Ticket #${id}`;
-  const modal = document.getElementById("itImageViewerModal");
-  const loading = document.getElementById("itModalImgLoading");
-  const imgEl = document.getElementById("itModalFullImg");
-  const driveLink = document.getElementById("itModalDriveLink");
-
-  loading.style.display = "block";
-  imgEl.style.display = "none";
-  imgEl.src = "";
-
-  if (rawUrl.startsWith("data:image/")) {
-    driveLink.style.display = "none";
-    imgEl.src = rawUrl;
-  } else {
-    driveLink.style.display = "inline-flex";
-    driveLink.href = rawUrl;
-    const driveMatch = rawUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || rawUrl.match(/id=([a-zA-Z0-9_-]+)/);
-    if (driveMatch && driveMatch[1]) {
-      imgEl.src = `https://lh3.googleusercontent.com/d/${driveMatch[1]}`;
-    } else {
-      imgEl.src = rawUrl;
-    }
-  }
-
-  modal.style.display = "flex";
-}
-
-/* =========================================================================
-   4. LOGIC ĐĂNG KÝ LỊCH TUẦN (WEEKLY SCHEDULE)
-   ========================================================================= */
-function handleAutoEndTime(startTimeStr) {
-  if (!startTimeStr) return;
-  const parts = startTimeStr.split(":");
-  if (parts.length < 2) return;
-  const startHour = parseInt(parts[0], 10);
-  const startMinute = parseInt(parts[1], 10);
-  let totalMinutes = startHour * 60 + startMinute + 120;
-  if (totalMinutes >= 24 * 60) totalMinutes = 23 * 60 + 59;
-  const endHour = Math.floor(totalMinutes / 60);
-  const endMinute = totalMinutes % 60;
-  const endStr = `${String(endHour).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`;
-  const regEndTime = document.getElementById("regEndTime");
-  if (regEndTime) {
-    if (window.endTimePicker) window.endTimePicker.setDate(endStr, true);
-    else regEndTime.value = endStr;
-  }
-}
-
-function calculateDayOfWeek(dateString) {
-  const dayInput = document.getElementById("regDayOfWeek");
-  if (!dayInput) return;
-  if (!dateString) { dayInput.value = ""; return; }
-  const parts = dateString.split("/");
-  if (parts.length !== 3) { dayInput.value = ""; return; }
-  const d = parseInt(parts[0], 10);
-  const m = parseInt(parts[1], 10) - 1;
-  const y = parseInt(parts[2], 10);
-  const dateObj = new Date(y, m, d);
-  if (isNaN(dateObj.getTime())) { dayInput.value = ""; return; }
-  const days = ["Chủ nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
-  dayInput.value = days[dateObj.getDay()];
-}
-
-function setupCharCounter(inputId, counterId, maxLen) {
-  const input = document.getElementById(inputId);
-  const counter = document.getElementById(counterId);
-  if (!input || !counter) return;
-  const update = () => {
-    const len = input.value.length;
-    counter.textContent = `${len} / ${maxLen} ký tự`;
-    counter.classList.toggle("warning", len > maxLen * 0.9);
-  };
-  input.addEventListener("input", update);
-  update();
-}
-
-function renderScheduleTable(data) {
-  const tbody = document.getElementById("scheduleTableBody");
-  const countBadge = document.getElementById("totalScheduleCount");
-  if (!tbody) return;
-
-  const keyword = (document.getElementById("searchInput")?.value || "").toLowerCase().trim();
-  let list = Array.isArray(data) ? [...data] : [];
-
-  if (keyword) {
-    list = list.filter(item => {
-      const txt = `${item.date} ${item.dayOfWeek} ${item.time} ${item.content} ${item.attendees} ${item.location} ${getSenderDisplayName(item)}`.toLowerCase();
-      return txt.includes(keyword);
-    });
-  }
-
-  if (countBadge) countBadge.textContent = `${list.length} mục`;
-
-  if (list.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" class="text-center empty-state">Không có lịch công tác nào phù hợp.</td></tr>`;
-    renderPaginationControls(0, 0, 0, 0);
-    return;
-  }
-
-  // Sắp xếp lịch theo ngày
-  list.sort((a, b) => {
-    const da = (a.date || "").split("/").reverse().join("");
-    const db = (b.date || "").split("/").reverse().join("");
-    return db.localeCompare(da);
-  });
-
-  const totalPages = Math.ceil(list.length / ITEMS_PER_PAGE);
-  if (currentPage > totalPages) currentPage = totalPages;
-  if (currentPage < 1) currentPage = 1;
-
-  const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIdx = Math.min(startIdx + ITEMS_PER_PAGE, list.length);
-  const pageItems = list.slice(startIdx, endIdx);
-
-  tbody.innerHTML = pageItems.map(item => {
-    const st = getMeetingStatus(item.date, item.time);
-    return `
-      <tr class="${st.isPast ? 'meeting-past' : ''}">
-        <td>
-          <strong>${item.dayOfWeek}</strong>
-          <div style="font-size: 0.76rem; color: #64748b;">${item.date}</div>
-        </td>
-        <td>
-          <strong style="color: #1e40af;">${item.time}</strong>
-          <div style="margin-top: 2px;"><span class="badge ${st.badgeClass}">${st.label}</span></div>
-        </td>
-        <td>
-          <div style="font-weight: 600; color: #0f172a; line-height: 1.4;">${formatCellHtmlWithRedHighlight(item.content)}</div>
-        </td>
-        <td style="font-size: 0.82rem; color: #334155;">${formatCellHtmlWithRedHighlight(item.attendees)}</td>
-        <td style="font-size: 0.82rem; color: #475569;">${escapeHtml(item.location)}</td>
-        <td>
-          <div style="font-weight: 600; font-size: 0.82rem;">${getSenderDisplayName(item)}</div>
-        </td>
-      </tr>
-    `;
-  }).join('');
-
-  renderPaginationControls(list.length, totalPages, startIdx + 1, endIdx);
-}
-
-function renderPaginationControls(total, totalPages, start, end) {
-  const infoEl = document.getElementById("paginationInfo");
-  const controlsEl = document.getElementById("paginationControls");
-  if (infoEl) infoEl.innerHTML = `Hiển thị <strong>${start} - ${end}</strong> trên tổng số <strong>${total}</strong> lịch`;
-  if (!controlsEl) return;
-  if (totalPages <= 1) { controlsEl.innerHTML = ""; return; }
-
-  let html = `<button type="button" class="btn-page" ${currentPage === 1 ? 'disabled' : ''} onclick="currentPage--; renderScheduleTable(scheduleData);">&laquo;</button>`;
-  for (let i = 1; i <= totalPages; i++) {
-    html += `<button type="button" class="btn-page ${i === currentPage ? 'active' : ''}" onclick="currentPage = ${i}; renderScheduleTable(scheduleData);">${i}</button>`;
-  }
-  html += `<button type="button" class="btn-page ${currentPage === totalPages ? 'disabled' : ''} onclick="currentPage++; renderScheduleTable(scheduleData);">&raquo;</button>`;
-  controlsEl.innerHTML = html;
-}
-
-async function handleSubmitSchedule(e) {
-  if (e) e.preventDefault();
-
-  const date = document.getElementById("regDate").value.trim();
-  const dayOfWeek = document.getElementById("regDayOfWeek").value.trim();
-  const startTime = document.getElementById("regStartTime").value.trim();
-  const endTime = document.getElementById("regEndTime").value.trim();
-  const content = document.getElementById("regContent").value.trim();
-  const attendees = document.getElementById("regAttendees").value.trim();
-  const location = document.getElementById("regLocation").value.trim();
-
-  if (!date || !startTime || !endTime || !content || !attendees || !location) {
-    showToast("Vui lòng điền đầy đủ các thông tin lịch công tác!", "warning");
-    return;
-  }
-
-  const time = `${startTime} - ${endTime}`;
-  const btn = document.getElementById("btnSubmitRegister");
-  const origHtml = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang ghi nhận...`;
-
-  const payload = {
-    action: "addSchedule",
-    phone: currentUser ? currentUser.phone : "",
-    name: currentUser ? currentUser.fullname : "Cán bộ",
-    date: date,
-    dayOfWeek: dayOfWeek,
-    time: time,
-    content: content,
-    attendees: attendees,
-    location: location
-  };
-
-  const now = new Date();
-  const newScheduleItem = {
-    id: "LT-" + now.getTime(),
-    timestamp: `${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()} ${now.getHours()}:${now.getMinutes()}`,
-    phone: payload.phone,
-    name: payload.name,
-    date: date,
-    dayOfWeek: dayOfWeek,
-    time: time,
-    content: content,
-    attendees: attendees,
-    location: location
-  };
-
-  if (googleScriptUrl && googleScriptUrl.trim() !== "") {
-    try {
-      await fetch(googleScriptUrl, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(payload)
-      });
-    } catch(err) {
-      console.warn("Lỗi gửi lịch tuần lên Apps Script, lưu offline:", err);
-    }
-  }
-
-  scheduleData.unshift(newScheduleItem);
-  localStorage.setItem(STORAGE_KEYS.LOCAL_SCHEDULE, JSON.stringify(scheduleData));
-
-  btn.disabled = false;
-  btn.innerHTML = origHtml;
-
-  // Reset form
-  document.getElementById("regContent").value = "";
-  document.getElementById("regAttendees").value = "";
-  document.getElementById("regLocation").value = "";
-  setupCharCounter("regContent", "contentCounter", 500);
-  setupCharCounter("regAttendees", "attendeesCounter", 500);
-  setupCharCounter("regLocation", "locationCounter", 500);
-
-  showToast("Đã đăng ký lịch công tác tuần thành công!", "success");
-  renderScheduleTable(scheduleData);
-  updateHubData();
-}
-
-async function fetchSchedule() {
-  const btn = document.getElementById("btnRefreshList");
-  if (btn) btn.disabled = true;
-
-  if (googleScriptUrl && googleScriptUrl.trim() !== "") {
-    try {
-      const res = await fetch(`${googleScriptUrl}?action=getSchedule&t=${Date.now()}`);
-      const data = await res.json();
-      if (data && data.success && Array.isArray(data.data)) {
-        scheduleData = data.data;
-        localStorage.setItem(STORAGE_KEYS.LOCAL_SCHEDULE, JSON.stringify(scheduleData));
-      }
-    } catch(err) {
-      loadCachedSchedule();
-    }
-  } else {
-    loadCachedSchedule();
-  }
-
-  if (btn) btn.disabled = false;
-  renderScheduleTable(scheduleData);
-  updateHubData();
-}
-
-function loadCachedSchedule() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEYS.LOCAL_SCHEDULE);
-    if (saved) {
-      scheduleData = JSON.parse(saved);
-      return;
-    }
-  } catch(e){}
-
-  // Demo schedule
-  scheduleData = [
-    {
-      id: "LT-261028-01",
-      timestamp: "28/10/2026 08:00",
-      phone: "0909736435",
-      name: "Nguyễn Thị Bích Tuyền",
-      date: "28/10/2026",
-      dayOfWeek: "Thứ Tư",
-      time: "08:00 - 11:30",
-      content: "Họp giao ban định kỳ Chi nhánh 23 rà soát tiến độ giải quyết hồ sơ đất đai và công tác tiếp công dân",
-      attendees: "Ban Giám đốc, Lãnh đạo các Tổ chuyên môn Chi nhánh số 23",
-      location: "Phòng họp số 1 - Chi nhánh số 23"
-    }
-  ];
-}
-
-/* =========================================================================
-   5. BINDING CÁC SỰ KIỆN GIAO DIỆN KHI KHỞI ĐỘNG
-   ========================================================================= */
+// ==================== KHỞI CHẠY ỨNG DỤNG ====================
 document.addEventListener("DOMContentLoaded", () => {
-  // 1. Chuyển đổi qua lại giữa Login và Register
-  document.getElementById("btnGoToRegister")?.addEventListener("click", () => switchView("register"));
-  document.getElementById("btnBackToLogin")?.addEventListener("click", () => switchView("login"));
-
-  // 2. Form Auth
-  document.getElementById("loginForm")?.addEventListener("submit", handleLogin);
-  document.getElementById("registerUserForm")?.addEventListener("submit", handleRegisterUser);
-  document.getElementById("btnLogout")?.addEventListener("click", handleLogout);
-
-  // 3. Toggle mắt xem mật khẩu
-  document.getElementById("btnToggleLoginPassword")?.addEventListener("click", () => {
-    const el = document.getElementById("loginPassword");
-    if (!el) return;
-    el.type = (el.type === "password") ? "text" : "password";
-  });
-  document.getElementById("btnToggleRegPassword")?.addEventListener("click", () => {
-    const el = document.getElementById("regPassword");
-    if (!el) return;
-    el.type = (el.type === "password") ? "text" : "password";
-  });
-  document.getElementById("btnToggleRegPasswordConfirm")?.addEventListener("click", () => {
-    const el = document.getElementById("regPasswordConfirm");
-    if (!el) return;
-    el.type = (el.type === "password") ? "text" : "password";
-  });
-
-  // 4. Chọn nhanh tài khoản kiểm thử
-  document.getElementById("quickAccountSelect")?.addEventListener("change", (e) => {
-    const val = e.target.value;
-    if (!val) return;
-    const [p, pw] = val.split("|");
-    const phoneInput = document.getElementById("loginPhone");
-    const passInput = document.getElementById("loginPassword");
-    if (phoneInput) phoneInput.value = p;
-    if (passInput) passInput.value = pw;
-  });
-
-  // 5. Tabs trên Header
-  document.getElementById("navTabHub")?.addEventListener("click", () => switchView("hub"));
-  document.getElementById("navTabSchedule")?.addEventListener("click", () => switchView("schedule"));
-  document.getElementById("navTabHelpdesk")?.addEventListener("click", () => switchView("helpdesk"));
-
-  // 6. Nút điều hướng trên Hub
-  document.getElementById("btnHubGoSchedule")?.addEventListener("click", () => switchView("schedule"));
-  document.getElementById("cardSelectSchedule")?.addEventListener("click", (e) => {
-    if (!e.target.closest("button")) switchView("schedule");
-  });
-  document.getElementById("btnHubGoHelpdesk")?.addEventListener("click", () => switchView("helpdesk"));
-  document.getElementById("cardSelectHelpdesk")?.addEventListener("click", (e) => {
-    if (!e.target.closest("button")) switchView("helpdesk");
-  });
-
-  // 7. Nút quay lại từ phân hệ về Hub
-  document.getElementById("btnBackFromSchedule")?.addEventListener("click", () => switchView("hub"));
-  document.getElementById("btnBackFromHelpdesk")?.addEventListener("click", () => switchView("hub"));
-
-  // 8. Đăng ký lịch tuần
-  document.getElementById("registerForm")?.addEventListener("submit", handleSubmitSchedule);
-  document.getElementById("btnRefreshList")?.addEventListener("click", fetchSchedule);
-  document.getElementById("searchInput")?.addEventListener("input", () => {
-    currentPage = 1;
-    renderScheduleTable(scheduleData);
-  });
-  document.getElementById("btnExportWord")?.addEventListener("click", openExportWordModal);
-  document.getElementById("btnCloseExportModal")?.addEventListener("click", closeExportWordModal);
-  document.getElementById("btnCancelExportModal")?.addEventListener("click", closeExportWordModal);
-  document.getElementById("btnConfirmExportWord")?.addEventListener("click", handleConfirmExportWord);
-
-  // 9. IT Helpdesk
-  document.getElementById("itTicketForm")?.addEventListener("submit", handleSubmitTicket);
-  document.getElementById("btnRefreshItTickets")?.addEventListener("click", fetchTickets);
-  document.getElementById("itSearchInput")?.addEventListener("input", renderTickets);
-  document.getElementById("itStatusFilter")?.addEventListener("change", renderTickets);
-  document.getElementById("btnCloseItImgModal")?.addEventListener("click", () => {
-    document.getElementById("itImageViewerModal").style.display = "none";
-  });
-  document.getElementById("btnCloseItImgBtn")?.addEventListener("click", () => {
-    document.getElementById("itImageViewerModal").style.display = "none";
-  });
-  document.getElementById("btnOkItSuccess")?.addEventListener("click", () => {
-    document.getElementById("itSuccessModal").style.display = "none";
-  });
-
-  // Radio chips selector
-  document.querySelectorAll('.category-radio-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      document.querySelectorAll('.category-radio-chip').forEach(c => c.classList.remove('selected'));
-      chip.classList.add('selected');
-    });
-  });
-
-  // 10. Quên mật khẩu & Cấu hình Server
-  document.getElementById("btnForgotPassword")?.addEventListener("click", () => {
-    document.getElementById("forgotPasswordModal").style.display = "flex";
-  });
-  document.getElementById("btnCloseForgotModal")?.addEventListener("click", () => {
-    document.getElementById("forgotPasswordModal").style.display = "none";
-  });
-  document.getElementById("btnCloseForgotBtn")?.addEventListener("click", () => {
-    document.getElementById("forgotPasswordModal").style.display = "none";
-  });
-
-  document.getElementById("btnAdminServerConfig")?.addEventListener("click", () => {
-    const input = document.getElementById("googleScriptUrlInput");
-    if (input) input.value = googleScriptUrl;
-    document.getElementById("configModal").style.display = "flex";
-  });
-  document.getElementById("btnBannerConfig")?.addEventListener("click", () => {
-    const input = document.getElementById("googleScriptUrlInput");
-    if (input) input.value = googleScriptUrl;
-    document.getElementById("configModal").style.display = "flex";
-  });
-  document.getElementById("btnCloseModal")?.addEventListener("click", () => {
-    document.getElementById("configModal").style.display = "none";
-  });
-  document.getElementById("btnSaveConfig")?.addEventListener("click", () => {
-    const val = (document.getElementById("googleScriptUrlInput")?.value || "").trim();
-    if (val) {
-      googleScriptUrl = val;
-      localStorage.setItem(STORAGE_KEYS.SCRIPT_URL, val);
-      showToast("Đã lưu cấu hình Server API thành công!", "success");
-      document.getElementById("configModal").style.display = "none";
-      updateSyncBanner();
-    }
-  });
-
-  // Khởi tạo các bộ đếm ký tự 500
-  setupCharCounter("regContent", "contentCounter", 500);
-  setupCharCounter("regAttendees", "attendeesCounter", 500);
-  setupCharCounter("regLocation", "locationCounter", 500);
-
-  // Setup IT Helpdesk paste & drop
-  setupPasteEventListener();
-  setupDropZone();
-
-  // Khởi tạo Flatpickr cho ngày & giờ lịch tuần
-  initDateTimePickers();
-
-  // Nạp dữ liệu ban đầu
-  loadCachedSchedule();
-  loadCachedTickets();
-
-  // Kiểm tra đăng nhập
+  initStorage();
+  bindEvents();
   checkAutoLogin();
+  updateSyncBanner();
+
+  // Kiểm tra thời gian thực (real-time) mỗi 60 giây để cập nhật trạng thái cuộc họp
+  setInterval(() => {
+    if (scheduleData && scheduleData.length > 0) {
+      renderScheduleTable(currentFilteredList.length > 0 ? currentFilteredList : scheduleData);
+    }
+  }, 60000);
 });
 
-function initDateTimePickers() {
+function initStorage() {
+  const existingSchedule = localStorage.getItem(STORAGE_KEYS.LOCAL_SCHEDULE);
+  if (!existingSchedule) {
+    scheduleData = [];
+    localStorage.setItem(STORAGE_KEYS.LOCAL_SCHEDULE, JSON.stringify([]));
+  } else {
+    try {
+      const parsed = JSON.parse(existingSchedule);
+      // Xoá bỏ sạch các dữ liệu mẫu cũ (LT-001, LT-002, LT-003) nếu còn lưu trong máy
+      scheduleData = Array.isArray(parsed) 
+        ? parsed.filter(item => !["LT-001", "LT-002", "LT-003"].includes(item.id))
+        : [];
+      localStorage.setItem(STORAGE_KEYS.LOCAL_SCHEDULE, JSON.stringify(scheduleData));
+    } catch (e) {
+      scheduleData = [];
+    }
+  }
+
+  // Điền URL cấu hình nếu có
+  const inputUrl = document.getElementById("googleScriptUrlInput");
+  if (inputUrl && googleScriptUrl) {
+    inputUrl.value = googleScriptUrl;
+    updateConnectionStatusUI(true, "Đã kết nối Google Apps Script chính thức");
+  }
+
+  updateSyncBanner();
+
+  // Điền sẵn ngày hôm nay vào ô chọn ngày (Định dạng Ngày/Tháng/Năm DD/MM/YYYY) và CHẶN CHỌN NGÀY QUÁ KHỨ
   const regDateInput = document.getElementById("regDate");
   const today = new Date();
   const yyyy = today.getFullYear();
@@ -2056,33 +271,42 @@ function initDateTimePickers() {
   const dd = String(today.getDate()).padStart(2, '0');
   const todayVnStr = `${dd}/${mm}/${yyyy}`;
 
-  if (regDateInput && window.flatpickr) {
-    flatpickr(regDateInput, {
-      dateFormat: "d/m/Y",
-      minDate: "today",
-      defaultDate: todayVnStr,
-      disableMobile: true,
-      locale: {
-        weekdays: {
-          shorthand: ["CN", "T2", "T3", "T4", "T5", "T6", "T7"],
-          longhand: ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"]
+  if (regDateInput) {
+    if (window.flatpickr) {
+      window.datePickerInstance = flatpickr(regDateInput, {
+        dateFormat: "d/m/Y",
+        minDate: "today",
+        defaultDate: todayVnStr,
+        disableMobile: true, // Ép hiển thị Flatpickr trên cả di động để đảm bảo 100% định dạng DD/MM/YYYY
+        locale: {
+          weekdays: {
+            shorthand: ["CN", "T2", "T3", "T4", "T5", "T6", "T7"],
+            longhand: ["Chủ nhật", "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy"]
+          },
+          months: {
+            shorthand: ["Th1", "Th2", "Th3", "Th4", "Th5", "Th6", "Th7", "Th8", "Th9", "Th10", "Th11", "Th12"],
+            longhand: ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"]
+          },
+          firstDayOfWeek: 1
         },
-        months: {
-          shorthand: ["Th1", "Th2", "Th3", "Th4", "Th5", "Th6", "Th7", "Th8", "Th9", "Th10", "Th11", "Th12"],
-          longhand: ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"]
-        },
-        firstDayOfWeek: 1
-      },
-      onChange: (selectedDates, dateStr) => calculateDayOfWeek(dateStr)
-    });
-    calculateDayOfWeek(todayVnStr);
+        onChange: function(selectedDates, dateStr) {
+          calculateDayOfWeek(dateStr);
+        }
+      });
+      calculateDayOfWeek(todayVnStr);
+    } else {
+      regDateInput.value = todayVnStr;
+      calculateDayOfWeek(todayVnStr);
+    }
   }
 
-  const regStart = document.getElementById("regStartTime");
-  const regEnd = document.getElementById("regEndTime");
+  // Khởi tạo bộ chọn giờ Hệ 24h (Flatpickr - Tuyệt đối không có AM/PM)
+  const regStartTimeInput = document.getElementById("regStartTime");
+  const regEndTimeInput = document.getElementById("regEndTime");
+
   if (window.flatpickr) {
-    if (regStart) {
-      window.startTimePicker = flatpickr(regStart, {
+    if (regStartTimeInput) {
+      window.startTimePicker = flatpickr(regStartTimeInput, {
         enableTime: true,
         noCalendar: true,
         dateFormat: "H:i",
@@ -2090,32 +314,1123 @@ function initDateTimePickers() {
         defaultDate: "07:30",
         minuteIncrement: 15,
         disableMobile: true,
-        onChange: (dates, dateStr) => handleAutoEndTime(dateStr)
+        onChange: function(selectedDates, dateStr) {
+          handleAutoEndTime(dateStr);
+        }
       });
     }
-    if (regEnd) {
-      window.endTimePicker = flatpickr(regEnd, {
+
+    if (regEndTimeInput) {
+      window.endTimePicker = flatpickr(regEndTimeInput, {
         enableTime: true,
         noCalendar: true,
         dateFormat: "H:i",
         time_24hr: true,
         defaultDate: "09:30",
         minuteIncrement: 15,
-        disableMobile: true
+        disableMobile: true,
+        onChange: function(selectedDates, dateStr) {
+          validateEndTimeSelection(dateStr);
+        }
       });
     }
+  } else {
+    if (regStartTimeInput) regStartTimeInput.value = "07:30";
+    if (regEndTimeInput) regEndTimeInput.value = "09:30";
+  }
+}
+
+function handleAutoEndTime(startTimeStr) {
+  if (!startTimeStr || !startTimeStr.includes(":")) return;
+  const endInput = document.getElementById("regEndTime");
+  const endTimeStr = endInput ? endInput.value : "";
+
+  // Nếu giờ kết thúc chưa có hoặc nhỏ hơn/bằng giờ bắt đầu, tự động cộng 2 tiếng làm việc hợp lý
+  if (!endTimeStr || endTimeStr <= startTimeStr) {
+    const [h, m] = startTimeStr.split(":").map(Number);
+    let endH = h + 2;
+    let endM = m;
+    if (endH >= 24) endH = 23;
+    const newEndStr = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
+    if (window.endTimePicker) {
+      window.endTimePicker.setDate(newEndStr);
+    } else if (endInput) {
+      endInput.value = newEndStr;
+    }
+  }
+}
+
+function validateEndTimeSelection(endTimeStr) {
+  if (!endTimeStr) return;
+  const startInput = document.getElementById("regStartTime");
+  const startTimeStr = startInput ? startInput.value : "";
+  if (startTimeStr && endTimeStr <= startTimeStr) {
+    showToast(`⚠️ Giờ kết thúc (${endTimeStr}) phải sau giờ bắt đầu (${startTimeStr})!`, "warning");
+  }
+}
+
+// ==================== GẮN CÁC SỰ KIỆN ====================
+function bindEvents() {
+  // Form Đăng nhập
+  const loginForm = document.getElementById("loginForm");
+  if (loginForm) {
+    loginForm.addEventListener("submit", handleLogin);
+  }
+
+  // Đăng xuất
+  const btnLogout = document.getElementById("btnLogout");
+  if (btnLogout) {
+    btnLogout.addEventListener("click", handleLogout);
+  }
+
+  // Form Đăng ký lịch - Đồng hồ chọn giờ Bắt đầu & Kết thúc
+  const registerForm = document.getElementById("registerForm");
+  const regStartTime = document.getElementById("regStartTime");
+  const regEndTime = document.getElementById("regEndTime");
+
+  // Tự động gợi ý giờ kết thúc khi chọn giờ bắt đầu (mặc định + 2 tiếng làm việc)
+  if (regStartTime && regEndTime) {
+    regStartTime.addEventListener("change", (e) => {
+      const startVal = e.target.value;
+      if (startVal && startVal.includes(":")) {
+        const [h, m] = startVal.split(":").map(Number);
+        if (!regEndTime.value || regEndTime.value <= startVal) {
+          let endH = h + 2;
+          let endM = m;
+          if (endH >= 24) endH = 23;
+          regEndTime.value = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
+        }
+      }
+    });
+  }
+
+  if (registerForm) {
+    registerForm.addEventListener("submit", handleRegister);
+    registerForm.addEventListener("reset", () => {
+      setTimeout(() => {
+        if (window.startTimePicker) {
+          window.startTimePicker.setDate("07:30");
+        } else if (regStartTime) {
+          regStartTime.value = "07:30";
+        }
+        if (window.endTimePicker) {
+          window.endTimePicker.setDate("09:30");
+        } else if (regEndTime) {
+          regEndTime.value = "09:30";
+        }
+        document.getElementById("contentCounter").textContent = "0 / 500 ký tự";
+        document.getElementById("attendeesCounter").textContent = "0 / 500 ký tự";
+        document.getElementById("locationCounter").textContent = "0 / 500 ký tự";
+        const regDateInput = document.getElementById("regDate");
+        const today = new Date();
+        const dd = String(today.getDate()).padStart(2, '0');
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const yyyy = today.getFullYear();
+        const todayVnStr = `${dd}/${mm}/${yyyy}`;
+        if (window.datePickerInstance) {
+          window.datePickerInstance.setDate(todayVnStr);
+        } else if (regDateInput) {
+          regDateInput.value = todayVnStr;
+        }
+        calculateDayOfWeek(todayVnStr);
+      }, 30);
+    });
+  }
+
+  // Tính Thứ tự động khi thay đổi ngày
+  const regDateInput = document.getElementById("regDate");
+  if (regDateInput) {
+    regDateInput.addEventListener("change", (e) => {
+      calculateDayOfWeek(e.target.value);
+    });
+  }
+
+  // Đếm ký tự cho các ô giới hạn 500 ký tự
+  setupCharCounter("regContent", "contentCounter", 500);
+  setupCharCounter("regAttendees", "attendeesCounter", 500);
+  setupCharCounter("regLocation", "locationCounter", 500);
+
+  // Xuất file Word - Mở Modal tùy chọn (Xuất toàn bộ hoặc theo khoảng ngày)
+  const btnExportWord = document.getElementById("btnExportWord");
+  if (btnExportWord) {
+    btnExportWord.addEventListener("click", openExportWordModal);
+  }
+
+  // Modal Tùy chọn Xuất Word
+  const exportModal = document.getElementById("exportWordModal");
+  const btnCloseExportModal = document.getElementById("btnCloseExportModal");
+  const btnCancelExportModal = document.getElementById("btnCancelExportModal");
+  const btnConfirmExportWord = document.getElementById("btnConfirmExportWord");
+
+  if (btnCloseExportModal) btnCloseExportModal.addEventListener("click", closeExportWordModal);
+  if (btnCancelExportModal) btnCancelExportModal.addEventListener("click", closeExportWordModal);
+  if (exportModal) {
+    exportModal.addEventListener("click", (e) => {
+      if (e.target === exportModal) closeExportWordModal();
+    });
+  }
+
+  const radioAll = document.getElementById("scopeAll");
+  const radioRange = document.getElementById("scopeRange");
+  if (radioAll) radioAll.addEventListener("change", () => handleExportScopeChange("all"));
+  if (radioRange) radioRange.addEventListener("change", () => handleExportScopeChange("range"));
+
+  const btnQuickThisWeek = document.getElementById("btnQuickThisWeek");
+  const btnQuickNextWeek = document.getElementById("btnQuickNextWeek");
+  const btnQuickThisMonth = document.getElementById("btnQuickThisMonth");
+
+  if (btnQuickThisWeek) {
+    btnQuickThisWeek.addEventListener("click", () => {
+      const range = getThisWeekRange();
+      if (exportFromPicker) exportFromPicker.setDate(range.from);
+      if (exportToPicker) exportToPicker.setDate(range.to);
+      updateExportPreviewCount();
+    });
+  }
+
+  if (btnQuickNextWeek) {
+    btnQuickNextWeek.addEventListener("click", () => {
+      const range = getNextWeekRange();
+      if (exportFromPicker) exportFromPicker.setDate(range.from);
+      if (exportToPicker) exportToPicker.setDate(range.to);
+      updateExportPreviewCount();
+    });
+  }
+
+  if (btnQuickThisMonth) {
+    btnQuickThisMonth.addEventListener("click", () => {
+      const range = getThisMonthRange();
+      if (exportFromPicker) exportFromPicker.setDate(range.from);
+      if (exportToPicker) exportToPicker.setDate(range.to);
+      updateExportPreviewCount();
+    });
+  }
+
+  if (btnConfirmExportWord) {
+    btnConfirmExportWord.addEventListener("click", handleConfirmExportWord);
+  }
+
+  // Làm mới bảng danh sách
+  const btnRefreshList = document.getElementById("btnRefreshList");
+  if (btnRefreshList) {
+    btnRefreshList.addEventListener("click", () => {
+      loadScheduleList(true);
+    });
+  }
+
+  // Tìm kiếm bảng
+  const searchInput = document.getElementById("searchInput");
+  if (searchInput) {
+    searchInput.addEventListener("input", (e) => {
+      filterScheduleTable(e.target.value);
+    });
+  }
+
+  // Modal Cấu hình Server (Chỉ Quản trị viên Đỗ Trọng Minh Quân được phép mở)
+  const btnAdminServerConfig = document.getElementById("btnAdminServerConfig");
+  const btnBannerConfig = document.getElementById("btnBannerConfig");
+  const configModal = document.getElementById("configModal");
+  const btnCloseModal = document.getElementById("btnCloseModal");
+  const btnSaveConfig = document.getElementById("btnSaveConfig");
+  const btnTestConnection = document.getElementById("btnTestConnection");
+
+  const openConfig = () => {
+    if (!currentUser || currentUser.email.toLowerCase().trim() !== ADMIN_EMAIL) {
+      showToast("Chức năng Cấu hình Server chỉ dành riêng cho Quản trị viên (Đỗ Trọng Minh Quân)!", "error");
+      return;
+    }
+    if (configModal) configModal.style.display = "flex";
+  };
+
+  if (btnAdminServerConfig) btnAdminServerConfig.addEventListener("click", openConfig);
+  if (btnBannerConfig) btnBannerConfig.addEventListener("click", openConfig);
+
+  if (btnCloseModal && configModal) {
+    btnCloseModal.addEventListener("click", () => {
+      configModal.style.display = "none";
+    });
+  }
+
+  if (btnSaveConfig) {
+    btnSaveConfig.addEventListener("click", saveGoogleScriptConfig);
+  }
+
+  if (btnTestConnection) {
+    btnTestConnection.addEventListener("click", testGoogleScriptConnection);
+  }
+
+  // Modal Xem Chi Tiết Lịch Công Tác (Xử lý overtext/overflow 500 ký tự)
+  const detailModal = document.getElementById("scheduleDetailModal");
+  const btnCloseDetailModal = document.getElementById("btnCloseDetailModal");
+  const btnCloseDetailBtn = document.getElementById("btnCloseDetailBtn");
+
+  const closeDetail = () => {
+    if (detailModal) detailModal.style.display = "none";
+  };
+
+  if (btnCloseDetailModal) btnCloseDetailModal.addEventListener("click", closeDetail);
+  if (btnCloseDetailBtn) btnCloseDetailBtn.addEventListener("click", closeDetail);
+  if (detailModal) {
+    detailModal.addEventListener("click", (e) => {
+      if (e.target === detailModal) closeDetail();
+    });
+  }
+
+  // Modal Quên Mật Khẩu (Liên hệ Quản trị viên IT Chi nhánh 23)
+  const btnForgotPassword = document.getElementById("btnForgotPassword");
+  const forgotPasswordModal = document.getElementById("forgotPasswordModal");
+  const btnCloseForgotModal = document.getElementById("btnCloseForgotModal");
+  const btnCloseForgotBtn = document.getElementById("btnCloseForgotBtn");
+
+  const closeForgotModal = () => {
+    if (forgotPasswordModal) forgotPasswordModal.style.display = "none";
+  };
+
+  if (btnForgotPassword) {
+    btnForgotPassword.addEventListener("click", () => {
+      if (forgotPasswordModal) {
+        forgotPasswordModal.style.display = "flex";
+      } else {
+        alert("Vui lòng liên hệ Quản trị viên Đỗ Trọng Minh Quân qua Zalo/SĐT: 0973.807.027 để được cấp lại mật khẩu!");
+      }
+    });
+  }
+
+  if (btnCloseForgotModal) btnCloseForgotModal.addEventListener("click", closeForgotModal);
+  if (btnCloseForgotBtn) btnCloseForgotBtn.addEventListener("click", closeForgotModal);
+  if (forgotPasswordModal) {
+    forgotPasswordModal.addEventListener("click", (e) => {
+      if (e.target === forgotPasswordModal) closeForgotModal();
+    });
   }
 }
 
 function updateSyncBanner() {
   const banner = document.getElementById("syncWarningBanner");
   if (!banner) return;
-  if (!googleScriptUrl || googleScriptUrl.trim() === "" || googleScriptUrl.includes("PLACEHOLDER")) {
+  // Chỉ hiển thị banner nếu chưa có link Google Script và đã vào màn hình chính
+  if (!googleScriptUrl) {
     banner.style.display = "flex";
   } else {
     banner.style.display = "none";
   }
 }
+
+// ==================== XỬ LÝ ĐĂNG NHẬP / ĐĂNG XUẤT ====================
+async function handleLogin(e) {
+  e.preventDefault();
+  const emailInput = document.getElementById("loginEmail").value.trim().toLowerCase();
+  const passwordInput = document.getElementById("loginPassword").value.trim();
+  const rememberMe = document.getElementById("rememberMe").checked;
+
+  if (!emailInput || !passwordInput) {
+    showToast("Vui lòng nhập đầy đủ Email và Mật khẩu!", "warning");
+    return;
+  }
+
+  // Kiểm tra đuôi Gmail hợp lệ
+  if (!emailInput.includes("@")) {
+    showToast("Email không hợp lệ. Vui lòng nhập địa chỉ Gmail!", "warning");
+    return;
+  }
+
+  const btnLogin = document.getElementById("btnLogin");
+  btnLogin.disabled = true;
+  btnLogin.innerHTML = "<span>⏳ Đang kiểm tra...</span>";
+
+  try {
+    // 1. Nếu có cấu hình Google Apps Script URL -> Gọi API online
+    if (googleScriptUrl) {
+      try {
+        const response = await fetch(googleScriptUrl, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "login",
+            email: emailInput,
+            password: passwordInput
+          })
+        });
+        const result = await response.json();
+        if (result.success) {
+          const userObj = result.user || {};
+          if (KNOWN_USERS_MAP[emailInput]) {
+            userObj.name = KNOWN_USERS_MAP[emailInput];
+          }
+          if (emailInput === ADMIN_EMAIL) {
+            userObj.role = "admin";
+          }
+          onLoginSuccess(userObj, rememberMe);
+          return;
+        } else {
+          showToast(result.message || "Email hoặc Mật khẩu không đúng!", "error");
+          btnLogin.disabled = false;
+          btnLogin.innerHTML = "<span>Đăng nhập</span>";
+          return;
+        }
+      } catch (err) {
+        console.warn("Không gọi được Google Script, chuyển sang chế độ kiểm tra cục bộ:", err);
+      }
+    }
+
+    // 2. Chế độ kiểm tra cục bộ (Fallback khi chưa nối Google Sheet hoặc test nhanh)
+    if (passwordInput === "123456" || passwordInput.length >= 6) {
+      let role = "user";
+      let name = "Nhân viên";
+      if (emailInput === ADMIN_EMAIL) {
+        role = "admin";
+        name = "Đỗ Trọng Minh Quân";
+      } else if (emailInput.includes("tuyen") || emailInput.includes("admin")) {
+        role = "admin";
+        name = "Nguyễn Thị Bích Tuyền";
+      } else if (emailInput.includes("thang")) {
+        role = "user";
+        name = "Nguyễn Chiến Thắng";
+      } else if (KNOWN_USERS_MAP[emailInput]) {
+        name = KNOWN_USERS_MAP[emailInput];
+      } else {
+        name = emailInput.split("@")[0].toUpperCase();
+      }
+
+      const user = {
+        email: emailInput,
+        name: name,
+        role: role
+      };
+
+      onLoginSuccess(user, rememberMe);
+    } else {
+      showToast("Mật khẩu không đúng (Mật khẩu mặc định là: 123456)!", "error");
+      btnLogin.disabled = false;
+      btnLogin.innerHTML = "<span>Đăng nhập</span>";
+    }
+  } catch (error) {
+    showToast("Đã có lỗi xảy ra khi đăng nhập: " + error.message, "error");
+    btnLogin.disabled = false;
+    btnLogin.innerHTML = "<span>Đăng nhập</span>";
+  }
+}
+
+function onLoginSuccess(user, remember) {
+  currentUser = user;
+  if (remember) {
+    localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+  } else {
+    sessionStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+  }
+
+  showToast(`Xin chào ${getSenderDisplayName(user)}! Đăng nhập thành công.`, "success");
+  showWorkspaceUI();
+  loadScheduleList();
+
+  const btnLogin = document.getElementById("btnLogin");
+  if (btnLogin) {
+    btnLogin.disabled = false;
+    btnLogin.innerHTML = "<span>Đăng nhập</span>";
+  }
+}
+
+function checkAutoLogin() {
+  const savedUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER) || sessionStorage.getItem(STORAGE_KEYS.CURRENT_USER) || localStorage.getItem("binhduong_user") || sessionStorage.getItem("binhduong_user");
+  if (savedUser) {
+    try {
+      const u = JSON.parse(savedUser);
+      currentUser = {
+        email: u.email || u.phone || u.so_dien_thoai || "user",
+        name: u.name || u.fullname || u.ho_ten || "Cán bộ",
+        phone: u.phone || u.so_dien_thoai || "",
+        department: u.department || u.don_vi || "Chi nhánh số 23",
+        role: u.role || "user"
+      };
+      showWorkspaceUI();
+      loadScheduleList();
+      return;
+    } catch (e) {
+      localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+      localStorage.removeItem("binhduong_user");
+    }
+  }
+  // Nếu chưa đăng nhập, tự động chuyển về Cổng Dịch Vụ
+  window.location.href = "index.html";
+}
+
+function handleLogout() {
+  currentUser = null;
+  localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+  sessionStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+  localStorage.removeItem("binhduong_user");
+  sessionStorage.removeItem("binhduong_user");
+
+  window.location.href = "index.html";
+}
+
+function showWorkspaceUI() {
+  document.getElementById("loginSection").style.display = "none";
+  document.getElementById("appWorkspace").style.display = "grid";
+  document.getElementById("headerUserArea").style.display = "flex";
+
+  const displayName = getSenderDisplayName(currentUser);
+  document.getElementById("displayUserName").textContent = displayName;
+  document.getElementById("displayUserEmail").textContent = currentUser.email;
+
+  // Hiển thị nút Cấu hình Server DUY NHẤT cho Quản trị viên (quan.vpdk@gmail.com)
+  const isAdmin = currentUser && currentUser.email.toLowerCase().trim() === ADMIN_EMAIL;
+  const btnAdminConfig = document.getElementById("btnAdminServerConfig");
+  if (btnAdminConfig) {
+    btnAdminConfig.style.display = isAdmin ? "inline-flex" : "none";
+  }
+
+  updateSyncBanner();
+}
+
+// ==================== TÍNH TOÁN "THỨ" TỰ ĐỘNG ====================
+function calculateDayOfWeek(dateString) {
+  if (!dateString) {
+    document.getElementById("regDayOfWeek").value = "";
+    document.getElementById("formattedDateText").textContent = "Định dạng: DD/MM/YYYY";
+    return;
+  }
+
+  let year, month, day;
+
+  // Hỗ trợ định dạng Ngày/Tháng/Năm (DD/MM/YYYY)
+  if (dateString.includes("/")) {
+    const parts = dateString.split("/");
+    if (parts.length !== 3) return;
+    day = parseInt(parts[0], 10);
+    month = parseInt(parts[1], 10) - 1; // 0-indexed
+    year = parseInt(parts[2], 10);
+  } else if (dateString.includes("-")) {
+    // Hỗ trợ định dạng Năm-Tháng-Ngày (YYYY-MM-DD)
+    const parts = dateString.split("-");
+    if (parts.length !== 3) return;
+    year = parseInt(parts[0], 10);
+    month = parseInt(parts[1], 10) - 1;
+    day = parseInt(parts[2], 10);
+  } else {
+    return;
+  }
+
+  const dateObj = new Date(year, month, day);
+  if (isNaN(dateObj.getTime())) return;
+  const dayOfWeekIndex = dateObj.getDay();
+
+  const daysOfWeek = [
+    "Chủ Nhật",
+    "Thứ Hai",
+    "Thứ Ba",
+    "Thứ Tư",
+    "Thứ Năm",
+    "Thứ Sáu",
+    "Thứ Bảy"
+  ];
+
+  const calculatedDay = daysOfWeek[dayOfWeekIndex];
+  document.getElementById("regDayOfWeek").value = calculatedDay;
+
+  // Hiển thị ngày chuẩn DD/MM/YYYY
+  const formattedDay = String(day).padStart(2, '0');
+  const formattedMonth = String(month + 1).padStart(2, '0');
+  document.getElementById("formattedDateText").textContent = `Ngày: ${formattedDay}/${formattedMonth}/${year} (${calculatedDay})`;
+}
+
+// Đếm số lượng ký tự max 500
+function setupCharCounter(inputId, counterId, maxLength) {
+  const inputEl = document.getElementById(inputId);
+  const counterEl = document.getElementById(counterId);
+  if (!inputEl || !counterEl) return;
+
+  inputEl.addEventListener("input", () => {
+    const len = inputEl.value.length;
+    counterEl.textContent = `${len} / ${maxLength} ký tự`;
+
+    if (len > maxLength * 0.9) {
+      counterEl.className = "char-counter limit";
+    } else if (len > maxLength * 0.75) {
+      counterEl.className = "char-counter warning";
+    } else {
+      counterEl.className = "char-counter";
+    }
+  });
+}
+
+// ==================== XỬ LÝ ĐĂNG KÝ LỊCH TUẦN ====================
+async function handleRegister(e) {
+  e.preventDefault();
+
+  const submitBtn = document.getElementById("btnSubmitRegister");
+  const regDate = (document.getElementById("regDate").value || "").trim();
+  const regDayOfWeek = document.getElementById("regDayOfWeek").value.trim();
+  
+  // Lấy thời gian bắt đầu và kết thúc từ 2 ô đồng hồ
+  const startTimeInput = document.getElementById("regStartTime");
+  const endTimeInput = document.getElementById("regEndTime");
+  const startTime = startTimeInput ? startTimeInput.value.trim() : "";
+  const endTime = endTimeInput ? endTimeInput.value.trim() : "";
+
+  const regContent = document.getElementById("regContent").value.trim();
+  const regAttendees = document.getElementById("regAttendees").value.trim();
+  const regLocation = document.getElementById("regLocation").value.trim();
+
+  // Bắt buộc nhập đầy đủ tất cả các ô
+  if (!regDate || !regDayOfWeek || !startTime || !endTime || !regContent || !regAttendees || !regLocation) {
+    showToast("Vui lòng chọn ngày, thời gian bắt đầu, kết thúc và điền đầy đủ các thông tin!", "warning");
+    return;
+  }
+
+  // Kiểm tra thời gian kết thúc phải sau thời gian bắt đầu (lớn hơn)
+  if (endTime <= startTime) {
+    showToast(`⚠️ Giờ kết thúc (${endTime}) phải sau giờ bắt đầu (${startTime})! Vui lòng chọn lại.`, "warning");
+    if (window.endTimePicker) window.endTimePicker.open();
+    else if (endTimeInput) endTimeInput.focus();
+    return;
+  }
+
+  const regTime = `${startTime} - ${endTime}`;
+
+  // Chuẩn hóa ngày thành cả 2 định dạng: formattedDate (DD/MM/YYYY) và rawDate (YYYY-MM-DD)
+  let formattedDate = "";
+  let rawDate = "";
+
+  if (regDate.includes("/")) {
+    const parts = regDate.split("/");
+    const d = parts[0].padStart(2, '0');
+    const m = parts[1].padStart(2, '0');
+    const y = parts[2];
+    formattedDate = `${d}/${m}/${y}`;
+    rawDate = `${y}-${m}-${d}`;
+  } else if (regDate.includes("-")) {
+    const parts = regDate.split("-");
+    const y = parts[0];
+    const m = parts[1].padStart(2, '0');
+    const d = parts[2].padStart(2, '0');
+    formattedDate = `${d}/${m}/${y}`;
+    rawDate = `${y}-${m}-${d}`;
+  } else {
+    showToast("Định dạng ngày chưa hợp lệ! Vui lòng chọn lại.", "warning");
+    return;
+  }
+
+  // Chặn chọn ngày trong quá khứ
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const todayStr = `${yyyy}-${mm}-${dd}`;
+  if (rawDate < todayStr) {
+    showToast("Không thể đăng ký lịch trong quá khứ! Vui lòng chọn ngày từ hôm nay trở đi.", "warning");
+    return;
+  }
+
+  // Kiểm tra giới hạn 500 ký tự
+  if (regContent.length > 500 || regAttendees.length > 500 || regLocation.length > 500) {
+    showToast("Nội dung, thành phần hoặc địa điểm không được vượt quá 500 ký tự!", "danger");
+    return;
+  }
+
+  // Tạo đối tượng lịch đăng ký hoàn chỉnh
+  const newScheduleItem = {
+    id: "LT-" + Date.now(),
+    date: formattedDate,
+    rawDate: rawDate,
+    dayOfWeek: regDayOfWeek,
+    time: regTime,
+    content: regContent,
+    attendees: regAttendees,
+    location: regLocation,
+    email: currentUser ? currentUser.email : "user@gmail.com",
+    name: getSenderDisplayName(currentUser),
+    created_at: new Date().toISOString()
+  };
+
+  // Trạng thái nút bấm đang lưu
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `
+      <svg class="btn-svg spin" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"/></svg>
+      <span class="btn-text">Đang nạp dữ liệu lên server...</span>
+    `;
+  }
+
+  try {
+    // 1. Gửi lên máy chủ API (POST trước, nếu bị lỗi mạng/CORS thì tự động kích hoạt GET fallback)
+    let syncedToGoogle = false;
+    let syncErrorMsg = null;
+
+    if (googleScriptUrl) {
+      try {
+        const response = await fetch(googleScriptUrl, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "register",
+            email: newScheduleItem.email,
+            date: newScheduleItem.date,
+            dayOfWeek: newScheduleItem.dayOfWeek,
+            time: newScheduleItem.time,
+            content: newScheduleItem.content,
+            attendees: newScheduleItem.attendees,
+            location: newScheduleItem.location
+          })
+        });
+        const result = await response.json();
+        if (result && result.success) {
+          syncedToGoogle = true;
+        } else if (result && result.message) {
+          syncErrorMsg = result.message;
+        }
+      } catch (errPost) {
+        console.warn("POST server không phản hồi, đang kích hoạt GET fallback:", errPost);
+        // Fallback sang GET query parameters (Tuyệt đối không bị lỗi CORS trên bất kỳ trình duyệt nào)
+        try {
+          const qParams = new URLSearchParams({
+            action: "register",
+            email: newScheduleItem.email,
+            date: newScheduleItem.date,
+            dayOfWeek: newScheduleItem.dayOfWeek,
+            time: newScheduleItem.time,
+            content: newScheduleItem.content,
+            attendees: newScheduleItem.attendees,
+            location: newScheduleItem.location
+          });
+          const getUrl = googleScriptUrl.includes("?") 
+            ? `${googleScriptUrl}&${qParams.toString()}` 
+            : `${googleScriptUrl}?${qParams.toString()}`;
+          const resGet = await fetch(getUrl);
+          const resGetJson = await resGet.json();
+          if (resGetJson && resGetJson.success) {
+            syncedToGoogle = true;
+          } else if (resGetJson && resGetJson.message) {
+            syncErrorMsg = resGetJson.message;
+          }
+        } catch (errGet) {
+          console.error("GET fallback server cũng thất bại:", errGet);
+          syncErrorMsg = errGet.message;
+        }
+      }
+    }
+
+    // 2. Lưu vào danh sách cục bộ để hiển thị ngay lập tức trên web
+    scheduleData.unshift(newScheduleItem);
+    localStorage.setItem(STORAGE_KEYS.LOCAL_SCHEDULE, JSON.stringify(scheduleData));
+
+    // Cập nhật lại giao diện bảng (tự động sort mới nhất lên đầu)
+    renderScheduleTable(scheduleData);
+
+    // Reset các ô nhập liệu (giữ lại ngày để người dùng tiện đăng ký tiếp buổi khác)
+    if (window.startTimePicker) {
+      window.startTimePicker.setDate("07:30");
+    } else {
+      document.getElementById("regStartTime").value = "07:30";
+    }
+    if (window.endTimePicker) {
+      window.endTimePicker.setDate("09:30");
+    } else {
+      document.getElementById("regEndTime").value = "09:30";
+    }
+    document.getElementById("regContent").value = "";
+    document.getElementById("regAttendees").value = "";
+    document.getElementById("regLocation").value = "";
+    document.getElementById("contentCounter").textContent = "0 / 500 ký tự";
+    document.getElementById("attendeesCounter").textContent = "0 / 500 ký tự";
+    document.getElementById("locationCounter").textContent = "0 / 500 ký tự";
+
+    if (syncedToGoogle) {
+      showToast("🎉 Đã nạp dữ liệu lên server thành công!", "success");
+      // Tải lại nhẹ nhàng sau 1s để đồng bộ ID chuẩn
+      setTimeout(() => loadScheduleList(false), 1000);
+    } else if (googleScriptUrl) {
+      showToast(`⚠️ Dữ liệu đã lưu tạm trên máy nhưng chưa gửi lên server: ${syncErrorMsg || "Lỗi mạng"}.`, "warning");
+    } else {
+      showToast("Đã lưu vào danh sách cục bộ.", "info");
+    }
+  } catch (error) {
+    console.error("Lỗi đăng ký:", error);
+    showToast("Đã có lỗi xảy ra: " + error.message, "error");
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `
+        <svg class="btn-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        <span class="btn-text">Đăng Ký Lịch Này</span>
+      `;
+    }
+  }
+}
+
+// ==================== TẢI VÀ HIỂN THỊ DANH SÁCH LỊCH ====================
+let currentPage = 1;
+const PAGE_SIZE = 7; // Hiển thị 7 lịch trên 1 trang để vừa vặn màn hình không phải cuộn nhiều
+let currentFilteredList = [];
+
+// Trích xuất mốc thời gian và nhóm trạng thái của một lịch
+function getMeetingMetadata(item) {
+  const cleanDate = formatDisplayDate(item.date);
+  const cleanTime = formatDisplayTime(item.time);
+
+  let startTimestamp = 0;
+  let endTimestamp = 0;
+
+  if (cleanDate && cleanDate.includes("/")) {
+    const parts = cleanDate.split("/").map(Number);
+    const day = parts[0];
+    const month = parts[1] - 1;
+    const year = parts[2];
+
+    let startH = 8, startM = 0;
+    let endH = 10, endM = 0;
+    let hasCustomEnd = false;
+
+    if (cleanTime && cleanTime.includes(" - ")) {
+      const p = cleanTime.split(" - ");
+      const pStart = (p[0] || "").trim().split(":");
+      const pEnd = (p[1] || "").trim().split(":");
+      if (pStart.length >= 2) {
+        startH = parseInt(pStart[0], 10) || 0;
+        startM = parseInt(pStart[1], 10) || 0;
+      }
+      if (pEnd.length >= 2) {
+        endH = parseInt(pEnd[0], 10) || 0;
+        endM = parseInt(pEnd[1], 10) || 0;
+        hasCustomEnd = true;
+      }
+    } else if (cleanTime && cleanTime.includes(":")) {
+      const timeParts = cleanTime.split(":");
+      startH = parseInt(timeParts[0], 10) || 0;
+      startM = parseInt(timeParts[1], 10) || 0;
+    }
+
+    startTimestamp = new Date(year, month, day, startH, startM, 0).getTime();
+    endTimestamp = hasCustomEnd
+      ? new Date(year, month, day, endH, endM, 0).getTime()
+      : (startTimestamp + 2 * 3600 * 1000);
+  }
+
+  const now = Date.now();
+  let status = "upcoming";
+  let tier = 2; // 1: Đang diễn ra, 2: Sắp diễn ra, 3: Đã diễn ra
+
+  if (now > endTimestamp) {
+    status = "past";
+    tier = 3;
+  } else if (now >= startTimestamp && now <= endTimestamp) {
+    status = "ongoing";
+    tier = 1;
+  } else {
+    status = "upcoming";
+    tier = 2;
+  }
+
+  return {
+    status,
+    tier,
+    startTimestamp,
+    endTimestamp
+  };
+}
+
+/**
+ * Sắp xếp bảng lịch tuần thông minh theo đúng yêu cầu:
+ * 1. "Đang diễn ra" (ưu tiên cao nhất, hiển thị ở đầu bảng)
+ * 2. "Sắp diễn ra" (sắp xếp TỪ GẦN TỚI XA: cuộc họp hôm nay/ngày mai xếp trước tuần tới)
+ * 3. "Đã diễn ra" (đưa xuống dưới cùng, cuộc họp mới kết thúc gần nhất xếp trước)
+ */
+function compareScheduleSmart(a, b) {
+  const metaA = getMeetingMetadata(a);
+  const metaB = getMeetingMetadata(b);
+
+  // 1. Phân cấp nhóm ưu tiên: Đang diễn ra (1) > Sắp diễn ra (2) > Đã diễn ra (3)
+  if (metaA.tier !== metaB.tier) {
+    return metaA.tier - metaB.tier;
+  }
+
+  // 2. Trong nhóm "Đang diễn ra": cuộc họp nào bắt đầu trước lên trước
+  if (metaA.tier === 1) {
+    return metaA.startTimestamp - metaB.startTimestamp;
+  }
+
+  // 3. Trong nhóm "Sắp diễn ra": TỪ GẦN TỚI XA (gần nhất lên trước)
+  if (metaA.tier === 2) {
+    return metaA.startTimestamp - metaB.startTimestamp;
+  }
+
+  // 4. Trong nhóm "Đã diễn ra": cuộc họp mới diễn ra xong gần nhất lên trước các cuộc họp cũ hơn
+  if (metaA.tier === 3) {
+    return metaB.startTimestamp - metaA.startTimestamp;
+  }
+
+  return 0;
+}
+
+// Hàm so sánh sắp xếp: THEO TRÌNH TỰ THỜI GIAN TUẦN (Thứ Hai -> Chủ Nhật, sáng -> chiều, dùng cho xuất Word)
+function compareScheduleChronological(a, b) {
+  const da = a.rawDate || convertDDMMYYYYtoYYYYMMDD(a.date);
+  const db = b.rawDate || convertDDMMYYYYtoYYYYMMDD(b.date);
+  if (da !== db) {
+    return da.localeCompare(db); // Ngày từ đầu tuần đến cuối tuần
+  }
+  const ta = (a.time || "").trim();
+  const tb = (b.time || "").trim();
+  return ta.localeCompare(tb); // Giờ từ sáng đến chiều
+}
+
+async function loadScheduleList(forceRefresh = false) {
+  const tbody = document.getElementById("scheduleTableBody");
+  if (!tbody) return;
+
+  if (forceRefresh) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center empty-state">⏳ Đang tải dữ liệu từ server về...</td></tr>`;
+  }
+
+  // Nếu có máy chủ API, nạp dữ liệu mới nhất
+  if (googleScriptUrl) {
+    try {
+      const response = await fetch(`${googleScriptUrl}?action=getSchedule`);
+      const result = await response.json();
+      if (result.success && Array.isArray(result.data)) {
+        // Tự động đồng bộ danh bạ nếu máy chủ trả về ánh xạ users từ sheet TaiKhoan
+        if (result.users && typeof result.users === "object") {
+          Object.assign(KNOWN_USERS_MAP, result.users);
+          try {
+            localStorage.setItem("vpdk_known_users", JSON.stringify(KNOWN_USERS_MAP));
+          } catch (e) {}
+        }
+
+        scheduleData = result.data.map(item => {
+          const cleanDate = formatDisplayDate(item.date);
+          const cleanTime = formatDisplayTime(item.time);
+          let senderName = (item.name && item.name.trim() && !item.name.includes("@") && !item.name.toLowerCase().includes("vpdk"))
+            ? item.name.trim()
+            : getSenderDisplayName(item);
+
+          if (item.email && senderName && !senderName.includes("@") && !senderName.toLowerCase().includes("vpdk")) {
+            KNOWN_USERS_MAP[item.email.toLowerCase().trim()] = senderName;
+          }
+
+          return {
+            ...item,
+            name: senderName,
+            date: cleanDate,
+            time: cleanTime,
+            rawDate: convertDDMMYYYYtoYYYYMMDD(cleanDate)
+          };
+        });
+        localStorage.setItem(STORAGE_KEYS.LOCAL_SCHEDULE, JSON.stringify(scheduleData));
+      }
+    } catch (err) {
+      console.warn("Không tải được từ server, sử dụng cache cục bộ:", err);
+    }
+  }
+
+  renderScheduleTable(scheduleData);
+}
+
+function renderScheduleTable(data) {
+  const tbody = document.getElementById("scheduleTableBody");
+  const countBadge = document.getElementById("totalScheduleCount");
+  const paginationBar = document.getElementById("paginationBar");
+  if (!tbody) return;
+
+  currentFilteredList = Array.isArray(data) ? data : [];
+
+  if (!currentFilteredList || currentFilteredList.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="text-center empty-state">
+          Chưa có mục đăng ký nào trong tuần. Hãy nhập thông tin ở bảng bên trái và bấm <strong>Đăng Ký Lịch Này</strong>!
+        </td>
+      </tr>`;
+    if (countBadge) countBadge.textContent = "0 mục";
+    if (paginationBar) paginationBar.style.display = "none";
+    return;
+  }
+
+  // SẮP XẾP THÔNG MINH: ĐANG DIỄN RA > SẮP DIỄN RA (TỪ GẦN TỚI XA) > ĐÃ DIỄN RA
+  const sorted = [...currentFilteredList].sort(compareScheduleSmart);
+
+  const totalItems = sorted.length;
+  if (countBadge) countBadge.textContent = `${totalItems} mục`;
+
+  // XỬ LÝ PHÂN TRANG (PAGINATION)
+  const totalPages = Math.ceil(totalItems / PAGE_SIZE) || 1;
+  if (currentPage > totalPages) currentPage = totalPages;
+  if (currentPage < 1) currentPage = 1;
+
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
+  const endIndex = Math.min(startIndex + PAGE_SIZE, totalItems);
+  const pageItems = sorted.slice(startIndex, endIndex);
+
+  tbody.innerHTML = pageItems.map((item) => {
+    const displayDate = formatDisplayDate(item.date);
+    const displayTime = formatDisplayTime(item.time);
+    const senderName = getSenderDisplayName(item);
+    const status = getMeetingStatus(item.date, item.time);
+
+    // Xử lý overflow text dài 500 ký tự (rút gọn hiển thị dấu ba chấm và có nút bấm mở pop-up)
+    const contentHtml = formatCellTextWithTruncate(item.content, item.id, "Nội dung");
+    const attendeesHtml = formatCellTextWithTruncate(item.attendees, item.id, "Thành phần");
+    const locationHtml = formatCellTextWithTruncate(item.location, item.id, "Địa điểm");
+
+    return `
+      <tr class="schedule-row-clickable ${status.isPast ? 'row-meeting-past' : ''}" onclick="openScheduleDetailModal('${item.id}')" title="Bấm vào hàng này để xem đầy đủ chi tiết lịch công tác">
+        <td data-label="Thứ / Ngày">
+          <span class="day-badge">${escapeHtml(item.dayOfWeek || "")}</span>
+          <span class="date-text">${escapeHtml(displayDate)}</span>
+        </td>
+        <td data-label="Thời gian">
+          <div class="time-status-container">
+            <span class="meeting-time-value">${escapeHtml(displayTime)}</span>
+            <span class="status-pill ${status.badgeClass}">${status.label}</span>
+          </div>
+        </td>
+        <td data-label="Nội dung">${contentHtml}</td>
+        <td data-label="Thành phần">${attendeesHtml}</td>
+        <td data-label="Địa điểm">${locationHtml}</td>
+        <td data-label="Người gửi">
+          <span class="user-tag" title="${escapeHtml(item.email || "")}">
+            ${escapeHtml(senderName)}
+          </span>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  // Cập nhật thanh phân trang
+  renderPaginationControls(totalItems, totalPages, startIndex, endIndex);
+}
+
+// Xử lý chuỗi văn bản dài để tránh vỡ giao diện (overflow/overtext)
+function formatCellTextWithTruncate(text, id, fieldName) {
+  if (!text) return "";
+  const clean = String(text).trim();
+  const isLong = clean.length > 70 || clean.includes("\n");
+
+  if (!isLong) {
+    return `<div class="cell-text-normal">${escapeHtml(clean)}</div>`;
+  }
+
+  return `
+    <div class="cell-content-box">
+      <div class="cell-text-truncated" title="${escapeHtml(clean)}">${escapeHtml(clean)}</div>
+      <button type="button" class="btn-detail-link" onclick="openScheduleDetailModal('${id}'); event.stopPropagation();" title="Bấm xem toàn bộ ${fieldName}">
+        Xem thêm &raquo;
+      </button>
+    </div>
+  `;
+}
+
+// Điều khiển nút phân trang
+function renderPaginationControls(totalItems, totalPages, startIndex, endIndex) {
+  const paginationBar = document.getElementById("paginationBar");
+  const paginationInfo = document.getElementById("paginationInfo");
+  const paginationControls = document.getElementById("paginationControls");
+  if (!paginationBar || !paginationInfo || !paginationControls) return;
+
+  if (totalItems <= PAGE_SIZE) {
+    paginationBar.style.display = "flex";
+    paginationInfo.innerHTML = `Hiển thị tất cả <strong>${totalItems}</strong> lịch đăng ký`;
+    paginationControls.innerHTML = "";
+    return;
+  }
+
+  paginationBar.style.display = "flex";
+  paginationInfo.innerHTML = `Hiển thị <strong>${startIndex + 1} - ${endIndex}</strong> trên tổng số <strong>${totalItems}</strong> lịch`;
+
+  let buttonsHtml = "";
+  // Nút Trước
+  buttonsHtml += `
+    <button type="button" class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})" title="Trang trước">
+      &laquo; Trước
+    </button>
+  `;
+
+  // Các nút số trang
+  for (let p = 1; p <= totalPages; p++) {
+    if (p === 1 || p === totalPages || (p >= currentPage - 1 && p <= currentPage + 1)) {
+      buttonsHtml += `
+        <button type="button" class="page-btn ${p === currentPage ? 'active' : ''}" onclick="changePage(${p})">
+          ${p}
+        </button>
+      `;
+    } else if (p === currentPage - 2 || p === currentPage + 2) {
+      buttonsHtml += `<span style="padding: 0 4px; color: #94a3b8; font-weight: bold;">...</span>`;
+    }
+  }
+
+  // Nút Sau
+  buttonsHtml += `
+    <button type="button" class="page-btn ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})" title="Trang sau">
+      Sau &raquo;
+    </button>
+  `;
+
+  paginationControls.innerHTML = buttonsHtml;
+}
+
+// Chuyển trang
+window.changePage = function(pageNumber) {
+  currentPage = pageNumber;
+  renderScheduleTable(currentFilteredList);
+  // Cuộn nhẹ lên đầu bảng trên thiết bị di động
+  const tableCard = document.querySelector(".table-card");
+  if (tableCard && window.innerWidth <= 768) {
+    tableCard.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+};
+
+// Mở Pop-up xem chi tiết toàn bộ nội dung (hỗ trợ tới 500 ký tự)
+window.openScheduleDetailModal = function(id) {
+  const item = scheduleData.find(s => String(s.id) === String(id));
+  if (!item) return;
+
+  const modal = document.getElementById("scheduleDetailModal");
+  if (!modal) return;
+
+  const senderName = getSenderDisplayName(item);
+  const status = getMeetingStatus(item.date, item.time);
+
+  document.getElementById("detailDayBadge").textContent = item.dayOfWeek || "Lịch làm việc";
+  document.getElementById("detailDateText").textContent = formatDisplayDate(item.date);
+  document.getElementById("detailTimeText").innerHTML = `
+    <span>${escapeHtml(formatDisplayTime(item.time))}</span>
+    <span class="status-pill ${status.badgeClass}" style="margin-left: 8px; font-size: 0.78rem;">${status.label}</span>
+  `;
+
+  const registrant = item.email ? `${senderName} (${item.email})` : senderName;
+  document.getElementById("detailUserText").textContent = registrant || "Cán bộ đăng ký";
+
+  document.getElementById("detailContentText").textContent = item.content || "Không có nội dung";
+  document.getElementById("detailAttendeesText").textContent = item.attendees || "Không có thành phần";
+  document.getElementById("detailLocationText").textContent = item.location || "Không có địa điểm";
+
+  modal.style.display = "flex";
+};
+
+function filterScheduleTable(keyword) {
+  const term = (keyword || "").toLowerCase().trim();
+  currentPage = 1; // Luôn đưa về trang đầu khi tìm kiếm
+  if (!term) {
+    renderScheduleTable(scheduleData);
+    return;
+  }
+
+  const filtered = scheduleData.filter(item => {
+    return (
+      (item.content && item.content.toLowerCase().includes(term)) ||
+      (item.attendees && item.attendees.toLowerCase().includes(term)) ||
+      (item.location && item.location.toLowerCase().includes(term)) ||
+      (item.dayOfWeek && item.dayOfWeek.toLowerCase().includes(term)) ||
+      (item.date && item.date.toLowerCase().includes(term)) ||
+      (item.email && item.email.toLowerCase().includes(term))
+    );
+  });
+
+  renderScheduleTable(filtered);
+}
+
+// ==================== QUẢN LÝ MODAL TÙY CHỌN XUẤT FILE WORD ====================
+let exportFromPicker = null;
+let exportToPicker = null;
 
 function formatVnDateObj(d) {
   return String(d.getDate()).padStart(2, "0") + "/" + String(d.getMonth() + 1).padStart(2, "0") + "/" + d.getFullYear();

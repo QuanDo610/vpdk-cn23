@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng Ký Lịch Công Tác Tuần - VPĐK</title>
+  <!-- Thư viện chọn ngày chuẩn Ngày/Tháng/Năm (DD/MM/YYYY) -->
+  <link rel="stylesheet" href="flatpickr.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="flatpickr.min.js"></script>
+  <!-- Thư viện tạo file Word (.docx) chuyên nghiệp trực tiếp trên trình duyệt -->
+  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</head>
+<body>
+  <!-- Header chính thức -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="header-title-box">
+        <span class="agency-name">VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI THÀNH PHỐ HỒ CHÍ MINH</span>
+        <h1 class="system-title">HỆ THỐNG ĐĂNG KÝ LỊCH CÔNG TÁC TUẦN</h1>
+        <span class="sub-agency">CHI NHÁNH SỐ 23</span>
+      </div>
+      <div class="header-action-box" id="headerUserArea" style="display: none;">
+        <a href="index.html" class="nav-tab-btn" style="text-decoration: none;" title="Quay lại Cổng Dịch Vụ Hub">
+          <i class="fa-solid fa-house"></i> <span>Cổng Dịch Vụ</span>
+        </a>
+        <a href="it_helpdesk.html" class="nav-tab-btn" style="text-decoration: none; background-color: #2563eb; border-color: #3b82f6;" title="Chuyển sang IT Helpdesk">
+          <i class="fa-solid fa-headset"></i> <span>IT Helpdesk</span>
+        </a>
+        <div class="user-badge">
+          <span class="user-icon-svg-box">
+            <svg class="user-avatar-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </span>
+          <div class="user-info-text">
+            <strong id="displayUserName">Người dùng</strong>
+            <small id="displayUserEmail">email@gmail.com</small>
+          </div>
+        </div>
+        <button id="btnAdminServerConfig" class="btn btn-admin-config btn-sm" style="display: none;" title="Cài đặt Server API (Chỉ Quản trị viên)">⚙️ Cài đặt Server</button>
+        <button id="btnLogout" class="btn btn-header-logout btn-sm">
+          <i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> Đăng xuất
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Thông báo Toast Notification -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <main class="main-content">
+
+    <!-- ==================== 1. MÀN HÌNH ĐĂNG NHẬP ==================== -->
+    <section id="loginSection" class="card login-card" style="display: none;">
+      <div class="card-header text-center">
+        <h2>ĐĂNG NHẬP HỆ THỐNG</h2>
+        <p class="text-muted">Sử dụng tài khoản Gmail và mật khẩu được cấp để đăng ký lịch</p>
+      </div>
+      <div class="card-body">
+        <form id="loginForm" autocomplete="on">
+          <div class="form-group">
+            <label for="loginEmail">Email (Gmail): <span class="required">*</span></label>
+            <input type="email" id="loginEmail" class="form-control" placeholder="vidu: tuyen.vpdk@gmail.com" required autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Mật khẩu: <span class="required">*</span></label>
+            <input type="password" id="loginPassword" class="form-control" placeholder="Nhập mật khẩu của bạn" required autocomplete="current-password">
+          </div>
+          <div class="form-check-group login-options-row">
+            <label class="checkbox-label">
+              <input type="checkbox" id="rememberMe" checked>
+              <span>Ghi nhớ đăng nhập</span>
+            </label>
+            <button type="button" id="btnForgotPassword" class="btn-forgot-password">Quên mật khẩu?</button>
+          </div>
+          <button type="submit" id="btnLogin" class="btn btn-primary btn-block">
+            <svg class="btn-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+            <span class="btn-text">Đăng nhập</span>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ==================== 2. MÀN HÌNH ĐĂNG KÝ VÀ DANH SÁCH LỊCH ==================== -->
+    <div id="syncWarningBanner" class="sync-warning-banner" style="display: none;">
+      <div class="sync-banner-content">
+        <span class="sync-banner-icon">⚠️</span>
+        <div class="sync-banner-text">
+          <strong>Hệ thống chưa kết nối Google Sheet!</strong>
+          <p>Dữ liệu lịch đăng ký đang chỉ lưu tạm trên trình duyệt của máy này. Vui lòng bấm <strong>Kết nối ngay</strong> để dán Web App URL từ Google Apps Script.</p>
+        </div>
+      </div>
+      <button type="button" id="btnBannerConfig" class="btn btn-warning-contrast btn-sm">⚙️ Kết nối ngay</button>
+    </div>
+
+    <div id="appWorkspace" class="workspace-grid" style="display: none;">
+      
+      <!-- CỘT TRÁI: FORM ĐĂNG KÝ -->
+      <section class="card form-card">
+        <div class="card-header">
+          <h2>📝 Thông Tin Đăng Ký Lịch</h2>
+          <span class="badge badge-info">Dành cho cá nhân</span>
+        </div>
+        <div class="card-body">
+          <form id="registerForm">
+            
+            <!-- Hàng 1: Ngày / Tháng / Năm và Thứ -->
+            <div class="form-row">
+              <div class="form-group col-half">
+                <label for="regDate">Ngày / Tháng / Năm: <span class="required">*</span></label>
+                <input type="text" id="regDate" class="form-control date-input-calendar" placeholder="Chọn ngày (DD/MM/YYYY)" readonly required>
+                <small class="field-hint" id="formattedDateText">Định dạng: DD/MM/YYYY</small>
+              </div>
+              <div class="form-group col-half">
+                <label for="regDayOfWeek">Thứ: <span class="badge-auto">Tự động</span></label>
+                <input type="text" id="regDayOfWeek" class="form-control auto-filled" readonly placeholder="Sẽ tự động điền...">
+              </div>
+            </div>
+
+            <!-- Hàng 2: Thời gian làm việc (Bắt đầu và Kết thúc - Đồng hồ chọn giờ hệ 24h) -->
+            <div class="form-row">
+              <div class="form-group col-half">
+                <label for="regStartTime">⏰ Bắt đầu: <span class="required">*</span></label>
+                <input type="text" id="regStartTime" class="form-control time-input-clock" placeholder="07:30" readonly required>
+                <small class="field-hint">Giờ bắt đầu (Hệ 24h)</small>
+              </div>
+              <div class="form-group col-half">
+                <label for="regEndTime">🏁 Kết thúc: <span class="required">*</span></label>
+                <input type="text" id="regEndTime" class="form-control time-input-clock" placeholder="09:30" readonly required>
+                <small class="field-hint">Giờ kết thúc (Hệ 24h)</small>
+              </div>
+            </div>
+
+            <!-- Hàng 3: Nội dung làm việc -->
+            <div class="form-group">
+              <div class="label-with-counter">
+                <label for="regContent">Nội dung làm việc: <span class="required">*</span></label>
+                <span class="char-counter" id="contentCounter">0 / 500 ký tự</span>
+              </div>
+              <textarea id="regContent" class="form-control" rows="3" maxlength="500" placeholder="Nhập tóm tắt nội dung cuộc họp, công việc, hội nghị..." required></textarea>
+            </div>
+
+            <!-- Hàng 4: Thành phần -->
+            <div class="form-group">
+              <div class="label-with-counter">
+                <label for="regAttendees">Thành phần: <span class="required">*</span></label>
+                <span class="char-counter" id="attendeesCounter">0 / 500 ký tự</span>
+              </div>
+              <textarea id="regAttendees" class="form-control" rows="2" maxlength="500" placeholder="Ví dụ: BGĐ, Lãnh đạo các Phòng, Chi nhánh số 23, Ông Nguyễn Văn A..." required></textarea>
+            </div>
+
+            <!-- Hàng 5: Địa điểm -->
+            <div class="form-group">
+              <div class="label-with-counter">
+                <label for="regLocation">Địa điểm: <span class="required">*</span></label>
+                <span class="char-counter" id="locationCounter">0 / 500 ký tự</span>
+              </div>
+              <input type="text" id="regLocation" class="form-control" maxlength="500" placeholder="Ví dụ: Phòng họp số 1 - Trụ sở VPĐK, Hội trường tầng 3..." required>
+            </div>
+
+            <!-- Nút Đăng Ký và Làm Mới Biểu Mẫu (Độ tương phản cao) -->
+            <div class="form-actions">
+              <button type="submit" id="btnSubmitRegister" class="btn btn-register btn-lg btn-block">
+                <svg class="btn-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                <span class="btn-text">Đăng Ký Lịch Này</span>
+              </button>
+              <button type="reset" id="btnResetForm" class="btn btn-reset btn-block">
+                <svg class="btn-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                <span class="btn-text">Làm mới biểu mẫu</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- CỘT PHẢI: BẢNG LỊCH TUẦN & NÚT XUẤT WORD -->
+      <section class="card table-card">
+        <div class="card-header table-header-flex">
+          <div>
+            <h2>📋 Lịch Đã Đăng Ký Trong Tuần</h2>
+            <p class="text-muted">Tổng hợp danh sách các cá nhân đã đăng ký</p>
+          </div>
+          <div class="table-actions">
+            <span class="sort-order-badge" title="Tự động sắp xếp theo thời điểm mới nhất đến cũ nhất">
+              <svg class="sort-icon-svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+              <span>Mới nhất trước</span>
+            </span>
+            <button id="btnRefreshList" class="btn btn-refresh btn-sm" title="Tải dữ liệu từ server về">
+              <svg class="btn-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              <span>Tải từ server</span>
+            </button>
+            <button id="btnExportWord" class="btn btn-success" title="Xuất file Lịch tuần chuẩn Nghị định 30">
+              <svg class="btn-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              <span><strong>Xuất Lịch tuần Word</strong></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="card-body table-responsive">
+          <div class="table-filter-bar">
+            <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="🔍 Tìm kiếm nội dung, người đăng ký, địa điểm...">
+            <span class="total-count-badge" id="totalScheduleCount">0 mục</span>
+          </div>
+
+          <table class="schedule-table" id="scheduleTable">
+            <thead>
+              <tr>
+                <th style="width: 120px; white-space: nowrap;">Thứ / Ngày</th>
+                <th style="width: 155px; white-space: nowrap;">Thời gian</th>
+                <th style="min-width: 280px;">Nội dung làm việc</th>
+                <th style="width: 190px;">Thành phần</th>
+                <th style="width: 170px;">Địa điểm</th>
+                <th style="width: 155px; white-space: nowrap;">Người gửi</th>
+              </tr>
+            </thead>
+            <tbody id="scheduleTableBody">
+              <tr>
+                <td colspan="6" class="text-center empty-state">
+                  Đang tải dữ liệu từ server về...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Thanh phân trang dữ liệu -->
+          <div class="pagination-bar" id="paginationBar">
+            <div class="pagination-info" id="paginationInfo">
+              Hiển thị <strong>0 - 0</strong> trên tổng số <strong>0</strong> lịch
+            </div>
+            <div class="pagination-controls" id="paginationControls">
+              <!-- Render động các nút trang bằng JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ==================== MODAL TÙY CHỌN XUẤT LỊCH TUẦN WORD (.DOCX) ==================== -->
+  <div id="exportWordModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card modal-export-card">
+      <div class="modal-header">
+        <div class="detail-header-title">
+          <span class="detail-badge-day" style="background-color: #dcfce7; color: #15803d;">📄 Văn bản Word</span>
+          <h3>Tùy Chọn Xuất Lịch Công Tác</h3>
+        </div>
+        <button id="btnCloseExportModal" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="export-subtitle">Chọn phạm vi dữ liệu bạn muốn xuất văn bản theo chuẩn <strong>Nghị định 30/2020/NĐ-CP</strong>:</p>
+
+        <div class="export-options-group">
+          <!-- Tùy chọn 1: Xuất toàn bộ -->
+          <label class="export-radio-card active" id="labelExportAll">
+            <input type="radio" name="exportScope" id="scopeAll" value="all" checked>
+            <div class="radio-card-content">
+              <strong>📑 Xuất toàn bộ lịch hiện có</strong>
+              <small>Xuất tất cả các lịch đăng ký trong hệ thống</small>
+            </div>
+          </label>
+
+          <!-- Tùy chọn 2: Xuất theo khoảng ngày -->
+          <label class="export-radio-card" id="labelExportRange">
+            <input type="radio" name="exportScope" id="scopeRange" value="range">
+            <div class="radio-card-content">
+              <strong>📅 Xuất theo khoảng ngày (Từ ngày &rarr; Đến ngày)</strong>
+              <small>Lọc và xuất chính xác các cuộc họp trong khoảng thời gian tùy chọn</small>
+            </div>
+          </label>
+        </div>
+
+        <!-- Khung chọn khoảng ngày (chỉ hiện khi chọn 'range') -->
+        <div id="exportDateRangeBox" class="export-range-box" style="display: none;">
+          <div class="form-row">
+            <div class="form-group col-half">
+              <label for="exportFromDate">Từ ngày: <span class="required">*</span></label>
+              <input type="text" id="exportFromDate" class="form-control date-input-calendar" placeholder="DD/MM/YYYY" readonly>
+            </div>
+            <div class="form-group col-half">
+              <label for="exportToDate">Đến ngày: <span class="required">*</span></label>
+              <input type="text" id="exportToDate" class="form-control date-input-calendar" placeholder="DD/MM/YYYY" readonly>
+            </div>
+          </div>
+          <div class="quick-date-buttons">
+            <button type="button" class="btn-quick-date" id="btnQuickThisWeek">Tuần này</button>
+            <button type="button" class="btn-quick-date" id="btnQuickNextWeek">Tuần sau</button>
+            <button type="button" class="btn-quick-date" id="btnQuickThisMonth">Tháng này</button>
+          </div>
+        </div>
+
+        <div class="export-preview-info" id="exportPreviewInfo">
+          Đang chọn: <strong>Tất cả lịch</strong> (<span id="exportCountPreview">0</span> mục)
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn btn-secondary" id="btnCancelExportModal">Hủy bỏ</button>
+        <button type="button" class="btn btn-success" id="btnConfirmExportWord">
+          <svg class="btn-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <span>Tải file Word (.docx)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL XEM CHI TIẾT LỊCH (XỬ LÝ OVERFLOW 500 KÝ TỰ) ==================== -->
+  <div id="scheduleDetailModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card modal-detail-card">
+      <div class="modal-header">
+        <div class="detail-header-title">
+          <span class="detail-badge-day" id="detailDayBadge">Thứ</span>
+          <h3 id="detailModalTitle">Chi Tiết Lịch Công Tác</h3>
+        </div>
+        <button id="btnCloseDetailModal" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body detail-modal-body">
+        <div class="detail-meta-grid">
+          <div class="detail-meta-item">
+            <span class="meta-label">📅 Ngày làm việc:</span>
+            <strong id="detailDateText">--/--/----</strong>
+          </div>
+          <div class="detail-meta-item">
+            <span class="meta-label">⏰ Thời điểm làm việc:</span>
+            <strong id="detailTimeText" class="time-highlight">--:--</strong>
+          </div>
+          <div class="detail-meta-item full-width">
+            <span class="meta-label">👤 Cán bộ đăng ký:</span>
+            <span id="detailUserText">--</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <label class="section-label">📝 Nội dung làm việc:</label>
+          <div class="detail-box content-box" id="detailContentText"></div>
+        </div>
+
+        <div class="detail-section">
+          <label class="section-label">👥 Thành phần tham dự:</label>
+          <div class="detail-box attendees-box" id="detailAttendeesText"></div>
+        </div>
+
+        <div class="detail-section">
+          <label class="section-label">📍 Địa điểm:</label>
+          <div class="detail-box location-box" id="detailLocationText"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btnCloseDetailBtn" class="btn btn-secondary">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL QUÊN MẬT KHẨU ==================== -->
+  <div id="forgotPasswordModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card modal-forgot-card">
+      <div class="modal-header">
+        <h3>🔑 Hỗ Trợ Cấp Lại Mật Khẩu</h3>
+        <button id="btnCloseForgotModal" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body text-center">
+        <div class="forgot-icon-box">
+          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <h4 style="margin: 10px 0 6px; color: #0f172a; font-size: 1.1rem;">Quên Mật Khẩu Đăng Nhập?</h4>
+        <p style="color: #475569; font-size: 0.9rem; line-height: 1.5; margin-bottom: 16px;">
+          Để bảo mật dữ liệu công tác của cơ quan, vui lòng liên hệ Quản trị viên để được cấp lại mật khẩu:
+        </p>
+        <div class="admin-contact-card">
+          <div class="admin-contact-name">👤 <strong>Đỗ Trọng Minh Quân</strong> (Quản trị viên)</div>
+          <div class="admin-contact-zalo">
+            💬 Hỗ trợ kỹ thuật: <strong>Tổ CNTT - Chi nhánh 23</strong>
+          </div>
+        </div>
+        <div style="margin-top: 18px;">
+          <a href="#" onclick="alert('Vui lòng liên hệ trực tiếp Tổ CNTT Chi nhánh 23 hoặc gửi yêu cầu qua IT Helpdesk!'); return false;" class="btn btn-zalo btn-block">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            <span>Liên hệ Quản trị viên CNTT</span>
+          </a>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btnCloseForgotBtn" class="btn btn-secondary">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL CẤU HÌNH MÁY CHỦ DỮ LIỆU (SERVER API) ==================== -->
+  <div id="configModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>⚙️ Cấu Hình Máy Chủ Dữ Liệu (Server API)</h3>
+        <button id="btnCloseModal" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted">
+          Dán đường link <strong>Web App URL</strong> từ máy chủ để kết nối và đồng bộ dữ liệu hệ thống.
+        </p>
+        <div class="form-group">
+          <label for="googleScriptUrlInput"><strong>Đường link Server API URL:</strong></label>
+          <input type="url" id="googleScriptUrlInput" class="form-control" placeholder="https://script.google.com/macros/s/.../exec">
+        </div>
+        <div class="status-box" id="connectionStatusBox">
+          <span class="status-indicator" id="statusDot"></span>
+          <span id="statusText">Chưa kiểm tra kết nối</span>
+        </div>
+        <div class="alert alert-info">
+          <small>
+            📌 <em>Hệ thống đã tích hợp sẵn máy chủ mặc định. Nếu máy chủ tạm thời không khả dụng, dữ liệu sẽ tự động lưu trữ an toàn trên bộ nhớ máy tính để bạn xuất file Word ngay lập tức.</em>
+          </small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnTestConnection" class="btn btn-secondary">Kiểm tra kết nối</button>
+        <button id="btnSaveConfig" class="btn btn-primary">Lưu cấu hình</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <p class="footer-copy">© 2026 Văn phòng Đăng ký đất đai TP.HCM - Chi nhánh số 23. Chuẩn thể thức Nghị định 30/2020/NĐ-CP.</p>
+    <p class="footer-credit">Hệ thống Đăng ký Lịch tuần VPĐK &bull; Phát triển bởi <strong>Đỗ Trọng Minh Quân</strong></p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
