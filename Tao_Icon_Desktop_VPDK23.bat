@@ -1,7 +1,9 @@
 ﻿@echo off
-:: ======================================================================
-:: CÔNG CỤ TỰ ĐỘNG TẠO BIỂU TƯỢNG CỔNG DỊCH VỤ - CHI NHÁNH SỐ 23 TRÊN DESKTOP
-:: ======================================================================
+:: ===============================================================================
+:: CÔNG CỤ TỰ ĐỘNG CÀI ĐẶT PHÍM TẮT CỔNG DỊCH VỤ NỘI BỘ - CHI NHÁNH SỐ 23
+:: - Mở trực tiếp bằng Google Chrome hoặc Microsoft Edge
+:: - Biểu tượng (Icon/Thumbnail) huy hiệu Chi Nhánh 23 Hoàng gia Vàng & Xanh nổi bật
+:: ===============================================================================
 chcp 65001 >nul
 title Cài đặt Phím tắt Cổng Dịch Vụ - Chi Nhánh 23
 color 0B
@@ -9,96 +11,135 @@ color 0B
 echo.
 echo ===============================================================================
 echo       CỔNG DỊCH VỤ NỘI BỘ - VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI CHI NHÁNH SỐ 23
-echo                 (Hệ thống Lịch Tuần & Tiếp nhận IT Helpdesk)
+echo               (Hệ thống Lịch Tuần & Tiếp nhận IT Helpdesk)
 echo ===============================================================================
 echo.
-echo [*] Đang tìm kiếm thư mục Màn hình chính (Desktop)...
+echo [*] BƯỚC 1: Đang thiết lập Biểu tượng (Icon) Chi Nhánh 23 độc quyền...
 
-:: 1. Xác định chính xác đường dẫn Desktop (hỗ trợ cả máy dùng OneDrive đồng bộ)
-set "DESKTOP_DIR="
-for /f "tokens=2*" %%a in ('reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v Desktop 2^>nul') do set "DESKTOP_DIR=%%b"
-if defined DESKTOP_DIR (
-    call set "DESKTOP_DIR=%DESKTOP_DIR%"
+:: Tạo thư mục lưu Icon ứng dụng trong LocalAppData của cán bộ
+set "APP_DIR=%LOCALAPPDATA%\VPDK23"
+if not exist "%APP_DIR%" mkdir "%APP_DIR%" 2>nul
+set "ICON_FILE=%APP_DIR%\vpdk23.ico"
+
+:: Ưu tiên 1: Lấy icon có sẵn trong cùng thư mục (khi giải nén từ file zip)
+if exist "%~dp0vpdk23.ico" (
+    copy /y "%~dp0vpdk23.ico" "%ICON_FILE%" >nul 2>&1
+)
+
+:: Ưu tiên 2: Nếu chưa có, tải tự động từ máy chủ GitHub
+if not exist "%ICON_FILE%" (
+    curl -s -L "https://raw.githubusercontent.com/QuanDo610/vpdk-cn23/main/vpdk23.ico" -o "%ICON_FILE%" 2>nul
+)
+
+:: Ưu tiên 3: Dự phòng icon bảo mật hệ thống Windows nếu mạng chặn tải
+if not exist "%ICON_FILE%" (
+    set "ICON_FILE=%SystemRoot%\System32\shell32.dll,220"
+    echo   [!] Tạm thời dùng biểu tượng bảo vệ hệ thống Windows.
 ) else (
-    set "DESKTOP_DIR=%USERPROFILE%\Desktop"
+    echo   [OK] Đã thiết lập thành công Icon Huy hiệu Chi Nhánh 23 sắc nét.
 )
 
-if not exist "%DESKTOP_DIR%" (
-    if exist "%USERPROFILE%\Desktop" (
-        set "DESKTOP_DIR=%USERPROFILE%\Desktop"
-    ) else if exist "%USERPROFILE%\OneDrive\Desktop" (
-        set "DESKTOP_DIR=%USERPROFILE%\OneDrive\Desktop"
+echo.
+echo [*] BƯỚC 2: Đang tự động dò tìm trình duyệt Google Chrome hoặc Microsoft Edge...
+
+set "BROWSER_EXE="
+set "BROWSER_NAME="
+
+:: Dò tìm Google Chrome
+if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" (
+    set "BROWSER_EXE=%ProgramFiles%\Google\Chrome\Application\chrome.exe"
+    set "BROWSER_NAME=Google Chrome"
+) else if exist "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe" (
+    set "BROWSER_EXE=%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe"
+    set "BROWSER_NAME=Google Chrome"
+) else if exist "%LocalAppData%\Google\Chrome\Application\chrome.exe" (
+    set "BROWSER_EXE=%LocalAppData%\Google\Chrome\Application\chrome.exe"
+    set "BROWSER_NAME=Google Chrome"
+)
+
+:: Nếu không có Chrome, tự động chuyển sang Microsoft Edge (sẵn 100% trên Win 10/11)
+if not defined BROWSER_EXE (
+    if exist "%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe" (
+        set "BROWSER_EXE=%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe"
+        set "BROWSER_NAME=Microsoft Edge"
+    ) else if exist "%ProgramFiles%\Microsoft\Edge\Application\msedge.exe" (
+        set "BROWSER_EXE=%ProgramFiles%\Microsoft\Edge\Application\msedge.exe"
+        set "BROWSER_NAME=Microsoft Edge"
     )
 )
 
-echo [*] Vị trí Desktop phát hiện: "%DESKTOP_DIR%"
-echo.
-echo [*] Đang tạo biểu tượng truy cập "Cổng Dịch Vụ - Chi Nhánh 23"...
+:: Dò tìm bằng lệnh where nếu cài ở phân vùng khác
+if not defined BROWSER_EXE (
+    for /f "delims=" %%i in ('where chrome.exe 2^>nul') do (
+        set "BROWSER_EXE=%%i"
+        set "BROWSER_NAME=Google Chrome"
+    )
+)
+if not defined BROWSER_EXE (
+    for /f "delims=" %%i in ('where msedge.exe 2^>nul') do (
+        set "BROWSER_EXE=%%i"
+        set "BROWSER_NAME=Microsoft Edge"
+    )
+)
 
-:: 2. Khởi tạo nội dung file shortcut (.url)
+if not defined BROWSER_EXE (
+    set "BROWSER_EXE=%SystemRoot%\explorer.exe"
+    set "BROWSER_NAME=Trình duyệt hệ thống"
+)
+
+echo   [OK] Trình duyệt chuyên dụng: %BROWSER_NAME%
+
+echo.
+echo [*] BƯỚC 3: Đang khởi tạo Lối tắt (Shortcut .lnk) nổi bật ngoài Desktop...
+
 set "TARGET_URL=https://quando610.github.io/vpdk-cn23/index.html"
-set "ICON_PATH=%SystemRoot%\System32\shell32.dll"
-set "ICON_NUM=14"
 
-:: Tạo shortcut chính có dấu tiếng Việt tại Desktop được phát hiện
-set "SHORTCUT_VN=%DESKTOP_DIR%\Cổng Dịch Vụ - Chi Nhánh 23.url"
-(
-    echo [InternetShortcut]
-    echo URL=%TARGET_URL%
-    echo IconFile=%ICON_PATH%
-    echo IconIndex=%ICON_NUM%
-) > "%SHORTCUT_VN%"
-
-:: Tạo thêm shortcut dự phòng không dấu (tránh lỗi font trên một số máy Windows cũ)
-set "SHORTCUT_EN=%DESKTOP_DIR%\Cong Dich Vu - Chi Nhanh 23.url"
-if not exist "%SHORTCUT_VN%" (
-    (
-        echo [InternetShortcut]
-        echo URL=%TARGET_URL%
-        echo IconFile=%ICON_PATH%
-        echo IconIndex=%ICON_NUM%
-    ) > "%SHORTCUT_EN%"
-)
-
-:: Nếu máy có cả thư mục OneDrive\Desktop riêng, tạo thêm 1 bản để chắc chắn 100% hiển thị
-if exist "%USERPROFILE%\OneDrive\Desktop" (
-    if "%DESKTOP_DIR%" neq "%USERPROFILE%\OneDrive\Desktop" (
-        (
-            echo [InternetShortcut]
-            echo URL=%TARGET_URL%
-            echo IconFile=%ICON_PATH%
-            echo IconIndex=%ICON_NUM%
-        ) > "%USERPROFILE%\OneDrive\Desktop\Cổng Dịch Vụ - Chi Nhánh 23.url"
-    )
-)
-
-:: Nếu máy có thư mục chuẩn %USERPROFILE%\Desktop riêng, tạo thêm 1 bản
-if exist "%USERPROFILE%\Desktop" (
-    if "%DESKTOP_DIR%" neq "%USERPROFILE%\Desktop" (
-        (
-            echo [InternetShortcut]
-            echo URL=%TARGET_URL%
-            echo IconFile=%ICON_PATH%
-            echo IconIndex=%ICON_NUM%
-        ) > "%USERPROFILE%\Desktop\Cổng Dịch Vụ - Chi Nhánh 23.url"
-    )
-)
+:: Gọi PowerShell để tạo Shortcut chuẩn Windows LNK có Icon đẹp
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+  "$ws = New-Object -ComObject WScript.Shell; ^
+   $desktop = [Environment]::GetFolderPath('Desktop'); ^
+   $name = 'Cổng Dịch Vụ - Chi Nhánh 23.lnk'; ^
+   $p1 = Join-Path $desktop $name; ^
+   function MakeLnk($dest) { ^
+       $s = $ws.CreateShortcut($dest); ^
+       $s.TargetPath = '%BROWSER_EXE%'; ^
+       $s.Arguments = '%TARGET_URL%'; ^
+       $s.IconLocation = '%ICON_FILE%'; ^
+       $s.Description = 'Cổng Dịch Vụ Nội Bộ - Văn Phòng Đăng Ký Đất Đai Chi Nhánh 23'; ^
+       $s.WorkingDirectory = [System.IO.Path]::GetDirectoryName('%BROWSER_EXE%'); ^
+       $s.Save(); ^
+   }; ^
+   MakeLnk($p1); ^
+   Write-Host '   -> Da tao Shortcut chinh tai:' $p1 -ForegroundColor Green; ^
+   if (Test-Path "$env:USERPROFILE\Desktop") { ^
+       $p2 = Join-Path "$env:USERPROFILE\Desktop" $name; ^
+       if ($p2 -ne $p1) { MakeLnk($p2); } ^
+   }; ^
+   if (Test-Path "$env:USERPROFILE\OneDrive\Desktop") { ^
+       $p3 = Join-Path "$env:USERPROFILE\OneDrive\Desktop" $name; ^
+       if ($p3 -ne $p1) { MakeLnk($p3); } ^
+   }; ^
+   Remove-Item "$desktop\Cổng Dịch Vụ - Chi Nhánh 23.url" -ErrorAction SilentlyContinue; ^
+   Remove-Item "$desktop\Cong Dich Vu - Chi Nhanh 23.url" -ErrorAction SilentlyContinue;"
 
 echo.
 echo ===============================================================================
-echo  [V] HOÀN TẤT: ĐÃ TẠO THÀNH CÔNG BIỂU TƯỢNG TRUY CẬP TRÊN DESKTOP!
+echo  [V] HOÀN TẤT THÀNH CÔNG!
+echo      - Biểu tượng Huy Hiệu Chi Nhánh 23 đã được cài đặt ngoài Desktop.
+echo      - Đã cố định mở trực tiếp bằng: %BROWSER_NAME%.
 echo ===============================================================================
 echo.
-echo [*] Đang tự động mở Cổng dịch vụ lần đầu trên trình duyệt của bạn...
-start "" "%TARGET_URL%"
+echo [*] Đang tự động mở Cổng dịch vụ lần đầu bằng %BROWSER_NAME%...
+start "" "%BROWSER_EXE%" "%TARGET_URL%"
 
 echo.
 echo -------------------------------------------------------------------------------
-echo  LƯU Ý DÀNH CHO CÁN BỘ:
-echo  1. Từ lần sau, bạn chỉ cần bấm đúp vào biểu tượng "Cổng Dịch Vụ - Chi Nhánh 23"
-echo     ngay trên màn hình Desktop để vào làm việc.
+echo  HƯỚNG DẪN DÀNH CHO CÁN BỘ:
+echo  1. Hằng ngày, cán bộ chỉ cần bấm đúp vào biểu tượng "Cổng Dịch Vụ - Chi Nhánh 23"
+echo     (hình Huy Hiệu vàng - xanh có số 23) trên màn hình Desktop.
 echo  2. Đăng nhập bằng Số CCCD (12 số) và Mật khẩu đã được cấp.
 echo -------------------------------------------------------------------------------
 echo.
 echo Nhấn phím bất kỳ để đóng cửa sổ này...
 pause >nul
+exit /b
