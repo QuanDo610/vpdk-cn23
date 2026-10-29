@@ -1,0 +1,1924 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hệ thống Điều hành Giao việc & Báo cáo Số liệu Thực hiện - Chi nhánh số 23</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-hover: #1e40af;
+      --primary-light: #eff6ff;
+      --secondary: #0d9488;
+      --secondary-light: #ccfbf1;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #16a34a;
+      --success-bg: #dcfce7;
+      --warning: #ea580c;
+      --warning-bg: #ffedd5;
+      --danger: #dc2626;
+      --danger-bg: #fee2e2;
+      --urgent: #991b1b;
+      --urgent-bg: #ffe4e6;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --radius: 12px;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --primary-light: #1e3a5f;
+      --secondary-light: #134e4a;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding: 24px 16px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header-card {
+      background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+      color: #ffffff;
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .org-badge {
+      display: inline-block;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: rgba(255, 255, 255, 0.15);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .header-card h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      letter-spacing: -0.02em;
+    }
+
+    .header-card p {
+      font-size: 0.95rem;
+      opacity: 0.92;
+    }
+
+    .theme-toggle-btn {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+    .theme-toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Tabs Navigation */
+    .tabs-nav {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 2px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      padding: 12px 20px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 6px 6px 0 0;
+    }
+
+    .tab-btn:hover {
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      background: var(--card-bg);
+    }
+
+    [data-theme="dark"] .tab-btn.active {
+      color: #60a5fa;
+      border-bottom-color: #60a5fa;
+    }
+
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Live KPI bar */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .kpi-title {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .kpi-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 4px 0;
+    }
+
+    .kpi-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      width: fit-content;
+    }
+    .kpi-badge.pass { background: var(--success-bg); color: var(--success); }
+    .kpi-badge.warn { background: var(--warning-bg); color: var(--warning); }
+    .kpi-badge.fail { background: var(--danger-bg); color: var(--danger); }
+    .kpi-badge.urgent { background: var(--urgent-bg); color: var(--urgent); font-weight: 700; }
+
+    /* Main Form */
+    .form-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px;
+      margin-bottom: 30px;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary);
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 8px;
+      margin-top: 24px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title:first-of-type {
+      margin-top: 0;
+    }
+
+    [data-theme="dark"] .section-title {
+      color: #60a5fa;
+    }
+
+    .section-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: -10px;
+      margin-bottom: 16px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .label-hint {
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    input[type="datetime-local"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text-main);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.15);
+    }
+
+    input[readonly] {
+      background-color: rgba(148, 163, 184, 0.15);
+      cursor: not-allowed;
+      font-weight: 700;
+    }
+
+    .highlight-input {
+      background-color: var(--primary-light) !important;
+      border-color: #93c5fd;
+      color: var(--primary);
+    }
+    [data-theme="dark"] .highlight-input {
+      color: #93c5fd;
+    }
+
+    /* File drop styling */
+    .file-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      background: var(--bg);
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .file-input-wrapper:hover {
+      border-color: var(--primary);
+    }
+    .file-input-wrapper input[type="file"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .file-preview {
+      font-size: 0.85rem;
+      color: var(--primary);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Actions */
+    .form-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+
+    .btn-secondary {
+      background: var(--border);
+      color: var(--text-main);
+    }
+    .btn-secondary:hover {
+      background: #cbd5e1;
+    }
+
+    .btn-success {
+      background: var(--secondary);
+      color: white;
+    }
+    .btn-success:hover {
+      background: #0f766e;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-main);
+    }
+    .btn-outline:hover {
+      background: var(--bg);
+    }
+
+    /* Table History */
+    .history-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      margin-top: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.85rem;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    th {
+      background: var(--bg);
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 0.75rem;
+    }
+
+    tr:hover td {
+      background: rgba(148, 163, 184, 0.08);
+    }
+
+    .action-icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 6px;
+      color: var(--text-muted);
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+    .action-icon-btn:hover {
+      color: var(--danger);
+      background: var(--danger-bg);
+    }
+    .action-icon-btn.done:hover {
+      color: var(--success);
+      background: var(--success-bg);
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0f172a;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s;
+      z-index: 9999;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .toast.success { background: #15803d; }
+    .toast.error { background: #b91c1c; }
+
+    /* Print styling */
+    @media print {
+      body {
+        background: white !important;
+        color: black !important;
+        padding: 0 !important;
+      }
+      .header-card {
+        background: none !important;
+        color: black !important;
+        border: 1px solid #ccc;
+        box-shadow: none !important;
+      }
+      .theme-toggle-btn, .tabs-nav, .form-actions, .kpi-grid, .btn {
+        display: none !important;
+      }
+      .form-card, .history-card {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Header -->
+    <header class="header-card">
+      <button class="theme-toggle-btn" id="themeToggle" title="Chuyển chế độ Sáng / Tối">
+        <span id="themeIcon">🌙</span> <span id="themeText">Chế độ tối</span>
+      </button>
+      <div class="org-badge">VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI TP. HỒ CHÍ MINH — CHI NHÁNH SỐ 23</div>
+      <h1>HỆ THỐNG ĐIỀU HÀNH GIAO VIỆC & BÁO CÁO SỐ LIỆU THỰC HIỆN</h1>
+      <p>Nền tảng thường trực: Lãnh đạo giao việc, chỉ đạo điều hành 82 nhân sự & Tổng hợp số liệu thực hiện nghiệp vụ của các Tổ</p>
+    </header>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="tabs-nav">
+      <button class="tab-btn active" data-tab="tab-giao-viec">
+        <span>✍️</span> 1. LÃNH ĐẠO GIAO VIỆC & CHỈ ĐẠO CÁN BỘ
+      </button>
+      <button class="tab-btn" data-tab="tab-theo-doi-viec">
+        <span>📋</span> 2. BẢNG TIẾN ĐỘ CÔNG VIỆC ĐÃ GIAO
+      </button>
+      <button class="tab-btn" data-tab="tab-so-lieu-thuc-hien">
+        <span>📊</span> 3. BÁO CÁO SỐ LIỆU THỰC HIỆN (CẤP TỔ)
+      </button>
+    </nav>
+
+    <!-- ========================================== -->
+    <!-- TAB 1: LÃNH ĐẠO GIAO VIỆC CHO CẤP DƯỚI -->
+    <!-- ========================================== -->
+    <div id="tab-giao-viec" class="tab-content active">
+
+      <!-- Summary KPI Task Bar -->
+      <section class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-title">Tổng nhiệm vụ đã giao</div>
+          <div class="kpi-value" id="kpiTotalTasks">0</div>
+          <div class="label-hint">Lũy kế toàn đơn vị</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Đang thực hiện trong hạn</div>
+          <div class="kpi-value" style="color: var(--secondary);" id="kpiInProgressTasks">0</div>
+          <div class="kpi-badge pass">Tiến độ bình thường</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Nhiệm vụ Quá hạn Deadline</div>
+          <div class="kpi-value" style="color: var(--danger);" id="kpiOverdueTasks">0</div>
+          <div class="kpi-badge urgent" id="kpiOverdueBadge">Cần đôn đốc khẩn</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Đã hoàn thành</div>
+          <div class="kpi-value" style="color: var(--success);" id="kpiCompletedTasks">0</div>
+          <div class="kpi-badge pass" id="kpiCompletionRate">Tỷ lệ: 0.0%</div>
+        </div>
+      </section>
+
+      <!-- Task Assignment Form -->
+      <main class="form-card">
+        <form id="taskAssignmentForm">
+          <h2 class="section-title">
+            <span>🎯</span> I. THÔNG TIN PHÂN CÔNG & CÁN BỘ TIẾP NHẬN
+          </h2>
+          <p class="section-desc">Ban Giám đốc hoặc Lãnh đạo các Tổ giao việc trực tiếp cho nhân viên cấp dưới theo danh sách biên chế chính thức</p>
+
+          <div class="grid-3">
+            <!-- 1. Người giao việc -->
+            <div class="form-group">
+              <label for="assignLeader">Lãnh đạo giao việc <span style="color:red">*</span></label>
+              <select id="assignLeader" required>
+                <optgroup label="Ban Giám đốc Chi nhánh 23">
+                  <option value="Nguyễn Chiến Thắng (Giám đốc)" selected>Nguyễn Chiến Thắng — Giám đốc</option>
+                  <option value="Đặng Huy Cường (Phó Giám đốc)">Đặng Huy Cường — Phó Giám đốc</option>
+                  <option value="Nguyễn Thị Lệ Hằng (Phó Giám đốc)">Nguyễn Thị Lệ Hằng — Phó Giám đốc</option>
+                </optgroup>
+                <optgroup label="Lãnh đạo Tổ chuyên môn">
+                  <option value="Trần Thanh Triết (Tổ trưởng Tổ KTĐC&LT)">Trần Thanh Triết — Tổ trưởng Tổ KTĐC&LT</option>
+                  <option value="Đặng Thị Tuyết Trinh (Tổ phó Tổ KTĐC&LT)">Đặng Thị Tuyết Trinh — Tổ phó Tổ KTĐC&LT</option>
+                  <option value="Nguyễn Thị Thùy Trang (Tổ trưởng Tổ ĐK&CGCN)">Nguyễn Thị Thùy Trang — Tổ trưởng Tổ ĐK&CGCN</option>
+                  <option value="Nguyễn Thị Thu Minh (Tổ phó Tổ ĐK&CGCN)">Nguyễn Thị Thu Minh — Tổ phó Tổ ĐK&CGCN</option>
+                  <option value="Huỳnh Tấn Nguyên (Tổ phó Tổ ĐK&CGCN)">Huỳnh Tấn Nguyên — Tổ phó Tổ ĐK&CGCN</option>
+                  <option value="Nguyễn Thành Như Bảo (Tổ phó Tổ ĐK&CGCN)">Nguyễn Thành Như Bảo — Tổ phó Tổ ĐK&CGCN</option>
+                  <option value="Nguyễn Thị Bích Tuyền (Tổ trưởng Tổ HCTH)">Nguyễn Thị Bích Tuyền — Tổ trưởng Tổ HCTH</option>
+                  <option value="Bùi Thị Minh Nguyệt (Tổ phó Tổ HCTH)">Bùi Thị Minh Nguyệt — Tổ phó Tổ HCTH</option>
+                  <option value="Hồ Thị Hồng Linh (Tổ phó Tổ HCTH)">Hồ Thị Hồng Linh — Tổ phó Tổ HCTH</option>
+                  <option value="Nguyễn Thị Mai (Tổ phó Tổ HCTH)">Nguyễn Thị Mai — Tổ phó Tổ HCTH</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <!-- 2. Lọc nhanh theo Tổ -->
+            <div class="form-group">
+              <label for="filterStaffDept">Lọc nhanh theo Tổ chuyên môn</label>
+              <select id="filterStaffDept">
+                <option value="ALL">-- Tất cả các Tổ (82 nhân sự) --</option>
+                <option value="Tổ Kỹ thuật Địa chính và Lưu trữ">Tổ Kỹ thuật Địa chính và Lưu trữ (30 người)</option>
+                <option value="Tổ Đăng ký cấp GCN">Tổ Đăng ký cấp GCN (27 người)</option>
+                <option value="Tổ Hành chính Tổng hợp">Tổ Hành chính Tổng hợp (22 người)</option>
+                <option value="Ban Giám đốc">Ban Giám đốc (3 người)</option>
+              </select>
+              <span class="label-hint">Thu hẹp danh sách nhân sự bên cạnh</span>
+            </div>
+
+            <!-- 3. Cán bộ nhận việc (Droplist 82 nhân viên) -->
+            <div class="form-group">
+              <label for="assignStaff">Nhân viên nhận việc (Chi nhánh số 23) <span style="color:red">*</span></label>
+              <select id="assignStaff" required>
+                <!-- Rendered dynamically from 82 staff array -->
+              </select>
+              <span class="label-hint" id="assignStaffDetail">Chức vụ & Tổ tiếp nhận</span>
+            </div>
+          </div>
+
+          <h2 class="section-title">
+            <span>📝</span> II. NỘI DUNG NHIỆM VỤ, Ý KIẾN CHỈ ĐẠO & VĂN BẢN ĐÍNH KÈM
+          </h2>
+
+          <div class="grid-2">
+            <!-- Tên công việc -->
+            <div class="form-group">
+              <label for="taskTitle">Tên công việc / Nhiệm vụ giao việc <span style="color:red">*</span></label>
+              <input type="text" id="taskTitle" placeholder="Ví dụ: Rà soát hồ sơ cấp đổi GCN trễ hạn, thẩm tra bản đồ địa chính..." required>
+            </div>
+
+            <!-- Mức độ ưu tiên -->
+            <div class="form-group">
+              <label for="taskPriority">Mức độ ưu tiên / Tính chất văn bản <span style="color:red">*</span></label>
+              <select id="taskPriority" required>
+                <option value="Bình thường">Bình thường (Đúng hạn theo quy trình)</option>
+                <option value="Khẩn" style="color: var(--warning); font-weight: 600;">Khẩn (Ưu tiên xử lý trước)</option>
+                <option value="Hỏa tốc" style="color: var(--danger); font-weight: 700;">Hỏa tốc / Tối khẩn (Xử lý ngay)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Văn bản đính kèm & Căn cứ pháp lý -->
+          <div class="grid-2" style="margin-top: 14px;">
+            <div class="form-group">
+              <label for="taskDocRef">Số hiệu văn bản đính kèm / Căn cứ giao việc</label>
+              <input type="text" id="taskDocRef" placeholder="Ví dụ: Công văn số ...; Quyết định phân công số ...; Tờ trình ...">
+              <span class="label-hint">Ghi rõ số hiệu công văn, quyết định, kế hoạch chỉ đạo</span>
+            </div>
+
+            <div class="form-group">
+              <label>Đính kèm tệp văn bản (PDF, Word, Excel, Bản vẽ)</label>
+              <div class="file-input-wrapper">
+                <input type="file" id="taskFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg">
+                <span id="fileUploadIcon">📎</span>
+                <span id="fileUploadLabel" class="label-hint">Nhấp để chọn tệp đính kèm từ máy tính (tối đa 25MB)</span>
+              </div>
+              <div id="fileUploadPreview" class="file-preview" style="display: none;"></div>
+            </div>
+          </div>
+
+          <!-- Ý kiến chỉ đạo của Lãnh đạo -->
+          <div class="form-group" style="margin-top: 14px;">
+            <label for="leaderGuidance">Ý kiến chỉ đạo cụ thể của Lãnh đạo <span style="color:red">*</span></label>
+            <textarea id="leaderGuidance" rows="4" placeholder="Nhập ý kiến chỉ đạo chi tiết của Lãnh đạo: Yêu cầu phương pháp xử lý, các đơn vị/tổ phải phối hợp, tiêu chuẩn chất lượng sản phẩm đầu ra, thời điểm phải báo cáo sơ bộ..." required></textarea>
+          </div>
+
+          <!-- Thời hạn hoàn thành -->
+          <div class="grid-2" style="margin-top: 14px;">
+            <div class="form-group">
+              <label for="taskDeadline">Thời hạn hoàn thành (Deadline) <span style="color:red">*</span></label>
+              <input type="datetime-local" id="taskDeadline" required>
+              <span class="label-hint">Thời điểm bắt buộc cán bộ phải hoàn thành báo cáo Lãnh đạo</span>
+            </div>
+
+            <div class="form-group">
+              <label for="taskNote">Ghi chú bổ sung (nếu có)</label>
+              <input type="text" id="taskNote" placeholder="Ví dụ: Trình ký qua phần mềm VBDLis; Báo cáo tại cuộc họp giao ban...">
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="form-actions">
+            <button type="button" class="btn btn-outline" id="btnResetTaskForm">
+              <span>🔄</span> Làm mới
+            </button>
+            <button type="button" class="btn btn-secondary" id="btnPrintTaskTicket">
+              <span>🖨️</span> In phiếu giao việc
+            </button>
+            <button type="submit" class="btn btn-primary" id="btnSubmitTask">
+              <span>🚀</span> PHÁT LỆNH GIAO VIỆC CHO CÁN BỘ
+            </button>
+          </div>
+        </form>
+      </main>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: BẢNG TIẾN ĐỘ & THEO DÕI CÔNG VIỆC -->
+    <!-- ========================================== -->
+    <div id="tab-theo-doi-viec" class="tab-content">
+      <section class="history-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 1.2rem; font-weight: 700;">📋 BẢNG TIẾN ĐỘ CÔNG VIỆC & Ý KIẾN CHỈ ĐẠO</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Giám sát trạng thái thực hiện, thời hạn hoàn thành và ý kiến chỉ đạo đối với từng cán bộ</p>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <select id="filterTaskStatus" style="width: auto; padding: 6px 12px; font-size: 0.85rem;">
+              <option value="ALL">-- Tất cả trạng thái --</option>
+              <option value="Đang thực hiện">Đang thực hiện</option>
+              <option value="Quá hạn">Quá hạn Deadline</option>
+              <option value="Đã hoàn thành">Đã hoàn thành</option>
+            </select>
+            <select id="filterTaskDept" style="width: auto; padding: 6px 12px; font-size: 0.85rem;">
+              <option value="ALL">-- Tất cả các Tổ --</option>
+              <option value="Tổ Kỹ thuật Địa chính và Lưu trữ">Tổ KTĐC & Lưu trữ</option>
+              <option value="Tổ Đăng ký cấp GCN">Tổ ĐK & Cấp GCN</option>
+              <option value="Tổ Hành chính Tổng hợp">Tổ Hành chính - Tổng hợp</option>
+            </select>
+            <button class="btn btn-success" id="btnExportTaskCsv" style="padding: 6px 14px; font-size: 0.85rem;">
+              <span>📊</span> Xuất Excel
+            </button>
+            <button class="btn btn-outline" id="btnClearAllTasks" style="padding: 6px 12px; font-size: 0.85rem; color: var(--danger);">
+              Xóa tất cả
+            </button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table id="taskTable">
+            <thead>
+              <tr>
+                <th>Mã việc</th>
+                <th>Người giao (Lãnh đạo)</th>
+                <th>Cán bộ nhận việc</th>
+                <th>Tổ chuyên môn</th>
+                <th>Tên công việc / Nhiệm vụ</th>
+                <th>Văn bản đính kèm</th>
+                <th>Ý kiến chỉ đạo</th>
+                <th>Hạn hoàn thành (Deadline)</th>
+                <th>Độ khẩn</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="taskTableBody">
+              <!-- Dynamically rendered -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: BÁO CÁO SỐ LIỆU THỰC HIỆN (CẤP TỔ) -->
+    <!-- ========================================== -->
+    <div id="tab-so-lieu-thuc-hien" class="tab-content">
+      
+      <!-- Live KPI bar -->
+      <section class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-title">Hồ sơ tiếp nhận trong kỳ</div>
+          <div class="kpi-value" id="kpiTotalReceive">0</div>
+          <div class="label-hint" id="kpiReceiveDetail">Trực tiếp: 0 | Trực tuyến: 0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Tỷ lệ DVC trực tuyến</div>
+          <div class="kpi-value" id="kpiOnlineRate">0.0%</div>
+          <div class="kpi-badge warn" id="kpiOnlineBadge">Chỉ tiêu: ≥ 50.0%</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Tỷ lệ giải quyết đúng hạn</div>
+          <div class="kpi-value" id="kpiOnTimeRate">0.0%</div>
+          <div class="kpi-badge warn" id="kpiOnTimeBadge">Chỉ tiêu: ≥ 98.0%</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Tỷ lệ TT trực tuyến</div>
+          <div class="kpi-value" id="kpiPayOnlineRate">0.0%</div>
+          <div class="kpi-badge warn" id="kpiPayOnlineBadge">Chỉ tiêu: ≥ 40.0%</div>
+        </div>
+      </section>
+
+      <!-- Main Entry Form -->
+      <main class="form-card">
+        <form id="performanceReportForm">
+
+          <!-- THÔNG TIN ĐƠN VỊ VÀ KỲ BÁO CÁO -->
+          <h2 class="section-title">
+            <span>🏛️</span> I. ĐƠN VỊ TỔ VÀ THỜI GIAN BÁO CÁO
+          </h2>
+          <div class="grid-4">
+            <div class="form-group">
+              <label for="toChuyenMon">Tổ chuyên môn báo cáo <span style="color:red">*</span></label>
+              <select id="toChuyenMon" required>
+                <option value="" disabled selected>-- Chọn Tổ chuyên môn --</option>
+                <option value="Tổ Đăng ký cấp GCN">Tổ Đăng ký cấp GCN</option>
+                <option value="Tổ Kỹ thuật Địa chính và Lưu trữ">Tổ Kỹ thuật Địa chính và Lưu trữ</option>
+                <option value="Tổ Hành chính Tổng hợp">Tổ Hành chính Tổng hợp</option>
+              </select>
+              <span class="label-hint">Dữ liệu ghi nhận chung theo phạm vi toàn Tổ</span>
+            </div>
+
+            <div class="form-group">
+              <label for="loaiKyBaoCao">Loại kỳ báo cáo <span style="color:red">*</span></label>
+              <select id="loaiKyBaoCao" required>
+                <option value="Định kỳ Hàng tuần">Định kỳ Hàng tuần</option>
+                <option value="Định kỳ Hàng tháng" selected>Định kỳ Hàng tháng</option>
+                <option value="Định kỳ Hàng quý">Định kỳ Hàng quý</option>
+                <option value="Báo cáo 6 tháng / Năm">Báo cáo 6 tháng / Năm</option>
+                <option value="Đột xuất / Theo chuyên đề">Đột xuất / Theo chuyên đề</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="tenKyBaoCao">Tên kỳ / Đợt báo cáo <span style="color:red">*</span></label>
+              <input type="text" id="tenKyBaoCao" placeholder="Ví dụ: Tháng 10/2026, Quý IV/2026, Tuần 44..." required value="Tháng 10/2026">
+              <span class="label-hint">Linh hoạt theo nhu cầu sử dụng lâu dài</span>
+            </div>
+
+            <div class="form-group">
+              <label for="ngayChotSoLieu">Ngày chốt số liệu <span style="color:red">*</span></label>
+              <input type="date" id="ngayChotSoLieu" required>
+            </div>
+          </div>
+
+          <!-- 1. TIẾP NHẬN HỒ SƠ TRONG KỲ -->
+          <h2 class="section-title">
+            <span>📥</span> II. TIẾP NHẬN HỒ SƠ TTHC TRONG KỲ
+          </h2>
+          <div class="grid-4">
+            <div class="form-group">
+              <label for="tiepNhanTrucTiep">Trực tiếp (Tại Một cửa)</label>
+              <input type="number" id="tiepNhanTrucTiep" min="0" value="0" class="calc-trigger">
+            </div>
+            <div class="form-group">
+              <label for="tiepNhanTrucTuyen">Trực tuyến (Cổng DVC)</label>
+              <input type="number" id="tiepNhanTrucTuyen" min="0" value="0" class="calc-trigger">
+            </div>
+            <div class="form-group">
+              <label for="tongTiepNhan">Tổng tiếp nhận trong kỳ</label>
+              <input type="number" id="tongTiepNhan" readonly class="highlight-input">
+            </div>
+            <div class="form-group">
+              <label for="tyLeTrucTuyen">Tỷ lệ trực tuyến (%)</label>
+              <input type="text" id="tyLeTrucTuyen" readonly class="highlight-input">
+            </div>
+          </div>
+
+          <!-- 2. KẾT QUẢ GIẢI QUYẾT TTHC TRẢ TRONG KỲ -->
+          <h2 class="section-title">
+            <span>📤</span> III. KẾT QUẢ GIẢI QUYẾT TTHC ĐÃ TRẢ TRONG KỲ
+          </h2>
+          <div class="grid-4">
+            <div class="form-group">
+              <label for="traTruocHan">Trả trước hạn</label>
+              <input type="number" id="traTruocHan" min="0" value="0" class="calc-trigger">
+            </div>
+            <div class="form-group">
+              <label for="traDungHan">Trả đúng hạn</label>
+              <input type="number" id="traDungHan" min="0" value="0" class="calc-trigger">
+            </div>
+            <div class="form-group">
+              <label for="traQuaHan" style="color: var(--danger)">Quá hạn (Trễ hạn)</label>
+              <input type="number" id="traQuaHan" min="0" value="0" class="calc-trigger" style="border-color: #fca5a5;">
+            </div>
+            <div class="form-group">
+              <label for="tongGiaiQuyet">Tổng đã giải quyết</label>
+              <input type="number" id="tongGiaiQuyet" readonly class="highlight-input">
+            </div>
+          </div>
+          <div class="grid-2" style="margin-top: 12px;">
+            <div class="form-group">
+              <label for="tyLeDungHan">Tỷ lệ giải quyết đúng & trước hạn (%)</label>
+              <input type="text" id="tyLeDungHan" readonly class="highlight-input">
+            </div>
+            <div class="form-group">
+              <label for="soThuXinLoi">Số văn bản xin lỗi đã phát hành (nếu có trễ hạn)</label>
+              <input type="number" id="soThuXinLoi" min="0" value="0">
+            </div>
+          </div>
+
+          <!-- 3. HỒ SƠ ĐANG GIẢI QUYẾT (TỒN CUỐI KỲ) -->
+          <h2 class="section-title">
+            <span>📂</span> IV. HỒ SƠ ĐANG GIẢI QUYẾT (TỒN CUỐI KỲ)
+          </h2>
+          <div class="grid-3">
+            <div class="form-group">
+              <label for="tonTrongHan">Tồn trong hạn (Đang xử lý)</label>
+              <input type="number" id="tonTrongHan" min="0" value="0" class="calc-trigger">
+            </div>
+            <div class="form-group">
+              <label for="tonQuaHan" style="color: var(--danger)">Tồn quá hạn (Đã trễ chưa trả KQ)</label>
+              <input type="number" id="tonQuaHan" min="0" value="0" class="calc-trigger" style="border-color: #fca5a5;">
+            </div>
+            <div class="form-group">
+              <label for="tongDangGiaiQuyet">Tổng hồ sơ đang thụ lý</label>
+              <input type="number" id="tongDangGiaiQuyet" readonly class="highlight-input">
+            </div>
+          </div>
+
+          <!-- 4. NGHĨA VỤ TÀI CHÍNH VÀ THANH TOÁN TRỰC TUYẾN -->
+          <h2 class="section-title">
+            <span>💳</span> V. NGHĨA VỤ TÀI CHÍNH & THANH TOÁN TRỰC TUYẾN
+          </h2>
+          <div class="grid-4">
+            <div class="form-group">
+              <label for="hsCoNghiaVuTC">Hồ sơ có nghĩa vụ TC</label>
+              <input type="number" id="hsCoNghiaVuTC" min="0" value="0" class="calc-trigger">
+            </div>
+            <div class="form-group">
+              <label for="hsThanhToanTT">Thanh toán trực tuyến</label>
+              <input type="number" id="hsThanhToanTT" min="0" value="0" class="calc-trigger">
+            </div>
+            <div class="form-group">
+              <label for="tyLeThanhToanTT">Tỷ lệ thanh toán TT (%)</label>
+              <input type="text" id="tyLeThanhToanTT" readonly class="highlight-input">
+            </div>
+            <div class="form-group">
+              <label for="soTienThanhToanTT">Tổng số tiền TT trực tuyến (VNĐ)</label>
+              <input type="number" id="soTienThanhToanTT" min="0" value="0" step="1000">
+            </div>
+          </div>
+
+          <!-- 5. SỐ HÓA HỒ SƠ VÀ TÁI SỬ DỤNG DỮ LIỆU -->
+          <h2 class="section-title">
+            <span>📑</span> VI. SỐ HÓA HỒ SƠ & TÁI SỬ DỤNG DỮ LIỆU SỐ HÓA
+          </h2>
+          <div class="grid-4">
+            <div class="form-group">
+              <label for="soHoaDauVao">Số hóa thành phần đầu vào</label>
+              <input type="number" id="soHoaDauVao" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label for="soHoaDauRa">Số hóa KQ đầu ra (ký số)</label>
+              <input type="number" id="soHoaDauRa" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label for="taiSuDungSoHoa">Tái sử dụng KQ số hóa</label>
+              <input type="number" id="taiSuDungSoHoa" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label for="chungThucBanSaoDT">Chứng thực bản sao điện tử</label>
+              <input type="number" id="chungThucBanSaoDT" min="0" value="0">
+            </div>
+          </div>
+
+          <!-- 6. PHẦN MỀM SỐ VBDLIS VÀ CSDL DÂN CƯ -->
+          <h2 class="section-title">
+            <span>💻</span> VII. ĐỒNG BỘ PHẦN MỀM VBDLIS & KHAI THÁC CSDL
+          </h2>
+          <div class="grid-3">
+            <div class="form-group">
+              <label for="dongBoVBDLis">Số HS đồng bộ trạng thái VBDLis & TTHC</label>
+              <input type="number" id="dongBoVBDLis" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label for="loiNghenPhanMem" style="color: var(--danger)">Số HS chậm/nghẽn luồng trên phần mềm</label>
+              <input type="number" id="loiNghenPhanMem" min="0" value="0" style="border-color: #fca5a5;">
+            </div>
+            <div class="form-group">
+              <label for="traCuuCSDLDanCu">Số lượt tra cứu CSDL dân cư/đất đai</label>
+              <input type="number" id="traCuuCSDLDanCu" min="0" value="0">
+            </div>
+          </div>
+
+          <!-- 7. GHI CHÚ, VƯỚNG MẮC TRONG KỲ -->
+          <h2 class="section-title">
+            <span>📝</span> VIII. VƯỚNG MẮC & ĐỀ XUẤT CỦA TỔ TRONG KỲ
+          </h2>
+          <div class="form-group">
+            <label for="ghiChuVuongMac">Khó khăn, vướng mắc phát sinh hoặc hồ sơ phức tạp cần hỗ trợ</label>
+            <textarea id="ghiChuVuongMac" rows="3" placeholder="Ghi nhận các vướng mắc về đường truyền phần mềm, hồ sơ pháp lý phức tạp, hoặc các kiến nghị gửi Ban Giám đốc Chi nhánh..."></textarea>
+          </div>
+
+          <!-- Form Buttons -->
+          <div class="form-actions">
+            <button type="button" class="btn btn-outline" id="btnResetForm">
+              <span>🔄</span> Làm mới biểu mẫu
+            </button>
+            <button type="button" class="btn btn-secondary" id="btnPrintForm">
+              <span>🖨️</span> In phiếu báo cáo
+            </button>
+            <button type="button" class="btn btn-success" id="btnExportCsv">
+              <span>📊</span> Xuất Excel (CSV)
+            </button>
+            <button type="submit" class="btn btn-primary" id="btnSaveRecord">
+              <span>💾</span> LƯU DỮ LIỆU BÁO CÁO CỦA TỔ
+            </button>
+          </div>
+
+        </form>
+      </main>
+
+      <!-- Table of Saved Records -->
+      <section class="history-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h2 style="font-size: 1.15rem; font-weight: 700;">📋 LỊCH SỬ DỮ LIỆU BÁO CÁO CÁC KỲ CỦA CÁC TỔ</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Dữ liệu được lưu trữ trực tiếp trên trình duyệt, có thể xuất Excel phục vụ tổng hợp lâu dài</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <select id="filterTo" style="width: auto; padding: 6px 12px; font-size: 0.85rem;">
+              <option value="ALL">Tất cả các Tổ</option>
+              <option value="Tổ Đăng ký cấp GCN">Tổ Đăng ký cấp GCN</option>
+              <option value="Tổ Kỹ thuật Địa chính và Lưu trữ">Tổ Kỹ thuật Địa chính và Lưu trữ</option>
+              <option value="Tổ Hành chính Tổng hợp">Tổ Hành chính Tổng hợp</option>
+            </select>
+            <button class="btn btn-outline" id="btnClearHistory" style="padding: 6px 12px; font-size: 0.85rem; color: var(--danger);">
+              Xóa toàn bộ
+            </button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table id="historyTable">
+            <thead>
+              <tr>
+                <th>STT</th>
+                <th>Kỳ báo cáo</th>
+                <th>Tổ chuyên môn</th>
+                <th>Ngày chốt</th>
+                <th>Tổng tiếp nhận</th>
+                <th>Tỷ lệ trực tuyến</th>
+                <th>Đã giải quyết</th>
+                <th>Đúng hạn (%)</th>
+                <th>Quá hạn</th>
+                <th>Tồn cuối kỳ</th>
+                <th>TT trực tuyến</th>
+                <th>Số tiền TT (VNĐ)</th>
+                <th>Số hóa đầu vào</th>
+                <th>Số hóa đầu ra</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <!-- Dynamic rows -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast">Thông báo</div>
+
+  <script>
+    // ==========================================
+    // 1. DANH SÁCH 82 NHÂN SỰ CHÍNH THỨC CHI NHÁNH SỐ 23
+    // ==========================================
+    const STAFF_CN23 = [
+      // Ban Giám đốc (3)
+      { id: "BGD_01", name: "Nguyễn Chiến Thắng", role: "Giám đốc", dept: "Ban Giám đốc", note: "" },
+      { id: "BGD_02", name: "Đặng Huy Cường", role: "Phó Giám đốc", dept: "Ban Giám đốc", note: "" },
+      { id: "BGD_03", name: "Nguyễn Thị Lệ Hằng", role: "Phó Giám đốc", dept: "Ban Giám đốc", note: "" },
+
+      // Tổ Kỹ thuật Địa chính và Lưu trữ (30)
+      { id: "KTDC_01", name: "Trần Thanh Triết", role: "Tổ trưởng", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_02", name: "Đặng Thị Tuyết Trinh", role: "Tổ phó", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_03", name: "Đỗ Văn Đông", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_04", name: "Nguyễn Văn Tiến", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_05", name: "Nguyễn Thanh Sang", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "Xin nghỉ việc 01/11/2026" },
+      { id: "KTDC_06", name: "Lưu Văn Tuấn", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_07", name: "Đoàn Văn Sang", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_08", name: "Ân Văn Tuấn", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_09", name: "Phạm Minh Trí", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_10", name: "Phạm Thành Vũ", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_11", name: "Nguyễn Quốc Danh", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_12", name: "Lê Quang Khoa", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_13", name: "Đoàn Thanh Phong", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_14", name: "Ngô Thị Cẩm Thúy", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_15", name: "Phạm Trần Hồng Như", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_16", name: "Phạm Hoàng Oanh", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_17", name: "Lê Thị Thùy Duyên", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_18", name: "Nguyễn Thanh Điền", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_19", name: "Huỳnh Thành Duy", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "Xin nghỉ việc 01/11/2026" },
+      { id: "KTDC_20", name: "Vương Ánh Xuân", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_21", name: "Nguyễn Tuấn Anh", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_22", name: "Nguyễn Hoàng Xuân", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_23", name: "Lê Thị Phương Mai", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_24", name: "Lê Ngọc Bảo Ngân", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_25", name: "Hồ Lê Thanh Vũ", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_26", name: "Huỳnh Quốc Nam", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_27", name: "Phạm Minh Hoàng", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_28", name: "Nguyễn Tuấn Kiệt", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "Chuyển từ CN28 ngày 01/8/2026" },
+      { id: "KTDC_29", name: "Trần Thị Hoàng Yến", role: "Nhân viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "Thử việc đến 01/11/2026" },
+      { id: "KTDC_30", name: "Nguyễn Hoài Bảo Phúc", role: "Nhân viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "Thử việc đến 01/11/2026" },
+
+      // Tổ Đăng ký cấp GCN (27)
+      { id: "DKGCN_01", name: "Nguyễn Thị Thùy Trang", role: "Tổ trưởng", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_02", name: "Nguyễn Thị Thu Minh", role: "Tổ phó", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_03", name: "Huỳnh Tấn Nguyên", role: "Tổ phó", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_04", name: "Nguyễn Thành Như Bảo", role: "Tổ phó", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_05", name: "Nguyễn Tiến Thịnh", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_06", name: "Hoàng Minh Tú", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_07", name: "Huỳnh Thị Ái Nhi", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_08", name: "Trần Nguyễn Hoài Lam", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_09", name: "Nguyễn Thị Huỳnh Mai", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_10", name: "Nguyễn Văn Khánh", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_11", name: "Trần Thị Thùy Trang", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_12", name: "Tạ Nguyễn Bích Trang", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_13", name: "Nguyễn Thị Lệ Thu", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_14", name: "Phạm Nguyễn Lan Anh", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_15", name: "Nguyễn Trần Thảo Vy", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_16", name: "Lê Sơn Thanh", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_17", name: "Nguyễn Bích Ngọc", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_18", name: "Nguyễn Trung Thành", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_19", name: "Nguyễn Thị Dáng", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_20", name: "Phạm Thị Yến Nhi", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_21", name: "Phan Trọng Hiệp", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_22", name: "Nguyễn Thị Ngọc Thảo", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_23", name: "Nguyễn Nhật Quyền Trinh", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_24", name: "Đỗ Thị Yến", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_25", name: "Võ Tường Lam", role: "Nhân viên", dept: "Tổ Đăng ký cấp GCN", note: "Thử việc đến 01/11/2026" },
+      { id: "DKGCN_26", name: "Nguyễn Ngọc Quế Trân", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "Chuyển từ CS2 qua ngày 03/9/2026" },
+      { id: "DKGCN_27", name: "Trần Đình Siêu", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+
+      // Tổ Hành chính Tổng hợp (22)
+      { id: "HCTH_01", name: "Nguyễn Thị Bích Tuyền", role: "Tổ trưởng", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_02", name: "Bùi Thị Minh Nguyệt", role: "Tổ phó", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_03", name: "Hồ Thị Hồng Linh", role: "Tổ phó", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_04", name: "Nguyễn Thị Mai", role: "Tổ phó", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_05", name: "Võ Phi Trúc", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_06", name: "Trương Ngô Hồng Duyên", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_07", name: "Nguyễn Anh Khôi", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_08", name: "Quản Nguyễn Thảo Nguyên", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_09", name: "Nguyễn Hoàng Duy", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_10", name: "Nguyễn Thị Trúc Phương", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_11", name: "Trần Quốc Hưng", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_12", name: "Đoàn Thị Hoàng An", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_13", name: "Nguyễn Thị Ngọc Trản", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_14", name: "Nguyễn Khánh Duy", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_15", name: "Nguyễn Duy Tấn", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_16", name: "Nguyễn Thảo Tuyết Nhi", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_17", name: "Lê Hồng Phong", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_18", name: "Nguyễn Thanh Phú", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_19", name: "Hồ Lê Thanh Vũ", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_20", name: "Nguyễn Hoàng Tiến", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_21", name: "Lê Thị Thúy Hằng", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_22", name: "Đỗ Trọng Minh Quân", role: "Nhân viên", dept: "Tổ Hành chính Tổng hợp", note: "Thử việc đến 01/11/2026" }
+    ];
+
+    // Local Storage Keys
+    const STORAGE_KEY_PERFORMANCE = 'CN23_PERFORMANCE_RECORDS_V1';
+    const STORAGE_KEY_TASKS = 'CN23_TASK_ASSIGNMENTS_V1';
+
+    // Migrate any older records if present
+    try {
+      const oldRecords = localStorage.getItem('CN23_TB30347_WEEKLY_RECORDS_V1');
+      if (oldRecords && !localStorage.getItem(STORAGE_KEY_PERFORMANCE)) {
+        localStorage.setItem(STORAGE_KEY_PERFORMANCE, oldRecords);
+      }
+    } catch (e) {}
+
+    // ==========================================
+    // 2. TAB SWITCHING LOGIC
+    // ==========================================
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        btn.classList.add('active');
+        const targetTab = btn.getAttribute('data-tab');
+        document.getElementById(targetTab).classList.add('active');
+      });
+    });
+
+    // ==========================================
+    // 3. DROPLIST NHÂN SỰ CHI NHÁNH 23
+    // ==========================================
+    const staffSelect = document.getElementById('assignStaff');
+    const deptFilterSelect = document.getElementById('filterStaffDept');
+    const staffDetailHint = document.getElementById('assignStaffDetail');
+
+    function populateStaffDropdown(filterDept = 'ALL') {
+      staffSelect.innerHTML = '<option value="" disabled selected>-- Chọn cán bộ nhận việc --</option>';
+
+      const depts = filterDept === 'ALL' 
+        ? ["Tổ Kỹ thuật Địa chính và Lưu trữ", "Tổ Đăng ký cấp GCN", "Tổ Hành chính Tổng hợp", "Ban Giám đốc"]
+        : [filterDept];
+
+      depts.forEach(deptName => {
+        const staffInDept = STAFF_CN23.filter(s => s.dept === deptName);
+        if (staffInDept.length > 0) {
+          const optGroup = document.createElement('optgroup');
+          optGroup.label = `${deptName} (${staffInDept.length} nhân sự)`;
+          staffInDept.forEach(staff => {
+            const opt = document.createElement('option');
+            opt.value = staff.id;
+            const noteText = staff.note ? ` [${staff.note}]` : '';
+            opt.textContent = `${staff.name} — ${staff.role}${noteText}`;
+            optGroup.appendChild(opt);
+          });
+          staffSelect.appendChild(optGroup);
+        }
+      });
+    }
+
+    deptFilterSelect.addEventListener('change', () => {
+      populateStaffDropdown(deptFilterSelect.value);
+      staffDetailHint.textContent = 'Đã cập nhật danh sách theo Tổ đã lọc';
+    });
+
+    staffSelect.addEventListener('change', () => {
+      const selectedId = staffSelect.value;
+      const staff = STAFF_CN23.find(s => s.id === selectedId);
+      if (staff) {
+        staffDetailHint.innerHTML = `<strong>Tổ:</strong> ${staff.dept} | <strong>Chức vụ:</strong> ${staff.role} ${staff.note ? `<span style="color:var(--danger)">(${staff.note})</span>` : ''}`;
+      }
+    });
+
+    // File Upload Simulation
+    let attachedFileInfo = null;
+    const fileInput = document.getElementById('taskFileInput');
+    const filePreview = document.getElementById('fileUploadPreview');
+    const fileLabel = document.getElementById('fileUploadLabel');
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        attachedFileInfo = {
+          name: file.name,
+          size: (file.size / 1024).toFixed(1) + ' KB',
+          type: file.type || 'Tệp đính kèm'
+        };
+        filePreview.style.display = 'flex';
+        filePreview.innerHTML = `📄 <strong>${file.name}</strong> (${attachedFileInfo.size}) <span style="cursor:pointer; color:var(--danger);" onclick="removeAttachedFile()">✕ Hủy</span>`;
+        fileLabel.textContent = 'Đã chọn tệp thành công';
+      }
+    });
+
+    window.removeAttachedFile = function() {
+      fileInput.value = '';
+      attachedFileInfo = null;
+      filePreview.style.display = 'none';
+      fileLabel.textContent = 'Nhấp để chọn tệp đính kèm từ máy tính (tối đa 25MB)';
+    };
+
+    // ==========================================
+    // 4. TASK MANAGEMENT (GIAO VIỆC & TIẾN ĐỘ)
+    // ==========================================
+    function getStoredTasks() {
+      const data = localStorage.getItem(STORAGE_KEY_TASKS);
+      return data ? JSON.parse(data) : [];
+    }
+
+    function saveStoredTasks(tasks) {
+      localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(tasks));
+      updateTaskKPIs();
+      renderTasksTable();
+    }
+
+    function updateTaskKPIs() {
+      const tasks = getStoredTasks();
+      const total = tasks.length;
+      const completed = tasks.filter(t => t.status === 'Đã hoàn thành').length;
+      
+      const now = new Date();
+      let overdue = 0;
+      let inProgress = 0;
+
+      tasks.forEach(t => {
+        if (t.status !== 'Đã hoàn thành') {
+          if (t.deadline && new Date(t.deadline) < now) {
+            overdue++;
+          } else {
+            inProgress++;
+          }
+        }
+      });
+
+      document.getElementById('kpiTotalTasks').textContent = total;
+      document.getElementById('kpiInProgressTasks').textContent = inProgress;
+      document.getElementById('kpiOverdueTasks').textContent = overdue;
+      document.getElementById('kpiCompletedTasks').textContent = completed;
+
+      const rate = total > 0 ? ((completed / total) * 100).toFixed(1) : "0.0";
+      document.getElementById('kpiCompletionRate').textContent = `Tỷ lệ: ${rate}%`;
+
+      const overdueBadge = document.getElementById('kpiOverdueBadge');
+      if (overdue > 0) {
+        overdueBadge.className = 'kpi-badge urgent';
+        overdueBadge.textContent = `⚠️ Có ${overdue} việc quá hạn!`;
+      } else {
+        overdueBadge.className = 'kpi-badge pass';
+        overdueBadge.textContent = '✓ 100% trong hạn';
+      }
+    }
+
+    function renderTasksTable() {
+      const tasks = getStoredTasks();
+      const filterStatus = document.getElementById('filterTaskStatus').value;
+      const filterDept = document.getElementById('filterTaskDept').value;
+      const tbody = document.getElementById('taskTableBody');
+      tbody.innerHTML = '';
+
+      let filtered = tasks;
+      if (filterStatus !== 'ALL') {
+        if (filterStatus === 'Quá hạn') {
+          const now = new Date();
+          filtered = filtered.filter(t => t.status !== 'Đã hoàn thành' && new Date(t.deadline) < now);
+        } else {
+          filtered = filtered.filter(t => t.status === filterStatus);
+        }
+      }
+
+      if (filterDept !== 'ALL') {
+        filtered = filtered.filter(t => t.assigneeDept === filterDept);
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding: 24px; color: var(--text-muted);">Chưa có nhiệm vụ giao việc nào phù hợp với bộ lọc.</td></tr>`;
+        return;
+      }
+
+      const now = new Date();
+
+      filtered.forEach((t, idx) => {
+        const isOverdue = t.status !== 'Đã hoàn thành' && t.deadline && new Date(t.deadline) < now;
+        
+        let pClass = 'pass';
+        if (t.priority === 'Khẩn') pClass = 'warn';
+        if (t.priority === 'Hỏa tốc') pClass = 'urgent';
+
+        let sClass = 'warn';
+        let sText = t.status;
+        if (t.status === 'Đã hoàn thành') {
+          sClass = 'pass';
+        } else if (isOverdue) {
+          sClass = 'urgent';
+          sText = '⚠️ Quá hạn Deadline';
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${t.id}</strong></td>
+          <td>${t.leader}</td>
+          <td><strong>${t.assigneeName}</strong></td>
+          <td>${t.assigneeDept}</td>
+          <td title="${t.title}" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            <strong>${t.title}</strong>
+          </td>
+          <td>
+            ${t.docRef ? `<div>📜 ${t.docRef}</div>` : ''}
+            ${t.attachedFile ? `<div style="font-size:0.75rem; color:var(--primary);">📎 ${t.attachedFile.name}</div>` : '<span style="color:var(--text-muted)">Không có tệp</span>'}
+          </td>
+          <td title="${t.guidance}" style="max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            ${t.guidance}
+          </td>
+          <td style="${isOverdue ? 'color: var(--danger); font-weight: 700;' : ''}">
+            ${t.deadline ? t.deadline.replace('T', ' ') : 'Chưa đặt'}
+          </td>
+          <td><span class="kpi-badge ${pClass}">${t.priority}</span></td>
+          <td><span class="kpi-badge ${sClass}">${sText}</span></td>
+          <td>
+            ${t.status !== 'Đã hoàn thành' ? `
+              <button class="action-icon-btn done" title="Đánh dấu Hoàn thành" onclick="markTaskDone('${t.id}')">✓</button>
+            ` : `
+              <button class="action-icon-btn" title="Chuyển về Đang làm" onclick="markTaskReopen('${t.id}')">↩</button>
+            `}
+            <button class="action-icon-btn" title="In phiếu giao việc này" onclick="printSingleTask('${t.id}')">🖨️</button>
+            <button class="action-icon-btn" title="Xóa nhiệm vụ" onclick="deleteTask('${t.id}')">🗑️</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Submit Task
+    document.getElementById('taskAssignmentForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const staffId = staffSelect.value;
+      const staff = STAFF_CN23.find(s => s.id === staffId);
+      if (!staff) {
+        showToast('Vui lòng chọn nhân viên tiếp nhận việc!', 'error');
+        return;
+      }
+
+      const newTask = {
+        id: 'TASK_' + Math.floor(1000 + Math.random() * 9000),
+        leader: document.getElementById('assignLeader').value,
+        assigneeId: staff.id,
+        assigneeName: staff.name,
+        assigneeRole: staff.role,
+        assigneeDept: staff.dept,
+        title: document.getElementById('taskTitle').value.trim(),
+        priority: document.getElementById('taskPriority').value,
+        docRef: document.getElementById('taskDocRef').value.trim(),
+        attachedFile: attachedFileInfo,
+        guidance: document.getElementById('leaderGuidance').value.trim(),
+        deadline: document.getElementById('taskDeadline').value,
+        note: document.getElementById('taskNote').value.trim(),
+        status: 'Đang thực hiện',
+        createdAt: new Date().toLocaleString('vi-VN')
+      };
+
+      const tasks = getStoredTasks();
+      tasks.unshift(newTask);
+      saveStoredTasks(tasks);
+
+      showToast(`Đã phát lệnh giao việc thành công cho đồng chí ${staff.name}!`);
+
+      document.getElementById('taskTitle').value = '';
+      document.getElementById('taskDocRef').value = '';
+      document.getElementById('leaderGuidance').value = '';
+      document.getElementById('taskNote').value = '';
+      removeAttachedFile();
+      
+      setTimeout(() => {
+        document.querySelector('[data-tab="tab-theo-doi-viec"]').click();
+      }, 700);
+    });
+
+    window.markTaskDone = function(id) {
+      const tasks = getStoredTasks();
+      const task = tasks.find(t => t.id === id);
+      if (task) {
+        task.status = 'Đã hoàn thành';
+        task.completedAt = new Date().toLocaleString('vi-VN');
+        saveStoredTasks(tasks);
+        showToast(`Đã ghi nhận hoàn thành nhiệm vụ ${id}!`);
+      }
+    };
+
+    window.markTaskReopen = function(id) {
+      const tasks = getStoredTasks();
+      const task = tasks.find(t => t.id === id);
+      if (task) {
+        task.status = 'Đang thực hiện';
+        delete task.completedAt;
+        saveStoredTasks(tasks);
+        showToast(`Đã chuyển nhiệm vụ ${id} về trạng thái đang thực hiện`);
+      }
+    };
+
+    window.deleteTask = function(id) {
+      if (!confirm(`Bạn có chắc muốn xóa nhiệm vụ ${id} không?`)) return;
+      let tasks = getStoredTasks();
+      tasks = tasks.filter(t => t.id !== id);
+      saveStoredTasks(tasks);
+      showToast('Đã xóa nhiệm vụ thành công!');
+    };
+
+    window.printSingleTask = function(id) {
+      const tasks = getStoredTasks();
+      const t = tasks.find(t => t.id === id);
+      if (!t) return;
+
+      const printWindow = window.open('', '_blank', 'width=800,height=900');
+      printWindow.document.write(`
+        <html>
+        <head>
+          <title>Phiếu Giao Việc - ${t.id}</title>
+          <style>
+            body { font-family: 'Times New Roman', Times, serif; padding: 40px; line-height: 1.6; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .title { font-size: 18pt; font-weight: bold; text-align: center; margin: 20px 0; text-transform: uppercase; }
+            .row { margin-bottom: 12px; font-size: 13pt; }
+            .label { font-weight: bold; }
+            .box { border: 1px solid #333; padding: 15px; border-radius: 6px; margin: 15px 0; background: #fafafa; }
+            .signatures { display: flex; justify-content: space-between; margin-top: 50px; text-align: center; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div><strong>SỞ NÔNG NGHIỆP VÀ MÔI TRƯỜNG TP. HỒ CHÍ MINH</strong></div>
+            <div><strong>VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI THÀNH PHỐ - CHI NHÁNH SỐ 23</strong></div>
+            <div>***</div>
+          </div>
+          <div class="title">PHIẾU CHỈ ĐẠO GIAO VIỆC & ĐÔN ĐỐC TIẾN ĐỘ</div>
+          <div style="text-align: center; font-style: italic; margin-bottom: 20px;">(Mã nhiệm vụ: ${t.id} - Ngày giao: ${t.createdAt})</div>
+          
+          <div class="row"><span class="label">Người giao việc:</span> ${t.leader}</div>
+          <div class="row"><span class="label">Cán bộ nhận việc:</span> <strong>${t.assigneeName}</strong> (${t.assigneeRole} - ${t.assigneeDept})</div>
+          <div class="row"><span class="label">Tên nhiệm vụ:</span> <strong>${t.title}</strong></div>
+          <div class="row"><span class="label">Mức độ ưu tiên:</span> ${t.priority}</div>
+          <div class="row"><span class="label">Văn bản căn cứ/đính kèm:</span> ${t.docRef || 'Không'} ${t.attachedFile ? `(Tệp: ${t.attachedFile.name})` : ''}</div>
+          <div class="row"><span class="label">Thời hạn hoàn thành (Deadline):</span> <span style="color:red; font-weight:bold;">${t.deadline ? t.deadline.replace('T', ' ') : 'Chưa đặt'}</span></div>
+          
+          <div class="box">
+            <div class="label" style="margin-bottom: 6px;">Ý KIẾN CHỈ ĐẠO CỦA LÃNH ĐẠO:</div>
+            <div>${t.guidance.replace(/\n/g, '<br>')}</div>
+          </div>
+
+          ${t.note ? `<div class="row"><span class="label">Ghi chú:</span> ${t.note}</div>` : ''}
+
+          <div class="signatures">
+            <div>
+              <strong>CÁN BỘ TIẾP NHẬN</strong><br>
+              <em>(Ký và ghi rõ họ tên)</em><br><br><br><br>
+              <strong>${t.assigneeName}</strong>
+            </div>
+            <div>
+              <strong>LÃNH ĐẠO GIAO VIỆC</strong><br>
+              <em>(Ký và ghi rõ họ tên)</em><br><br><br><br>
+              <strong>${t.leader.split('(')[0].trim()}</strong>
+            </div>
+          </div>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => { printWindow.print(); }, 500);
+    };
+
+    document.getElementById('filterTaskStatus').addEventListener('change', renderTasksTable);
+    document.getElementById('filterTaskDept').addEventListener('change', renderTasksTable);
+
+    document.getElementById('btnExportTaskCsv').addEventListener('click', () => {
+      const tasks = getStoredTasks();
+      if (tasks.length === 0) {
+        showToast('Chưa có nhiệm vụ nào để xuất!', 'error');
+        return;
+      }
+
+      const headers = ["Mã việc", "Người giao việc", "Cán bộ nhận", "Chức danh", "Tổ chuyên môn", "Tên nhiệm vụ", "Độ khẩn", "Văn bản căn cứ", "Tệp đính kèm", "Ý kiến chỉ đạo", "Thời hạn (Deadline)", "Trạng thái", "Ngày tạo"];
+      const rows = [headers.join(",")];
+
+      tasks.forEach(t => {
+        const row = [
+          `"${t.id}"`,
+          `"${t.leader}"`,
+          `"${t.assigneeName}"`,
+          `"${t.assigneeRole}"`,
+          `"${t.assigneeDept}"`,
+          `"${t.title.replace(/"/g, '""')}"`,
+          `"${t.priority}"`,
+          `"${(t.docRef || '').replace(/"/g, '""')}"`,
+          `"${t.attachedFile ? t.attachedFile.name : ''}"`,
+          `"${t.guidance.replace(/"/g, '""')}"`,
+          `"${t.deadline || ''}"`,
+          `"${t.status}"`,
+          `"${t.createdAt}"`
+        ];
+        rows.push(row.join(","));
+      });
+
+      const blob = new Blob(["\uFEFF" + rows.join("\r\n")], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `DS_Giao_viec_Chi_dao_CN23_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Đã xuất danh sách giao việc ra Excel!');
+    });
+
+    document.getElementById('btnClearAllTasks').addEventListener('click', () => {
+      if (confirm('CẢNH BÁO: Bạn có chắc chắn muốn xóa TOÀN BỘ danh sách nhiệm vụ đã giao không?')) {
+        localStorage.removeItem(STORAGE_KEY_TASKS);
+        updateTaskKPIs();
+        renderTasksTable();
+        showToast('Đã xóa toàn bộ nhiệm vụ');
+      }
+    });
+
+    document.getElementById('btnResetTaskForm').addEventListener('click', () => {
+      document.getElementById('taskAssignmentForm').reset();
+      removeAttachedFile();
+      showToast('Đã làm mới mẫu giao việc');
+    });
+
+    document.getElementById('btnPrintTaskTicket').addEventListener('click', () => {
+      window.print();
+    });
+
+    // ==========================================
+    // 5. BÁO CÁO SỐ LIỆU THỰC HIỆN CỦA TỔ (TAB 3)
+    // ==========================================
+    document.getElementById('ngayChotSoLieu').value = new Date().toISOString().split('T')[0];
+
+    function calculatePerformanceMetrics() {
+      const trucTiep = parseInt(document.getElementById('tiepNhanTrucTiep').value) || 0;
+      const trucTuyen = parseInt(document.getElementById('tiepNhanTrucTuyen').value) || 0;
+      const tongTN = trucTiep + trucTuyen;
+      document.getElementById('tongTiepNhan').value = tongTN;
+
+      const tyLeTT = tongTN > 0 ? ((trucTuyen / tongTN) * 100).toFixed(1) : "0.0";
+      document.getElementById('tyLeTrucTuyen').value = tyLeTT + "%";
+
+      const truocHan = parseInt(document.getElementById('traTruocHan').value) || 0;
+      const dungHan = parseInt(document.getElementById('traDungHan').value) || 0;
+      const quaHan = parseInt(document.getElementById('traQuaHan').value) || 0;
+      const tongGQ = truocHan + dungHan + quaHan;
+      document.getElementById('tongGiaiQuyet').value = tongGQ;
+
+      const tyLeDH = tongGQ > 0 ? (((truocHan + dungHan) / tongGQ) * 100).toFixed(1) : "0.0";
+      document.getElementById('tyLeDungHan').value = tyLeDH + "%";
+
+      const tonTH = parseInt(document.getElementById('tonTrongHan').value) || 0;
+      const tonQH = parseInt(document.getElementById('tonQuaHan').value) || 0;
+      document.getElementById('tongDangGiaiQuyet').value = tonTH + tonQH;
+
+      const hsTC = parseInt(document.getElementById('hsCoNghiaVuTC').value) || 0;
+      const hsTT = parseInt(document.getElementById('hsThanhToanTT').value) || 0;
+      const tyLePay = hsTC > 0 ? ((hsTT / hsTC) * 100).toFixed(1) : "0.0";
+      document.getElementById('tyLeThanhToanTT').value = tyLePay + "%";
+
+      document.getElementById('kpiTotalReceive').textContent = tongTN.toLocaleString('vi-VN');
+      document.getElementById('kpiReceiveDetail').textContent = `Trực tiếp: ${trucTiep} | Trực tuyến: ${trucTuyen}`;
+
+      const numTT = parseFloat(tyLeTT);
+      document.getElementById('kpiOnlineRate').textContent = tyLeTT + "%";
+      const badgeTT = document.getElementById('kpiOnlineBadge');
+      if (numTT >= 50.0) {
+        badgeTT.className = "kpi-badge pass";
+        badgeTT.textContent = "✓ Đạt chỉ tiêu (≥ 50%)";
+      } else {
+        badgeTT.className = "kpi-badge warn";
+        badgeTT.textContent = "Chỉ tiêu: ≥ 50.0%";
+      }
+
+      const numDH = parseFloat(tyLeDH);
+      document.getElementById('kpiOnTimeRate').textContent = tyLeDH + "%";
+      const badgeDH = document.getElementById('kpiOnTimeBadge');
+      if (numDH >= 98.0) {
+        badgeDH.className = "kpi-badge pass";
+        badgeDH.textContent = "✓ Đạt chỉ tiêu (≥ 98%)";
+      } else if (numDH > 0 && numDH < 98.0) {
+        badgeDH.className = "kpi-badge fail";
+        badgeDH.textContent = "Chưa đạt chỉ tiêu (< 98%)";
+      } else {
+        badgeDH.className = "kpi-badge warn";
+        badgeDH.textContent = "Chỉ tiêu: ≥ 98.0%";
+      }
+
+      const numPay = parseFloat(tyLePay);
+      document.getElementById('kpiPayOnlineRate').textContent = tyLePay + "%";
+      const badgePay = document.getElementById('kpiPayOnlineBadge');
+      if (numPay >= 40.0) {
+        badgePay.className = "kpi-badge pass";
+        badgePay.textContent = "✓ Đạt chỉ tiêu (≥ 40%)";
+      } else {
+        badgePay.className = "kpi-badge warn";
+        badgePay.textContent = "Chỉ tiêu: ≥ 40.0%";
+      }
+    }
+
+    document.querySelectorAll('.calc-trigger').forEach(input => {
+      input.addEventListener('input', calculatePerformanceMetrics);
+    });
+
+    function getStoredPerformanceRecords() {
+      const data = localStorage.getItem(STORAGE_KEY_PERFORMANCE);
+      return data ? JSON.parse(data) : [];
+    }
+
+    function saveStoredPerformanceRecords(records) {
+      localStorage.setItem(STORAGE_KEY_PERFORMANCE, JSON.stringify(records));
+    }
+
+    function renderPerformanceHistory() {
+      const records = getStoredPerformanceRecords();
+      const filter = document.getElementById('filterTo').value;
+      const tbody = document.getElementById('historyTableBody');
+      tbody.innerHTML = '';
+
+      const filtered = filter === 'ALL' ? records : records.filter(r => r.toChuyenMon === filter);
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="15" style="text-align: center; color: var(--text-muted); padding: 20px;">Chưa có dữ liệu nào được ghi nhận. Vui lòng nhập dữ liệu ở biểu mẫu phía trên.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach((rec, idx) => {
+        const periodDisplay = rec.tenKyBaoCao || (rec.tuanBaoCao ? rec.tuanBaoCao.split(' ')[0] : 'Kỳ báo cáo');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td><strong>${periodDisplay}</strong></td>
+          <td>${rec.toChuyenMon}</td>
+          <td>${rec.ngayChotSoLieu}</td>
+          <td>${rec.tongTiepNhan}</td>
+          <td><span class="kpi-badge ${parseFloat(rec.tyLeTrucTuyen) >= 50 ? 'pass' : 'warn'}">${rec.tyLeTrucTuyen}</span></td>
+          <td>${rec.tongGiaiQuyet}</td>
+          <td><span class="kpi-badge ${parseFloat(rec.tyLeDungHan) >= 98 ? 'pass' : 'fail'}">${rec.tyLeDungHan}</span></td>
+          <td style="color: ${rec.traQuaHan > 0 ? 'var(--danger)' : 'inherit'}; font-weight: ${rec.traQuaHan > 0 ? '700' : 'normal'}">${rec.traQuaHan}</td>
+          <td>${rec.tongDangGiaiQuyet} (QH: ${rec.tonQuaHan})</td>
+          <td>${rec.tyLeThanhToanTT}</td>
+          <td>${(parseInt(rec.soTienThanhToanTT) || 0).toLocaleString('vi-VN')} đ</td>
+          <td>${rec.soHoaDauVao}</td>
+          <td>${rec.soHoaDauRa}</td>
+          <td>
+            <button class="action-icon-btn" title="Xóa dòng này" onclick="deletePerformanceRecord('${rec.id}')">🗑️</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.deletePerformanceRecord = function(id) {
+      if (!confirm('Bạn có chắc chắn muốn xóa bản ghi số liệu này không?')) return;
+      let records = getStoredPerformanceRecords();
+      records = records.filter(r => r.id !== id);
+      saveStoredPerformanceRecords(records);
+      renderPerformanceHistory();
+      showToast('Đã xóa bản ghi thành công!');
+    };
+
+    document.getElementById('performanceReportForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      calculatePerformanceMetrics();
+
+      const record = {
+        id: 'REC_' + Date.now(),
+        toChuyenMon: document.getElementById('toChuyenMon').value,
+        loaiKyBaoCao: document.getElementById('loaiKyBaoCao').value,
+        tenKyBaoCao: document.getElementById('tenKyBaoCao').value.trim(),
+        ngayChotSoLieu: document.getElementById('ngayChotSoLieu').value,
+        
+        tiepNhanTrucTiep: parseInt(document.getElementById('tiepNhanTrucTiep').value) || 0,
+        tiepNhanTrucTuyen: parseInt(document.getElementById('tiepNhanTrucTuyen').value) || 0,
+        tongTiepNhan: parseInt(document.getElementById('tongTiepNhan').value) || 0,
+        tyLeTrucTuyen: document.getElementById('tyLeTrucTuyen').value,
+
+        traTruocHan: parseInt(document.getElementById('traTruocHan').value) || 0,
+        traDungHan: parseInt(document.getElementById('traDungHan').value) || 0,
+        traQuaHan: parseInt(document.getElementById('traQuaHan').value) || 0,
+        tongGiaiQuyet: parseInt(document.getElementById('tongGiaiQuyet').value) || 0,
+        tyLeDungHan: document.getElementById('tyLeDungHan').value,
+        soThuXinLoi: parseInt(document.getElementById('soThuXinLoi').value) || 0,
+
+        tonTrongHan: parseInt(document.getElementById('tonTrongHan').value) || 0,
+        tonQuaHan: parseInt(document.getElementById('tonQuaHan').value) || 0,
+        tongDangGiaiQuyet: parseInt(document.getElementById('tongDangGiaiQuyet').value) || 0,
+
+        hsCoNghiaVuTC: parseInt(document.getElementById('hsCoNghiaVuTC').value) || 0,
+        hsThanhToanTT: parseInt(document.getElementById('hsThanhToanTT').value) || 0,
+        tyLeThanhToanTT: document.getElementById('tyLeThanhToanTT').value,
+        soTienThanhToanTT: parseInt(document.getElementById('soTienThanhToanTT').value) || 0,
+
+        soHoaDauVao: parseInt(document.getElementById('soHoaDauVao').value) || 0,
+        soHoaDauRa: parseInt(document.getElementById('soHoaDauRa').value) || 0,
+        taiSuDungSoHoa: parseInt(document.getElementById('taiSuDungSoHoa').value) || 0,
+        chungThucBanSaoDT: parseInt(document.getElementById('chungThucBanSaoDT').value) || 0,
+
+        dongBoVBDLis: parseInt(document.getElementById('dongBoVBDLis').value) || 0,
+        loiNghenPhanMem: parseInt(document.getElementById('loiNghenPhanMem').value) || 0,
+        traCuuCSDLDanCu: parseInt(document.getElementById('traCuuCSDLDanCu').value) || 0,
+
+        ghiChuVuongMac: document.getElementById('ghiChuVuongMac').value,
+        createdAt: new Date().toLocaleString('vi-VN')
+      };
+
+      const records = getStoredPerformanceRecords();
+      const existingIdx = records.findIndex(r => r.toChuyenMon === record.toChuyenMon && r.tenKyBaoCao === record.tenKyBaoCao);
+      if (existingIdx !== -1) {
+        if (confirm(`Số liệu của ${record.toChuyenMon} cho ${record.tenKyBaoCao} đã tồn tại. Bạn có muốn CẬP NHẬT đè số liệu mới không?`)) {
+          records[existingIdx] = record;
+        } else {
+          return;
+        }
+      } else {
+        records.unshift(record);
+      }
+
+      saveStoredPerformanceRecords(records);
+      renderPerformanceHistory();
+      showToast(`Đã lưu thành công số liệu báo cáo cho ${record.toChuyenMon}!`);
+    });
+
+    document.getElementById('btnResetForm').addEventListener('click', function() {
+      if (confirm('Làm mới các ô nhập liệu?')) {
+        document.getElementById('performanceReportForm').reset();
+        document.getElementById('ngayChotSoLieu').value = new Date().toISOString().split('T')[0];
+        calculatePerformanceMetrics();
+        showToast('Đã làm mới biểu mẫu');
+      }
+    });
+
+    document.getElementById('btnPrintForm').addEventListener('click', function() {
+      window.print();
+    });
+
+    document.getElementById('filterTo').addEventListener('change', renderPerformanceHistory);
+
+    document.getElementById('btnClearHistory').addEventListener('click', function() {
+      if (confirm('CẢNH BÁO: Toàn bộ dữ liệu lịch sử các kỳ báo cáo đã lưu sẽ bị xóa vĩnh viễn khỏi trình duyệt. Bạn có chắc chắn không?')) {
+        localStorage.removeItem(STORAGE_KEY_PERFORMANCE);
+        renderPerformanceHistory();
+        showToast('Đã xóa toàn bộ lịch sử lưu trữ');
+      }
+    });
+
+    // Export Performance CSV
+    document.getElementById('btnExportCsv').addEventListener('click', function() {
+      const records = getStoredPerformanceRecords();
+      if (records.length === 0) {
+        showToast('Chưa có dữ liệu nào để xuất!', 'error');
+        return;
+      }
+
+      const headers = [
+        "STT", "Tổ chuyên môn", "Kỳ báo cáo", "Loại kỳ", "Ngày chốt",
+        "Tiếp nhận trực tiếp", "Tiếp nhận trực tuyến", "Tổng tiếp nhận", "Tỷ lệ trực tuyến",
+        "Trả trước hạn", "Trả đúng hạn", "Trả quá hạn", "Tổng giải quyết", "Tỷ lệ đúng hạn", "Thư xin lỗi",
+        "Tồn trong hạn", "Tồn quá hạn", "Tổng đang giải quyết",
+        "Hồ sơ có nghĩa vụ TC", "Thanh toán trực tuyến", "Tỷ lệ thanh toán TT", "Số tiền TT (VNĐ)",
+        "Số hóa đầu vào", "Số hóa đầu ra", "Tái sử dụng số hóa", "Chứng thực bản sao ĐT",
+        "Đồng bộ VBDLis", "Lỗi nghẽn phần mềm", "Tra cứu CSDL dân cư", "Ghi chú vướng mắc", "Thời gian lưu"
+      ];
+
+      const csvRows = [headers.join(",")];
+
+      records.forEach((r, idx) => {
+        const row = [
+          idx + 1,
+          `"${r.toChuyenMon}"`,
+          `"${r.tenKyBaoCao || r.tuanBaoCao || ''}"`,
+          `"${r.loaiKyBaoCao || 'Định kỳ'}"`,
+          `"${r.ngayChotSoLieu}"`,
+          r.tiepNhanTrucTiep,
+          r.tiepNhanTrucTuyen,
+          r.tongTiepNhan,
+          `"${r.tyLeTrucTuyen}"`,
+          r.traTruocHan,
+          r.traDungHan,
+          r.traQuaHan,
+          r.tongGiaiQuyet,
+          `"${r.tyLeDungHan}"`,
+          r.soThuXinLoi,
+          r.tonTrongHan,
+          r.tonQuaHan,
+          r.tongDangGiaiQuyet,
+          r.hsCoNghiaVuTC,
+          r.hsThanhToanTT,
+          `"${r.tyLeThanhToanTT}"`,
+          r.soTienThanhToanTT,
+          r.soHoaDauVao,
+          r.soHoaDauRa,
+          r.taiSuDungSoHoa,
+          r.chungThucBanSaoDT,
+          r.dongBoVBDLis,
+          r.loiNghenPhanMem,
+          r.traCuuCSDLDanCu,
+          `"${(r.ghiChuVuongMac || '').replace(/"/g, '""')}"`,
+          `"${r.createdAt}"`
+        ];
+        csvRows.push(row.join(","));
+      });
+
+      const csvContent = "\uFEFF" + csvRows.join("\r\n");
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `BC_so_lieu_thuc_hien_CN23_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Đã xuất file dữ liệu thành công!');
+    });
+
+    // ==========================================
+    // 6. COMMON UTILITIES (TOAST & THEME)
+    // ==========================================
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = `toast show ${type}`;
+      setTimeout(() => {
+        toast.className = 'toast';
+      }, 3200);
+    }
+
+    const themeBtn = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const themeText = document.getElementById('themeText');
+
+    themeBtn.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      if (currentTheme === 'dark') {
+        document.documentElement.removeAttribute('data-theme');
+        themeIcon.textContent = '🌙';
+        themeText.textContent = 'Chế độ tối';
+        localStorage.setItem('theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        themeIcon.textContent = '☀️';
+        themeText.textContent = 'Chế độ sáng';
+        localStorage.setItem('theme', 'dark');
+      }
+    });
+
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      themeIcon.textContent = '☀️';
+      themeText.textContent = 'Chế độ sáng';
+    }
+
+    // Default initialization
+    populateStaffDropdown('ALL');
+    calculatePerformanceMetrics();
+    renderPerformanceHistory();
+    updateTaskKPIs();
+    renderTasksTable();
+  </script>
+</body>
+</html>
