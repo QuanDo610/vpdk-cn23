@@ -1,0 +1,17 @@
+================================================================================
+HƯỚNG DẪN CÀI ĐẶT PHÍM TẮT "FAMILY CN23" (PIKACHU KÍNH VUÔNG)
+================================================================================
+
+Bước 1: Giải nén file ZIP này (Bấm chuột phải vào file ZIP -> Chọn "Extract All..." hoặc "Extract to...").
+
+Bước 2: Bấm đúp chuột (Double click) vào file:
+        👉 Cai_Dat_Family_CN23.bat
+
+Bước 3: Xong! Màn hình Desktop sẽ tự động xuất hiện biểu tượng Pikachu mang tên:
+        ⭐ Family CN23
+
+* Lưu ý:
+- Phím tắt sẽ tự động mở bằng Google Chrome hoặc Microsoft Edge.
+- Hằng ngày vào làm việc, chỉ cần bấm đúp vào biểu tượng "Family CN23" để đăng nhập bằng CCCD.
+- Các file .ico và .png trong thư mục là file biểu tượng đi kèm, không cần bấm vào.
+================================================================================
