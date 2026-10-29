@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lãnh Đạo Giao Việc & Bảng Tiến Độ - Chi Nhánh Số 23</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome 6.5.1 CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Thư viện chọn ngày Flatpickr -->
+  <link rel="stylesheet" href="css/flatpickr.min.css">
+  <script src="js/flatpickr.min.js"></script>
+
+  <!-- Tailwind Custom Configuration -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+          },
+          colors: {
+            brand: {
+              header: '#1e3a8a',
+              headerDark: '#172554',
+              primary: '#1e40af',
+              primaryHover: '#1d4ed8',
+              accent: '#f59e0b',
+              accentDark: '#d97706',
+              accentLight: '#fbbf24',
+              canvas: '#f8fafc',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    /* Modal Backdrop Animation */
+    .modal-backdrop {
+      background-color: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(4px);
+    }
+
+    /* Print Style Optimization */
+    @media print {
+      body * { visibility: hidden; }
+      #printableArea, #printableArea * { visibility: visible; }
+      #printableArea { position: absolute; left: 0; top: 0; width: 100%; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-[#f8fafc] text-slate-800 font-sans min-h-screen flex flex-col antialiased">
+
+  <!-- ==================== HEADER HỆ THỐNG CHUẨN FAMILY CN23 ==================== -->
+  <header class="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 text-white shadow-md border-b-[3px] border-amber-500 py-3 px-4 sm:px-6 sticky top-0 z-40">
+    <div class="max-w-[1720px] mx-auto flex flex-wrap items-center justify-between gap-3">
+      <!-- Cơ quan ban hành & Tiêu đề hệ thống -->
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-amber-400 text-lg shadow-inner transition transform active:scale-95" title="Về Cổng Dịch Vụ Hub">
+          <i class="fa-solid fa-house"></i>
+        </a>
+        <div>
+          <p class="text-[10px] sm:text-[11px] font-semibold tracking-wider text-slate-300 uppercase leading-tight">
+            Văn phòng Đăng ký đất đai TP. Hồ Chí Minh
+          </p>
+          <h1 class="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-2 leading-tight">
+            <i class="fa-solid fa-list-check text-amber-400"></i>
+            <span>LÃNH ĐẠO GIAO VIỆC & CHỈ ĐẠO CÁN BỘ</span>
+          </h1>
+          <p class="text-[10px] sm:text-[11px] text-amber-300 font-medium">Chi nhánh số 23 &bull; Bảng theo dõi tiến độ công việc</p>
+        </div>
+      </div>
+
+      <!-- Điều hướng nhanh giữa các phân hệ & Thông tin Cán bộ -->
+      <div class="flex items-center flex-wrap gap-2">
+        <!-- Nút Lịch tuần -->
+        <a href="lich_tuan.html" class="hidden md:inline-flex items-center gap-1.5 text-xs bg-white/10 hover:bg-white/20 text-white font-medium px-2.5 py-1.5 rounded-xl border border-white/20 transition">
+          <i class="fa-solid fa-calendar-days text-blue-300"></i>
+          <span>Lịch Tuần</span>
+        </a>
+
+        <!-- Nút IT Helpdesk -->
+        <a href="it_helpdesk.html" class="hidden md:inline-flex items-center gap-1.5 text-xs bg-white/10 hover:bg-white/20 text-white font-medium px-2.5 py-1.5 rounded-xl border border-white/20 transition">
+          <i class="fa-solid fa-headset text-amber-300"></i>
+          <span>IT Helpdesk</span>
+        </a>
+
+        <!-- Nút Báo cáo Tổ -->
+        <a href="bao_cao_to.html" class="hidden md:inline-flex items-center gap-1.5 text-xs bg-white/10 hover:bg-white/20 text-white font-medium px-2.5 py-1.5 rounded-xl border border-white/20 transition">
+          <i class="fa-solid fa-chart-pie text-emerald-300"></i>
+          <span>Báo Cáo Số Liệu Tổ</span>
+        </a>
+
+        <!-- Badge Cán bộ đăng nhập -->
+        <div id="headerUserBadge" class="flex items-center gap-2 bg-blue-950/70 border border-blue-400/30 px-3 py-1 rounded-xl shadow-inner">
+          <div class="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-bold">
+            <i class="fa-solid fa-user-tie"></i>
+          </div>
+          <div class="text-left text-xs leading-tight">
+            <p id="headerUserName" class="font-bold text-white max-w-[140px] truncate">Cán bộ</p>
+            <p id="headerUserRole" class="text-[10px] text-slate-300 max-w-[140px] truncate">Chi nhánh 23</p>
+          </div>
+        </div>
+
+        <!-- Nút Đăng xuất -->
+        <button id="btnLogout" class="text-xs bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-semibold px-2.5 py-1.5 rounded-xl transition shadow flex items-center gap-1" title="Đăng xuất khỏi hệ thống">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          <span class="hidden sm:inline">Thoát</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== TOAST NOTIFICATION CONTAINER ==================== -->
+  <div id="toastContainer" class="fixed top-20 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- ==================== KHU VỰC NỘI DUNG CHÍNH ==================== -->
+  <main class="flex-1 max-w-[1720px] w-full mx-auto p-4 sm:p-6 space-y-6">
+
+    <!-- KPI Metric Cards Overview -->
+    <section class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+      <!-- KPI 1: Tổng số việc -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center gap-3.5">
+        <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center text-xl shrink-0 font-bold border border-blue-100">
+          <i class="fa-solid fa-folder-open"></i>
+        </div>
+        <div class="min-w-0">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Tổng công việc</p>
+          <h3 id="kpiTotalTasks" class="text-2xl font-extrabold text-slate-900 leading-tight">0</h3>
+          <p class="text-[11px] text-slate-500 truncate">Nhiệm vụ đã phát lệnh</p>
+        </div>
+      </div>
+
+      <!-- KPI 2: Đang thực hiện -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center gap-3.5">
+        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0 font-bold border border-amber-100">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+        <div class="min-w-0">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Đang thực hiện</p>
+          <h3 id="kpiInProgressTasks" class="text-2xl font-extrabold text-amber-600 leading-tight">0</h3>
+          <p class="text-[11px] text-amber-600 font-medium">Chuyên viên đang xử lý</p>
+        </div>
+      </div>
+
+      <!-- KPI 3: Quá hạn (Deadline Alert) -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center gap-3.5">
+        <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl shrink-0 font-bold border border-rose-100">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div class="min-w-0">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Quá hạn Deadline</p>
+          <h3 id="kpiOverdueTasks" class="text-2xl font-extrabold text-rose-600 leading-tight">0</h3>
+          <p id="kpiOverdueBadge" class="text-[11px] font-semibold text-rose-600 truncate">Cần đôn đốc gấp</p>
+        </div>
+      </div>
+
+      <!-- KPI 4: Hoàn thành -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center gap-3.5">
+        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0 font-bold border border-emerald-100">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <div class="min-w-0">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Đã hoàn thành</p>
+          <h3 id="kpiCompletedTasks" class="text-2xl font-extrabold text-emerald-600 leading-tight">0</h3>
+          <p class="text-[11px] text-emerald-600 font-medium">Đạt kết quả yêu cầu</p>
+        </div>
+      </div>
+
+      <!-- KPI 5: Tỷ lệ hoàn thành -->
+      <div class="col-span-2 lg:col-span-1 bg-gradient-to-br from-blue-900 to-blue-800 rounded-2xl p-4 text-white shadow-sm flex items-center gap-3.5 border border-blue-700">
+        <div class="w-12 h-12 rounded-xl bg-white/10 text-amber-400 flex items-center justify-center text-xl shrink-0 font-bold border border-white/20">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <div class="min-w-0">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-300">Tỷ lệ hoàn thành</p>
+          <h3 id="kpiCompletionRate" class="text-2xl font-extrabold text-white leading-tight">0.0%</h3>
+          <p class="text-[11px] text-amber-300 font-medium">Hiệu suất chỉ đạo</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Navigation Tabs: Giao Việc Mới vs Bảng Tiến Độ -->
+    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
+      <div class="inline-flex p-1 bg-slate-200/70 rounded-2xl">
+        <button id="tabBtnAssign" class="tab-button active flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition bg-white text-blue-900 shadow-sm">
+          <i class="fa-solid fa-paper-plane text-amber-500"></i>
+          <span>1. Giao Việc & Chỉ Đạo Mới</span>
+        </button>
+        <button id="tabBtnTracking" class="tab-button flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition">
+          <i class="fa-solid fa-table-list text-blue-600"></i>
+          <span>2. Bảng Theo Dõi Tiến Độ</span>
+          <span id="tabBadgeCount" class="ml-1 px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-blue-100 text-blue-800">0</span>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button id="btnExportTaskCsv" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 px-3 py-2 rounded-xl transition shadow-sm">
+          <i class="fa-solid fa-file-excel text-emerald-600"></i>
+          <span>Xuất Bảng Excel</span>
+        </button>
+        <button id="btnPrintTable" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-3 py-2 rounded-xl transition shadow-sm">
+          <i class="fa-solid fa-print text-slate-500"></i>
+          <span>In Báo Cáo</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ==================== TAB 1: FORM GIAO VIỆC & CHỈ ĐẠO ==================== -->
+    <section id="panelAssign" class="tab-panel">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="bg-gradient-to-r from-blue-900 to-blue-800 text-white px-6 py-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+              <i class="fa-solid fa-feather-pointed"></i>
+            </div>
+            <div>
+              <h2 class="text-base font-bold text-white">PHIẾU PHÁT LỆNH GIAO VIỆC & ĐÔN ĐỐC TIẾN ĐỘ</h2>
+              <p class="text-xs text-slate-300">Phân công nhiệm vụ cụ thể cho 82 cán bộ viên chức thuộc 5 tổ chuyên môn</p>
+            </div>
+          </div>
+          <span class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-lg font-mono font-semibold">
+            Chi nhánh 23
+          </span>
+        </div>
+
+        <form id="taskAssignmentForm" class="p-6 space-y-6">
+          <!-- Hàng 1: Người giao việc & Tổ nhận việc -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <!-- 1. Người giao việc -->
+            <div>
+              <label for="assignLeader" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Lãnh đạo giao việc / Người chỉ đạo <span class="text-rose-500">*</span>
+              </label>
+              <div class="relative">
+                <select id="assignLeader" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                  <option value="Nguyễn Chiến Thắng (Giám đốc)">Nguyễn Chiến Thắng — Giám đốc Chi nhánh</option>
+                  <option value="Đặng Huy Cường (Phó Giám đốc)">Đặng Huy Cường — Phó Giám đốc Chi nhánh</option>
+                  <option value="Nguyễn Thị Lệ Hằng (Phó Giám đốc)">Nguyễn Thị Lệ Hằng — Phó Giám đốc Chi nhánh</option>
+                  <option value="Trần Thanh Triết (Tổ trưởng KTĐC)">Trần Thanh Triết — Tổ trưởng Kỹ thuật Địa chính</option>
+                  <option value="Đặng Thị Tuyết Trinh (Tổ phó KTĐC)">Đặng Thị Tuyết Trinh — Tổ phó Kỹ thuật Địa chính</option>
+                  <option value="Nguyễn Thị Thùy Trang (Tổ trưởng ĐKGCN)">Nguyễn Thị Thùy Trang — Tổ trưởng Đăng ký cấp GCN</option>
+                  <option value="Huỳnh Tấn Nguyên (Tổ phó ĐKGCN)">Huỳnh Tấn Nguyên — Tổ phó Đăng ký cấp GCN</option>
+                  <option value="Nguyễn Thành Như Bảo (Tổ phó ĐKGCN)">Nguyễn Thành Như Bảo — Tổ phó Đăng ký cấp GCN</option>
+                  <option value="Nguyễn Thị Thu Minh (Tổ phó ĐKGCN)">Nguyễn Thị Thu Minh — Tổ phó Đăng ký cấp GCN</option>
+                  <option value="Nguyễn Thị Bích Tuyền (Tổ trưởng HCTH)">Nguyễn Thị Bích Tuyền — Tổ trưởng Hành chính Tổng hợp</option>
+                  <option value="Bùi Thị Minh Nguyệt (Tổ phó HCTH)">Bùi Thị Minh Nguyệt — Tổ phó Hành chính Tổng hợp</option>
+                  <option value="Hồ Thị Hồng Linh (Tổ phó HCTH)">Hồ Thị Hồng Linh — Tổ phó Hành chính Tổng hợp</option>
+                  <option value="Nguyễn Thị Mai (Tổ phó HCTH)">Nguyễn Thị Mai — Tổ phó Hành chính Tổng hợp</option>
+                </select>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-1">Tự động nhận diện theo tài khoản đăng nhập</p>
+            </div>
+
+            <!-- 2. Lọc nhanh Tổ chuyên môn -->
+            <div>
+              <label for="filterStaffDept" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Lọc theo Tổ chuyên môn
+              </label>
+              <select id="filterStaffDept" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                <option value="ALL">-- Tất cả cán bộ trong cơ quan (82 nhân sự) --</option>
+                <option value="Tổ Kỹ thuật Địa chính và Lưu trữ">Tổ Kỹ thuật Địa chính và Lưu trữ (30)</option>
+                <option value="Tổ Đăng ký cấp GCN">Tổ Đăng ký cấp GCN (27)</option>
+                <option value="Tổ Hành chính Tổng hợp">Tổ Hành chính Tổng hợp (22)</option>
+                <option value="Ban Giám đốc">Ban Giám đốc (3)</option>
+              </select>
+              <p class="text-[11px] text-slate-500 mt-1">Chọn tổ để thu hẹp danh sách cán bộ bên cạnh</p>
+            </div>
+
+            <!-- 3. Cán bộ tiếp nhận việc (82 Nhân sự) -->
+            <div>
+              <label for="assignStaff" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Cán bộ tiếp nhận việc <span class="text-rose-500">*</span>
+              </label>
+              <select id="assignStaff" required class="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm font-bold text-blue-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                <option value="" disabled selected>-- Chọn cán bộ nhận việc --</option>
+              </select>
+              <p id="assignStaffDetail" class="text-[11px] text-blue-700 font-medium mt-1 truncate">
+                Chưa chọn cán bộ
+              </p>
+            </div>
+          </div>
+
+          <!-- Hàng 2: Tên nhiệm vụ, Mức độ ưu tiên & Hạn chót Deadline -->
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+            <!-- Tên nhiệm vụ (Chiếm 6 cột) -->
+            <div class="md:col-span-6">
+              <label for="taskTitle" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Tiêu đề nhiệm vụ / Nội dung công việc giao <span class="text-rose-500">*</span>
+              </label>
+              <input type="text" id="taskTitle" required placeholder="Ví dụ: Kiểm tra thực địa hồ sơ 1284/KTĐC, thẩm định cấp GCN..."
+                class="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+            </div>
+
+            <!-- Mức độ ưu tiên (Chiếm 3 cột) -->
+            <div class="md:col-span-3">
+              <label for="taskPriority" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Mức độ khẩn / Ưu tiên <span class="text-rose-500">*</span>
+              </label>
+              <select id="taskPriority" class="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                <option value="Bình thường" class="text-slate-700 font-semibold">🟢 Bình thường</option>
+                <option value="Khẩn" class="text-amber-700 font-bold">🟠 Khẩn (Ưu tiên giải quyết trong ngày)</option>
+                <option value="Hỏa tốc" class="text-rose-700 font-extrabold">🔴 Hỏa tốc (Chỉ đạo trực tiếp của BGĐ)</option>
+              </select>
+            </div>
+
+            <!-- Thời hạn hoàn thành / Deadline (Chiếm 3 cột) -->
+            <div class="md:col-span-3">
+              <label for="taskDeadline" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Hạn chót hoàn thành (Deadline) <span class="text-rose-500">*</span>
+              </label>
+              <div class="relative">
+                <input type="datetime-local" id="taskDeadline" required
+                  class="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+              </div>
+            </div>
+          </div>
+
+          <!-- Hàng 3: Văn bản căn cứ & Tệp đính kèm -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Văn bản căn cứ -->
+            <div>
+              <label for="taskDocRef" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Văn bản căn cứ / Số phiếu hồ sơ / Mã VBDLIS
+              </label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                  <i class="fa-solid fa-file-invoice"></i>
+                </span>
+                <input type="text" id="taskDocRef" placeholder="Số công văn đến, số biên nhận, số tờ trình..."
+                  class="w-full bg-white border border-slate-300 text-slate-900 rounded-xl pl-10 pr-3.5 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+              </div>
+            </div>
+
+            <!-- Tệp đính kèm -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Tệp hồ sơ đính kèm (Ảnh/PDF/Docx)
+              </label>
+              <div class="flex items-center gap-2">
+                <label class="flex-1 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-dashed border-slate-300 rounded-xl px-3.5 py-2 text-xs text-slate-600 flex items-center justify-between transition">
+                  <span id="fileUploadLabel" class="truncate">Nhấp để chọn tệp từ máy tính...</span>
+                  <i class="fa-solid fa-paperclip text-slate-400"></i>
+                  <input type="file" id="taskFileInput" class="hidden">
+                </label>
+              </div>
+              <div id="fileUploadPreview" class="hidden mt-1.5 text-xs text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200 flex items-center justify-between"></div>
+            </div>
+          </div>
+
+          <!-- Hàng 4: Ý kiến chỉ đạo của Lãnh đạo (Trọng tâm) -->
+          <div>
+            <label for="leaderGuidance" class="block text-xs font-bold text-blue-900 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+              <span><i class="fa-solid fa-bullhorn text-amber-500 mr-1.5"></i> Ý KIẾN CHỈ ĐẠO CỦA LÃNH ĐẠO (NỘI DUNG THỰC HIỆN) <span class="text-rose-500">*</span></span>
+              <span class="text-[11px] font-normal text-slate-400">Rõ ràng, cụ thể phương án xử lý</span>
+            </label>
+            <textarea id="leaderGuidance" required rows="4" placeholder="Ghi rõ yêu cầu chuyên môn, phương thức thẩm tra, phối hợp liên tổ, các bước kiểm tra thực địa, hoặc các mốc thời gian báo cáo sơ bộ..."
+              class="w-full bg-white border border-slate-300 text-slate-900 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition leading-relaxed"></textarea>
+          </div>
+
+          <!-- Hàng 5: Ghi chú thêm -->
+          <div>
+            <label for="taskNote" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              Ghi chú bổ sung
+            </label>
+            <input type="text" id="taskNote" placeholder="Ví dụ: Báo cáo kết quả trực tiếp cho đ/c Phó Giám đốc Cường trước 16h thứ 6..."
+              class="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+          </div>
+
+          <!-- Nút hành động -->
+          <div class="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-slate-200">
+            <button type="button" id="btnResetTaskForm" class="px-4 py-2.5 text-xs font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
+              <i class="fa-solid fa-rotate-left mr-1"></i> Làm mới biểu mẫu
+            </button>
+            <button type="submit" id="btnSubmitTask" class="px-6 py-2.5 text-sm font-bold text-white bg-blue-800 hover:bg-blue-700 active:scale-95 rounded-xl shadow-md transition flex items-center gap-2">
+              <i class="fa-solid fa-paper-plane text-amber-400"></i>
+              <span>PHÁT LỆNH GIAO VIỆC</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: BẢNG THEO DÕI TIẾN ĐỘ ==================== -->
+    <section id="panelTracking" class="tab-panel hidden space-y-4">
+      <!-- Bộ lọc và Tìm kiếm công việc -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+          <!-- Lọc trạng thái -->
+          <div class="w-full sm:w-48">
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Trạng thái việc</label>
+            <select id="filterTaskStatus" class="w-full bg-slate-50 border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-bold focus:ring-2 focus:ring-blue-500 transition">
+              <option value="ALL">-- Tất cả trạng thái --</option>
+              <option value="Đang thực hiện">🟡 Đang thực hiện</option>
+              <option value="Đã hoàn thành">🟢 Đã hoàn thành</option>
+              <option value="Quá hạn">🔴 Quá hạn Deadline</option>
+            </select>
+          </div>
+
+          <!-- Lọc tổ chuyên môn -->
+          <div class="w-full sm:w-60">
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tổ chuyên môn</label>
+            <select id="filterTaskDept" class="w-full bg-slate-50 border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-bold focus:ring-2 focus:ring-blue-500 transition">
+              <option value="ALL">-- Tất cả các tổ --</option>
+              <option value="Tổ Kỹ thuật Địa chính và Lưu trữ">Tổ Kỹ thuật Địa chính & Lưu trữ</option>
+              <option value="Tổ Đăng ký cấp GCN">Tổ Đăng ký cấp GCN</option>
+              <option value="Tổ Hành chính Tổng hợp">Tổ Hành chính Tổng hợp</option>
+              <option value="Ban Giám đốc">Ban Giám đốc</option>
+            </select>
+          </div>
+
+          <!-- Ô tìm kiếm -->
+          <div class="w-full sm:w-72">
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tìm kiếm nhiệm vụ / Cán bộ</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 text-xs">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </span>
+              <input type="text" id="searchTaskInput" placeholder="Nhập tên việc, cán bộ, mã việc..."
+                class="w-full bg-slate-50 border border-slate-300 text-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs focus:ring-2 focus:ring-blue-500 transition">
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="btnClearAllTasks" class="text-xs text-rose-600 hover:text-rose-800 font-semibold px-3 py-2 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-200 transition">
+            <i class="fa-solid fa-trash-can mr-1"></i> Xóa tất cả
+          </button>
+        </div>
+      </div>
+
+      <!-- Bảng Desktop-First Bảng Tiến Độ -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse" style="table-layout: fixed; min-width: 1200px;">
+            <thead>
+              <tr class="bg-gradient-to-r from-blue-900 to-blue-800 text-white font-bold text-[11px] uppercase tracking-wider">
+                <th class="py-3 px-3 w-24 text-center">Mã việc</th>
+                <th class="py-3 px-3 w-40">Người giao việc</th>
+                <th class="py-3 px-3 w-48">Cán bộ tiếp nhận</th>
+                <th class="py-3 px-3 w-44">Tổ chuyên môn</th>
+                <th class="py-3 px-3 w-64">Tiêu đề nhiệm vụ</th>
+                <th class="py-3 px-3 w-36">Căn cứ / Tệp</th>
+                <th class="py-3 px-3 w-40 text-center">Hạn chót (Deadline)</th>
+                <th class="py-3 px-3 w-28 text-center">Độ khẩn</th>
+                <th class="py-3 px-3 w-36 text-center">Trạng thái</th>
+                <th class="py-3 px-3 w-36 text-center">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="taskTableBody" class="divide-y divide-slate-200">
+              <!-- Render động bằng JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== MODAL XEM CHI TIẾT NHIỆM VỤ ==================== -->
+  <div id="taskDetailModal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full border border-slate-200 shadow-2xl overflow-hidden transform transition-all">
+      <!-- Modal Header -->
+      <div class="bg-gradient-to-r from-blue-900 to-blue-800 text-white px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <i class="fa-solid fa-circle-info text-amber-400 text-lg"></i>
+          <h3 class="font-bold text-base text-white">CHI TIẾT NHIỆM VỤ CHỈ ĐẠO GIAO VIỆC</h3>
+        </div>
+        <button onclick="closeTaskModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition">
+          ✕
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div>
+            <span id="modalTaskId" class="text-xs font-mono font-bold bg-blue-100 text-blue-900 px-2 py-0.5 rounded-lg">TASK_0000</span>
+            <span id="modalTaskCreatedAt" class="text-xs text-slate-400 ml-2">Ngày giao: --</span>
+          </div>
+          <div id="modalTaskBadges" class="flex items-center gap-1.5"></div>
+        </div>
+
+        <div>
+          <h4 id="modalTaskTitle" class="text-base font-extrabold text-slate-900 leading-snug"></h4>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 text-xs bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+          <div>
+            <p class="text-slate-400 font-medium">Người giao việc:</p>
+            <p id="modalTaskLeader" class="font-bold text-slate-800"></p>
+          </div>
+          <div>
+            <p class="text-slate-400 font-medium">Cán bộ nhận việc:</p>
+            <p id="modalTaskAssignee" class="font-bold text-blue-900"></p>
+          </div>
+          <div>
+            <p class="text-slate-400 font-medium">Tổ chuyên môn:</p>
+            <p id="modalTaskDept" class="font-semibold text-slate-700"></p>
+          </div>
+          <div>
+            <p class="text-slate-400 font-medium">Hạn hoàn thành (Deadline):</p>
+            <p id="modalTaskDeadline" class="font-bold text-rose-600"></p>
+          </div>
+          <div class="col-span-2">
+            <p class="text-slate-400 font-medium">Văn bản căn cứ / Tệp đính kèm:</p>
+            <p id="modalTaskDocRef" class="font-semibold text-slate-700"></p>
+          </div>
+        </div>
+
+        <!-- Ý kiến chỉ đạo -->
+        <div>
+          <label class="block text-xs font-bold text-blue-950 uppercase tracking-wider mb-1">
+            <i class="fa-solid fa-bullhorn text-amber-500 mr-1"></i> Ý kiến chỉ đạo của Lãnh đạo:
+          </label>
+          <div id="modalTaskGuidance" class="bg-amber-50/70 border border-amber-200/80 rounded-xl p-4 text-xs text-slate-800 leading-relaxed whitespace-pre-wrap font-medium"></div>
+        </div>
+
+        <!-- Ghi chú -->
+        <div id="modalTaskNoteWrapper">
+          <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Ghi chú bổ sung:</label>
+          <p id="modalTaskNote" class="text-xs text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-200"></p>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="bg-slate-50 px-6 py-3.5 border-t border-slate-200 flex items-center justify-between">
+        <button id="modalBtnPrint" class="text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 px-3.5 py-2 rounded-xl transition shadow-sm">
+          <i class="fa-solid fa-print mr-1"></i> In Phiếu Giao Việc
+        </button>
+        <div class="flex items-center gap-2">
+          <button id="modalBtnToggleStatus" class="text-xs font-bold px-4 py-2 rounded-xl text-white shadow-sm transition"></button>
+          <button onclick="closeTaskModal()" class="text-xs font-semibold text-slate-600 hover:text-slate-800 px-3.5 py-2 rounded-xl transition">
+            Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== KHUNG IN ẨN PHỤC VỤ IN PHIẾU GIAO VIỆC ==================== -->
+  <div id="printableArea" class="hidden"></div>
+
+  <!-- ==================== SCRIPT LOGIC NGHIỆP VỤ (VANILLA JS) ==================== -->
+  <script>
+    // ========================================================
+    // 1. DANH SÁCH 82 NHÂN SỰ CHÍNH THỨC CHI NHÁNH SỐ 23
+    // ========================================================
+    const STAFF_CN23 = [
+      // Ban Giám đốc (3)
+      { id: "BGD_01", name: "Nguyễn Chiến Thắng", role: "Giám đốc", dept: "Ban Giám đốc", note: "" },
+      { id: "BGD_02", name: "Đặng Huy Cường", role: "Phó Giám đốc", dept: "Ban Giám đốc", note: "" },
+      { id: "BGD_03", name: "Nguyễn Thị Lệ Hằng", role: "Phó Giám đốc", dept: "Ban Giám đốc", note: "" },
+
+      // Tổ Kỹ thuật Địa chính và Lưu trữ (30)
+      { id: "KTDC_01", name: "Trần Thanh Triết", role: "Tổ trưởng", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_02", name: "Đặng Thị Tuyết Trinh", role: "Tổ phó", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_03", name: "Đỗ Văn Đông", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_04", name: "Nguyễn Văn Tiến", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_05", name: "Nguyễn Thanh Sang", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "Xin nghỉ việc 01/11/2026" },
+      { id: "KTDC_06", name: "Lưu Văn Tuấn", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_07", name: "Đoàn Văn Sang", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_08", name: "Ân Văn Tuấn", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_09", name: "Phạm Minh Trí", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_10", name: "Phạm Thành Vũ", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_11", name: "Nguyễn Quốc Danh", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_12", name: "Lê Quang Khoa", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_13", name: "Đoàn Thanh Phong", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_14", name: "Ngô Thị Cẩm Thúy", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_15", name: "Phạm Trần Hồng Như", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_16", name: "Phạm Hoàng Oanh", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_17", name: "Lê Thị Thùy Duyên", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_18", name: "Nguyễn Thanh Điền", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_19", name: "Huỳnh Thành Duy", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "Xin nghỉ việc 01/11/2026" },
+      { id: "KTDC_20", name: "Vương Ánh Xuân", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_21", name: "Nguyễn Tuấn Anh", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_22", name: "Nguyễn Hoàng Xuân", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_23", name: "Lê Thị Phương Mai", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_24", name: "Lê Ngọc Bảo Ngân", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_25", name: "Hồ Lê Thanh Vũ", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_26", name: "Huỳnh Quốc Nam", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_27", name: "Phạm Minh Hoàng", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_28", name: "Nguyễn Tuấn Kiệt", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "Chuyển từ CN28 ngày 01/8/2026" },
+      { id: "KTDC_29", name: "Trần Thị Hoàng Yến", role: "Nhân viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "Thử việc đến 01/11/2026" },
+      { id: "KTDC_30", name: "Nguyễn Hoài Bảo Phúc", role: "Nhân viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "Thử việc đến 01/11/2026" },
+
+      // Tổ Đăng ký cấp GCN (27)
+      { id: "DKGCN_01", name: "Nguyễn Thị Thùy Trang", role: "Tổ trưởng", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_02", name: "Nguyễn Thị Thu Minh", role: "Tổ phó", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_03", name: "Huỳnh Tấn Nguyên", role: "Tổ phó", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_04", name: "Nguyễn Thành Như Bảo", role: "Tổ phó", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_05", name: "Nguyễn Tiến Thịnh", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_06", name: "Hoàng Minh Tú", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_07", name: "Huỳnh Thị Ái Nhi", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_08", name: "Trần Nguyễn Hoài Lam", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_09", name: "Nguyễn Thị Huỳnh Mai", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_10", name: "Nguyễn Văn Khánh", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_11", name: "Trần Thị Thùy Trang", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_12", name: "Tạ Nguyễn Bích Trang", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_13", name: "Nguyễn Thị Lệ Thu", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_14", name: "Phạm Nguyễn Lan Anh", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_15", name: "Nguyễn Trần Thảo Vy", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_16", name: "Lê Sơn Thanh", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_17", name: "Nguyễn Bích Ngọc", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_18", name: "Nguyễn Trung Thành", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_19", name: "Nguyễn Thị Dáng", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_20", name: "Phạm Thị Yến Nhi", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_21", name: "Phan Trọng Hiệp", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_22", name: "Nguyễn Thị Ngọc Thảo", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_23", name: "Nguyễn Nhật Quyền Trinh", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_24", name: "Đỗ Thị Yến", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_25", name: "Võ Tường Lam", role: "Nhân viên", dept: "Tổ Đăng ký cấp GCN", note: "Thử việc đến 01/11/2026" },
+      { id: "DKGCN_26", name: "Nguyễn Ngọc Quế Trân", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "Chuyển từ CS2 qua ngày 03/9/2026" },
+      { id: "DKGCN_27", name: "Trần Đình Siêu", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+
+      // Tổ Hành chính Tổng hợp (22)
+      { id: "HCTH_01", name: "Nguyễn Thị Bích Tuyền", role: "Tổ trưởng", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_02", name: "Bùi Thị Minh Nguyệt", role: "Tổ phó", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_03", name: "Hồ Thị Hồng Linh", role: "Tổ phó", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_04", name: "Nguyễn Thị Mai", role: "Tổ phó", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_05", name: "Võ Phi Trúc", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_06", name: "Trương Ngô Hồng Duyên", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_07", name: "Nguyễn Anh Khôi", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_08", name: "Quản Nguyễn Thảo Nguyên", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_09", name: "Nguyễn Hoàng Duy", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_10", name: "Nguyễn Thị Trúc Phương", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_11", name: "Trần Quốc Hưng", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_12", name: "Đoàn Thị Hoàng An", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_13", name: "Nguyễn Thị Ngọc Trản", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_14", name: "Nguyễn Khánh Duy", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_15", name: "Nguyễn Duy Tấn", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_16", name: "Nguyễn Thảo Tuyết Nhi", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_17", name: "Lê Hồng Phong", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_18", name: "Nguyễn Thanh Phú", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_19", name: "Hồ Lê Thanh Vũ", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_20", name: "Nguyễn Hoàng Tiến", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_21", name: "Lê Thị Thúy Hằng", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_22", name: "Đỗ Trọng Minh Quân", role: "Nhân viên", dept: "Tổ Hành chính Tổng hợp", note: "Thử việc đến 01/11/2026" }
+    ];
+
+    const STORAGE_KEY_TASKS = 'CN23_TASK_ASSIGNMENTS_V1';
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLjARkYWp2TegCCdMcfVc3W6qQm6PmhFz71-y8zB_xFXxXbRXpsUhk6aPbJtqVqUHE/exec";
+    let currentViewingTaskId = null;
+    let attachedFileInfo = null;
+
+    // Đồng bộ Cloud Google Apps Script
+    async function syncTasksFromCloud() {
+      try {
+        const res = await fetch(`${SCRIPT_URL}?action=getTasks`);
+        if (res.ok) {
+          const result = await res.json();
+          if (result.success && Array.isArray(result.data) && result.data.length > 0) {
+            const local = getStoredTasks();
+            const mergedMap = new Map();
+            local.forEach(t => mergedMap.set(t.id, t));
+            result.data.forEach(t => mergedMap.set(t.id, t));
+            const merged = Array.from(mergedMap.values());
+            localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(merged));
+            updateTaskKPIs();
+            renderTasksTable();
+          }
+        }
+      } catch (err) {
+        console.log("Cloud tasks sync offline mode");
+      }
+    }
+
+    async function syncTaskToCloud(action, payload) {
+      try {
+        fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: action, ...payload })
+        }).catch(e => console.log("Cloud sync error:", e));
+      } catch (e) {}
+    }
+
+    // Toast Notification
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto px-4 py-3 rounded-2xl shadow-xl text-xs font-bold flex items-center gap-2.5 transition-all transform duration-300 border ${
+        type === 'success' ? 'bg-emerald-600 text-white border-emerald-500' :
+        type === 'error' ? 'bg-rose-600 text-white border-rose-500' :
+        'bg-slate-900 text-white border-slate-700'
+      }`;
+      const icon = type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-info';
+      toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // ========================================================
+    // 2. KHỞI TẠO PHIÊN ĐĂNG NHẬP (USER SESSION)
+    // ========================================================
+    function initUserSession() {
+      try {
+        const userJson = sessionStorage.getItem('currentUser');
+        if (userJson) {
+          const user = JSON.parse(userJson);
+          document.getElementById('headerUserName').textContent = user.name || user.fullname || 'Cán bộ';
+          document.getElementById('headerUserRole').textContent = user.role || user.dept || 'Chi nhánh 23';
+
+          // Tự chọn người giao việc nếu cán bộ thuộc hàng ngũ Lãnh đạo
+          const leaderSelect = document.getElementById('assignLeader');
+          for (let i = 0; i < leaderSelect.options.length; i++) {
+            if (leaderSelect.options[i].text.includes(user.name)) {
+              leaderSelect.selectedIndex = i;
+              break;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Lỗi đọc session:', e);
+      }
+
+      document.getElementById('btnLogout').addEventListener('click', () => {
+        if (confirm('Đồng chí có chắc chắn muốn đăng xuất khỏi hệ thống?')) {
+          sessionStorage.removeItem('currentUser');
+          window.location.href = 'index.html';
+        }
+      });
+    }
+
+    // ========================================================
+    // 3. DROPDOWN DANH SÁCH 82 CÁN BỘ
+    // ========================================================
+    const staffSelect = document.getElementById('assignStaff');
+    const deptFilterSelect = document.getElementById('filterStaffDept');
+    const staffDetailHint = document.getElementById('assignStaffDetail');
+
+    function populateStaffDropdown(filterDept = 'ALL') {
+      staffSelect.innerHTML = '<option value="" disabled selected>-- Chọn cán bộ nhận việc --</option>';
+
+      const depts = filterDept === 'ALL'
+        ? ["Tổ Kỹ thuật Địa chính và Lưu trữ", "Tổ Đăng ký cấp GCN", "Tổ Hành chính Tổng hợp", "Ban Giám đốc"]
+        : [filterDept];
+
+      depts.forEach(deptName => {
+        const staffInDept = STAFF_CN23.filter(s => s.dept === deptName);
+        if (staffInDept.length > 0) {
+          const optGroup = document.createElement('optgroup');
+          optGroup.label = `${deptName} (${staffInDept.length} nhân sự)`;
+          staffInDept.forEach(staff => {
+            const opt = document.createElement('option');
+            opt.value = staff.id;
+            const noteText = staff.note ? ` [${staff.note}]` : '';
+            opt.textContent = `${staff.name} — ${staff.role}${noteText}`;
+            optGroup.appendChild(opt);
+          });
+          staffSelect.appendChild(optGroup);
+        }
+      });
+    }
+
+    deptFilterSelect.addEventListener('change', () => {
+      populateStaffDropdown(deptFilterSelect.value);
+      staffDetailHint.textContent = 'Đã cập nhật danh sách theo Tổ đã lọc';
+    });
+
+    staffSelect.addEventListener('change', () => {
+      const selectedId = staffSelect.value;
+      const staff = STAFF_CN23.find(s => s.id === selectedId);
+      if (staff) {
+        staffDetailHint.innerHTML = `<span class="inline-flex items-center gap-1.5"><i class="fa-solid fa-id-badge text-amber-500"></i> <strong>Tổ:</strong> ${staff.dept} | <strong>Chức vụ:</strong> ${staff.role} ${staff.note ? `<span class="text-rose-600 font-bold">(${staff.note})</span>` : ''}</span>`;
+      }
+    });
+
+    // File Upload Handler
+    const fileInput = document.getElementById('taskFileInput');
+    const filePreview = document.getElementById('fileUploadPreview');
+    const fileLabel = document.getElementById('fileUploadLabel');
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        attachedFileInfo = {
+          name: file.name,
+          size: (file.size / 1024).toFixed(1) + ' KB',
+          type: file.type || 'Tệp đính kèm'
+        };
+        filePreview.classList.remove('hidden');
+        filePreview.innerHTML = `<span><i class="fa-solid fa-file mr-1"></i> <strong>${file.name}</strong> (${attachedFileInfo.size})</span> <button type="button" class="text-rose-600 hover:text-rose-800 font-bold ml-2" onclick="removeAttachedFile()">✕ Hủy</button>`;
+        fileLabel.textContent = file.name;
+      }
+    });
+
+    window.removeAttachedFile = function() {
+      fileInput.value = '';
+      attachedFileInfo = null;
+      filePreview.classList.add('hidden');
+      fileLabel.textContent = 'Nhấp để chọn tệp từ máy tính...';
+    };
+
+    // ========================================================
+    // 4. QUẢN LÝ DỮ LIỆU & BẢNG TIẾN ĐỘ
+    // ========================================================
+    function getStoredTasks() {
+      const data = localStorage.getItem(STORAGE_KEY_TASKS);
+      return data ? JSON.parse(data) : [];
+    }
+
+    function saveStoredTasks(tasks) {
+      localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(tasks));
+      updateTaskKPIs();
+      renderTasksTable();
+    }
+
+    function updateTaskKPIs() {
+      const tasks = getStoredTasks();
+      const total = tasks.length;
+      const completed = tasks.filter(t => t.status === 'Đã hoàn thành').length;
+
+      const now = new Date();
+      let overdue = 0;
+      let inProgress = 0;
+
+      tasks.forEach(t => {
+        if (t.status !== 'Đã hoàn thành') {
+          if (t.deadline && new Date(t.deadline) < now) {
+            overdue++;
+          } else {
+            inProgress++;
+          }
+        }
+      });
+
+      document.getElementById('kpiTotalTasks').textContent = total;
+      document.getElementById('kpiInProgressTasks').textContent = inProgress;
+      document.getElementById('kpiOverdueTasks').textContent = overdue;
+      document.getElementById('kpiCompletedTasks').textContent = completed;
+      document.getElementById('tabBadgeCount').textContent = total;
+
+      const rate = total > 0 ? ((completed / total) * 100).toFixed(1) : "0.0";
+      document.getElementById('kpiCompletionRate').textContent = `${rate}%`;
+
+      const overdueBadge = document.getElementById('kpiOverdueBadge');
+      if (overdue > 0) {
+        overdueBadge.className = 'text-[11px] font-bold text-rose-600 truncate animate-pulse';
+        overdueBadge.textContent = `⚠️ Có ${overdue} việc quá hạn!`;
+      } else {
+        overdueBadge.className = 'text-[11px] font-semibold text-emerald-600 truncate';
+        overdueBadge.textContent = '✓ 100% trong hạn';
+      }
+    }
+
+    function renderTasksTable() {
+      const tasks = getStoredTasks();
+      const filterStatus = document.getElementById('filterTaskStatus').value;
+      const filterDept = document.getElementById('filterTaskDept').value;
+      const searchTerm = (document.getElementById('searchTaskInput').value || '').toLowerCase().trim();
+      const tbody = document.getElementById('taskTableBody');
+      tbody.innerHTML = '';
+
+      let filtered = tasks;
+
+      // Lọc trạng thái
+      if (filterStatus !== 'ALL') {
+        if (filterStatus === 'Quá hạn') {
+          const now = new Date();
+          filtered = filtered.filter(t => t.status !== 'Đã hoàn thành' && t.deadline && new Date(t.deadline) < now);
+        } else {
+          filtered = filtered.filter(t => t.status === filterStatus);
+        }
+      }
+
+      // Lọc tổ
+      if (filterDept !== 'ALL') {
+        filtered = filtered.filter(t => t.assigneeDept === filterDept);
+      }
+
+      // Tìm kiếm
+      if (searchTerm) {
+        filtered = filtered.filter(t => 
+          (t.title && t.title.toLowerCase().includes(searchTerm)) ||
+          (t.id && t.id.toLowerCase().includes(searchTerm)) ||
+          (t.assigneeName && t.assigneeName.toLowerCase().includes(searchTerm)) ||
+          (t.leader && t.leader.toLowerCase().includes(searchTerm)) ||
+          (t.guidance && t.guidance.toLowerCase().includes(searchTerm))
+        );
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="10" class="text-center py-12 text-slate-400">
+              <i class="fa-solid fa-inbox text-3xl mb-2 text-slate-300 block"></i>
+              <span>Chưa có nhiệm vụ giao việc nào phù hợp với bộ lọc hiện tại.</span>
+            </td>
+          </tr>`;
+        return;
+      }
+
+      const now = new Date();
+
+      filtered.forEach((t) => {
+        const isOverdue = t.status !== 'Đã hoàn thành' && t.deadline && new Date(t.deadline) < now;
+
+        // Badge Độ khẩn
+        let priorityPill = '';
+        if (t.priority === 'Hỏa tốc') {
+          priorityPill = '<span class="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-300 animate-pulse"><i class="fa-solid fa-bolt text-rose-600"></i> Hỏa tốc</span>';
+        } else if (t.priority === 'Khẩn') {
+          priorityPill = '<span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300"><i class="fa-solid fa-triangle-exclamation text-amber-600"></i> Khẩn</span>';
+        } else {
+          priorityPill = '<span class="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">Bình thường</span>';
+        }
+
+        // Badge Trạng thái
+        let statusPill = '';
+        if (t.status === 'Đã hoàn thành') {
+          statusPill = '<span class="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300"><i class="fa-solid fa-check text-emerald-600"></i> Hoàn thành</span>';
+        } else if (isOverdue) {
+          statusPill = '<span class="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-1 rounded-full bg-rose-100 text-rose-800 border border-rose-300"><i class="fa-solid fa-clock text-rose-600"></i> Quá hạn</span>';
+        } else {
+          statusPill = '<span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-300"><i class="fa-solid fa-spinner fa-spin text-amber-600"></i> Đang làm</span>';
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition cursor-pointer';
+        tr.onclick = (e) => {
+          if (!e.target.closest('button')) {
+            openTaskModal(t.id);
+          }
+        };
+
+        tr.innerHTML = `
+          <td class="py-3 px-3 text-center font-mono font-bold text-blue-900">${t.id}</td>
+          <td class="py-3 px-3 text-slate-700 font-medium truncate max-w-[160px]" title="${t.leader}">${t.leader}</td>
+          <td class="py-3 px-3 font-bold text-slate-900 truncate max-w-[190px]">
+            <div class="flex items-center gap-1.5">
+              <i class="fa-solid fa-user-check text-blue-600 text-xs"></i>
+              <span title="${t.assigneeName}">${t.assigneeName}</span>
+            </div>
+            <span class="text-[10px] text-slate-400 font-normal block truncate">${t.assigneeRole}</span>
+          </td>
+          <td class="py-3 px-3 text-slate-600 text-[11px] truncate max-w-[170px]" title="${t.assigneeDept}">${t.assigneeDept}</td>
+          <td class="py-3 px-3 font-bold text-slate-800 truncate max-w-[250px]" title="${t.title}">
+            <span>${t.title}</span>
+            <p class="text-[10px] text-slate-400 font-normal truncate mt-0.5">${t.guidance}</p>
+          </td>
+          <td class="py-3 px-3 text-[11px] text-slate-600 truncate max-w-[140px]">
+            ${t.docRef ? `<span class="font-semibold block truncate" title="${t.docRef}">📜 ${t.docRef}</span>` : ''}
+            ${t.attachedFile ? `<span class="text-[10px] text-blue-700 block truncate" title="${t.attachedFile.name}">📎 ${t.attachedFile.name}</span>` : '<span class="text-slate-400">Không có tệp</span>'}
+          </td>
+          <td class="py-3 px-3 text-center ${isOverdue ? 'text-rose-600 font-bold' : 'text-slate-700'}">
+            ${t.deadline ? t.deadline.replace('T', ' ') : '<span class="text-slate-400">Chưa đặt</span>'}
+          </td>
+          <td class="py-3 px-3 text-center">${priorityPill}</td>
+          <td class="py-3 px-3 text-center">${statusPill}</td>
+          <td class="py-3 px-3 text-center">
+            <div class="inline-flex items-center gap-1">
+              ${t.status !== 'Đã hoàn thành' ? `
+                <button type="button" onclick="markTaskDone('${t.id}')" title="Đánh dấu hoàn thành" class="w-7 h-7 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 flex items-center justify-center transition active:scale-95">
+                  <i class="fa-solid fa-check"></i>
+                </button>
+              ` : `
+                <button type="button" onclick="markTaskReopen('${t.id}')" title="Mở lại nhiệm vụ" class="w-7 h-7 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-300 flex items-center justify-center transition active:scale-95">
+                  <i class="fa-solid fa-rotate-left"></i>
+                </button>
+              `}
+              <button type="button" onclick="printSingleTask('${t.id}')" title="In phiếu giao việc" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition active:scale-95">
+                <i class="fa-solid fa-print"></i>
+              </button>
+              <button type="button" onclick="deleteTask('${t.id}')" title="Xóa nhiệm vụ" class="w-7 h-7 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition active:scale-95">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ========================================================
+    // 5. THAO TÁC SUBMIT NHIỆM VỤ MỚI
+    // ========================================================
+    document.getElementById('taskAssignmentForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const staffId = staffSelect.value;
+      const staff = STAFF_CN23.find(s => s.id === staffId);
+      if (!staff) {
+        showToast('Vui lòng chọn cán bộ tiếp nhận việc!', 'error');
+        return;
+      }
+
+      const newTask = {
+        id: 'TASK_' + Math.floor(1000 + Math.random() * 9000),
+        leader: document.getElementById('assignLeader').value,
+        assigneeId: staff.id,
+        assigneeName: staff.name,
+        assigneeRole: staff.role,
+        assigneeDept: staff.dept,
+        title: document.getElementById('taskTitle').value.trim(),
+        priority: document.getElementById('taskPriority').value,
+        docRef: document.getElementById('taskDocRef').value.trim(),
+        attachedFile: attachedFileInfo,
+        guidance: document.getElementById('leaderGuidance').value.trim(),
+        deadline: document.getElementById('taskDeadline').value,
+        note: document.getElementById('taskNote').value.trim(),
+        status: 'Đang thực hiện',
+        createdAt: new Date().toLocaleString('vi-VN')
+      };
+
+      const tasks = getStoredTasks();
+      tasks.unshift(newTask);
+      saveStoredTasks(tasks);
+
+      // Đồng bộ ngầm lên Google Sheet
+      syncTaskToCloud('createTask', newTask);
+
+      showToast(`Đã phát lệnh giao việc thành công cho đồng chí ${staff.name}!`, 'success');
+
+      // Reset form
+      document.getElementById('taskTitle').value = '';
+      document.getElementById('taskDocRef').value = '';
+      document.getElementById('leaderGuidance').value = '';
+      document.getElementById('taskNote').value = '';
+      removeAttachedFile();
+
+      // Tự động chuyển qua tab Bảng theo dõi tiến độ
+      setTimeout(() => {
+        document.getElementById('tabBtnTracking').click();
+      }, 600);
+    });
+
+    window.markTaskDone = function(id) {
+      const tasks = getStoredTasks();
+      const task = tasks.find(t => t.id === id);
+      if (task) {
+        task.status = 'Đã hoàn thành';
+        task.completedAt = new Date().toLocaleString('vi-VN');
+        saveStoredTasks(tasks);
+        syncTaskToCloud('updateTaskStatus', { id: task.id, status: task.status, completedAt: task.completedAt });
+        showToast(`Đã ghi nhận hoàn thành nhiệm vụ ${id}!`, 'success');
+        if (currentViewingTaskId === id) openTaskModal(id);
+      }
+    };
+
+    window.markTaskReopen = function(id) {
+      const tasks = getStoredTasks();
+      const task = tasks.find(t => t.id === id);
+      if (task) {
+        task.status = 'Đang thực hiện';
+        delete task.completedAt;
+        saveStoredTasks(tasks);
+        syncTaskToCloud('updateTaskStatus', { id: task.id, status: task.status, completedAt: '' });
+        showToast(`Đã chuyển nhiệm vụ ${id} về trạng thái đang làm!`);
+        if (currentViewingTaskId === id) openTaskModal(id);
+      }
+    };
+
+    window.deleteTask = function(id) {
+      if (!confirm(`Bạn có chắc muốn xóa nhiệm vụ ${id} không?`)) return;
+      let tasks = getStoredTasks();
+      tasks = tasks.filter(t => t.id !== id);
+      saveStoredTasks(tasks);
+      syncTaskToCloud('deleteTask', { id: id });
+      showToast('Đã xóa nhiệm vụ thành công!');
+      closeTaskModal();
+    };
+
+    // ========================================================
+    // 6. MODAL XEM CHI TIẾT
+    // ========================================================
+    function openTaskModal(id) {
+      const tasks = getStoredTasks();
+      const t = tasks.find(item => item.id === id);
+      if (!t) return;
+
+      currentViewingTaskId = id;
+      document.getElementById('modalTaskId').textContent = t.id;
+      document.getElementById('modalTaskCreatedAt').textContent = `Ngày giao: ${t.createdAt}`;
+      document.getElementById('modalTaskTitle').textContent = t.title;
+      document.getElementById('modalTaskLeader').textContent = t.leader;
+      document.getElementById('modalTaskAssignee').textContent = `${t.assigneeName} (${t.assigneeRole})`;
+      document.getElementById('modalTaskDept').textContent = t.assigneeDept;
+      document.getElementById('modalTaskDeadline').textContent = t.deadline ? t.deadline.replace('T', ' ') : 'Chưa đặt';
+      document.getElementById('modalTaskDocRef').textContent = t.docRef ? `${t.docRef} ${t.attachedFile ? `(📎 ${t.attachedFile.name})` : ''}` : 'Không';
+      document.getElementById('modalTaskGuidance').textContent = t.guidance;
+
+      if (t.note) {
+        document.getElementById('modalTaskNoteWrapper').classList.remove('hidden');
+        document.getElementById('modalTaskNote').textContent = t.note;
+      } else {
+        document.getElementById('modalTaskNoteWrapper').classList.add('hidden');
+      }
+
+      // Badges
+      const badgesContainer = document.getElementById('modalTaskBadges');
+      badgesContainer.innerHTML = '';
+      if (t.priority === 'Hỏa tốc') {
+        badgesContainer.innerHTML += '<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-300">🔴 HỎA TỐC</span>';
+      } else if (t.priority === 'Khẩn') {
+        badgesContainer.innerHTML += '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">🟠 KHẨN</span>';
+      }
+
+      // Nút hoàn thành trong modal
+      const btnToggle = document.getElementById('modalBtnToggleStatus');
+      if (t.status === 'Đã hoàn thành') {
+        btnToggle.className = 'text-xs font-bold px-4 py-2 rounded-xl text-amber-700 bg-amber-100 hover:bg-amber-200 border border-amber-300 transition';
+        btnToggle.innerHTML = '<i class="fa-solid fa-rotate-left mr-1"></i> Chuyển Về Đang Làm';
+        btnToggle.onclick = () => markTaskReopen(t.id);
+      } else {
+        btnToggle.className = 'text-xs font-bold px-4 py-2 rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm';
+        btnToggle.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Xác Nhận Hoàn Thành';
+        btnToggle.onclick = () => markTaskDone(t.id);
+      }
+
+      document.getElementById('modalBtnPrint').onclick = () => printSingleTask(t.id);
+      document.getElementById('taskDetailModal').classList.remove('hidden');
+    }
+
+    function closeTaskModal() {
+      document.getElementById('taskDetailModal').classList.add('hidden');
+      currentViewingTaskId = null;
+    }
+
+    // ========================================================
+    // 7. IN PHIẾU GIAO VIỆC CHUẨN THỂ THỨC HÀNH CHÍNH
+    // ========================================================
+    window.printSingleTask = function(id) {
+      const tasks = getStoredTasks();
+      const t = tasks.find(item => item.id === id);
+      if (!t) return;
+
+      const printWindow = window.open('', '_blank', 'width=800,height=900');
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="vi">
+        <head>
+          <meta charset="UTF-8">
+          <title>Phiếu Giao Việc - ${t.id}</title>
+          <style>
+            @page { size: A4; margin: 20mm; }
+            body { font-family: 'Times New Roman', Times, serif; font-size: 13pt; line-height: 1.5; color: #000; padding: 20px; }
+            .header-table { width: 100%; margin-bottom: 25px; border-collapse: collapse; }
+            .header-table td { vertical-align: top; text-align: center; font-size: 11pt; }
+            .title { font-size: 16pt; font-weight: bold; text-align: center; margin: 20px 0 5px 0; text-transform: uppercase; }
+            .sub-title { text-align: center; font-style: italic; font-size: 11pt; margin-bottom: 25px; }
+            .field-row { margin-bottom: 10px; }
+            .label { font-weight: bold; }
+            .guidance-box { border: 1.5px solid #000; padding: 15px; margin: 15px 0; border-radius: 4px; background: #fff; }
+            .signatures { display: flex; justify-content: space-between; margin-top: 50px; text-align: center; }
+            .sig-block { width: 45%; }
+            .sig-title { font-weight: bold; font-size: 12pt; text-transform: uppercase; }
+            .sig-note { font-style: italic; font-size: 10pt; }
+            .sig-space { height: 75px; }
+          </style>
+        </head>
+        <body>
+          <table class="header-table">
+            <tr>
+              <td style="width: 45%;">
+                <strong>SỞ NÔNG NGHIỆP VÀ MÔI TRƯỜNG TP.HCM</strong><br>
+                <strong>VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI</strong><br>
+                <strong>CHI NHÁNH SỐ 23</strong><br>
+                <span>***</span>
+              </td>
+              <td style="width: 55%;">
+                <strong>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</strong><br>
+                <strong>Độc lập - Tự do - Hạnh phúc</strong><br>
+                <span>---------------</span>
+              </td>
+            </tr>
+          </table>
+
+          <div class="title">PHIẾU CHỈ ĐẠO GIAO VIỆC & ĐÔN ĐỐC TIẾN ĐỘ</div>
+          <div class="sub-title">(Mã phiếu: <strong>${t.id}</strong> - Ngày ban hành: ${t.createdAt})</div>
+
+          <div class="field-row"><span class="label">Người giao việc:</span> ${t.leader}</div>
+          <div class="field-row"><span class="label">Cán bộ tiếp nhận:</span> <strong>${t.assigneeName}</strong> (${t.assigneeRole} - ${t.assigneeDept})</div>
+          <div class="field-row"><span class="label">Tiêu đề nhiệm vụ:</span> <strong>${t.title}</strong></div>
+          <div class="field-row"><span class="label">Mức độ ưu tiên:</span> <strong>${t.priority}</strong></div>
+          <div class="field-row"><span class="label">Văn bản căn cứ / Hồ sơ:</span> ${t.docRef || 'Không'} ${t.attachedFile ? `(Tệp đính kèm: ${t.attachedFile.name})` : ''}</div>
+          <div class="field-row"><span class="label">Thời hạn hoàn thành (Deadline):</span> <strong style="color: red;">${t.deadline ? t.deadline.replace('T', ' ') : 'Chưa đặt'}</strong></div>
+
+          <div class="guidance-box">
+            <div class="label" style="text-decoration: underline; margin-bottom: 8px;">Ý KIẾN CHỈ ĐẠO CỦA LÃNH ĐẠO:</div>
+            <div style="white-space: pre-wrap;">${t.guidance}</div>
+          </div>
+
+          ${t.note ? `<div class="field-row"><span class="label">Ghi chú:</span> ${t.note}</div>` : ''}
+
+          <div class="signatures">
+            <div class="sig-block">
+              <div class="sig-title">CÁN BỘ TIẾP NHẬN</div>
+              <div class="sig-note">(Ký và ghi rõ họ tên)</div>
+              <div class="sig-space"></div>
+              <strong>${t.assigneeName}</strong>
+            </div>
+            <div class="sig-block">
+              <div class="sig-title">LÃNH ĐẠO GIAO VIỆC</div>
+              <div class="sig-note">(Ký và ghi rõ họ tên)</div>
+              <div class="sig-space"></div>
+              <strong>${t.leader.split('(')[0].trim()}</strong>
+            </div>
+          </div>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => { printWindow.print(); }, 400);
+    };
+
+    // ========================================================
+    // 8. XUẤT CSV EXCEL
+    // ========================================================
+    document.getElementById('btnExportTaskCsv').addEventListener('click', () => {
+      const tasks = getStoredTasks();
+      if (tasks.length === 0) {
+        showToast('Chưa có dữ liệu nhiệm vụ nào để xuất!', 'error');
+        return;
+      }
+
+      const headers = ["Mã việc", "Người giao việc", "Cán bộ nhận", "Chức danh", "Tổ chuyên môn", "Tên nhiệm vụ", "Độ khẩn", "Văn bản căn cứ", "Ý kiến chỉ đạo", "Hạn chót Deadline", "Trạng thái", "Ngày tạo"];
+      const rows = [headers.join(",")];
+
+      tasks.forEach(t => {
+        const row = [
+          `"${t.id}"`,
+          `"${t.leader}"`,
+          `"${t.assigneeName}"`,
+          `"${t.assigneeRole}"`,
+          `"${t.assigneeDept}"`,
+          `"${t.title.replace(/"/g, '""')}"`,
+          `"${t.priority}"`,
+          `"${(t.docRef || '').replace(/"/g, '""')}"`,
+          `"${t.guidance.replace(/"/g, '""')}"`,
+          `"${t.deadline || ''}"`,
+          `"${t.status}"`,
+          `"${t.createdAt}"`
+        ];
+        rows.push(row.join(","));
+      });
+
+      const blob = new Blob(["\uFEFF" + rows.join("\r\n")], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `DS_Giao_Viec_CN23_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Đã xuất danh sách giao việc ra tệp Excel CSV!', 'success');
+    });
+
+    document.getElementById('btnClearAllTasks').addEventListener('click', () => {
+      if (confirm('CẢNH BÁO NGUY HIỂM: Đồng chí có chắc chắn muốn xóa TOÀN BỘ danh sách nhiệm vụ đã giao không?')) {
+        localStorage.removeItem(STORAGE_KEY_TASKS);
+        updateTaskKPIs();
+        renderTasksTable();
+        showToast('Đã xóa toàn bộ nhiệm vụ!');
+      }
+    });
+
+    document.getElementById('btnResetTaskForm').addEventListener('click', () => {
+      document.getElementById('taskAssignmentForm').reset();
+      removeAttachedFile();
+      showToast('Đã làm mới biểu mẫu giao việc');
+    });
+
+    document.getElementById('btnPrintTable').addEventListener('click', () => {
+      window.print();
+    });
+
+    // Event listeners lọc & tìm kiếm
+    document.getElementById('filterTaskStatus').addEventListener('change', renderTasksTable);
+    document.getElementById('filterTaskDept').addEventListener('change', renderTasksTable);
+    document.getElementById('searchTaskInput').addEventListener('input', renderTasksTable);
+
+    // Tab Switching
+    const tabBtnAssign = document.getElementById('tabBtnAssign');
+    const tabBtnTracking = document.getElementById('tabBtnTracking');
+    const panelAssign = document.getElementById('panelAssign');
+    const panelTracking = document.getElementById('panelTracking');
+
+    tabBtnAssign.addEventListener('click', () => {
+      tabBtnAssign.className = 'tab-button active flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition bg-white text-blue-900 shadow-sm';
+      tabBtnTracking.className = 'tab-button flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition';
+      panelAssign.classList.remove('hidden');
+      panelTracking.classList.add('hidden');
+    });
+
+    tabBtnTracking.addEventListener('click', () => {
+      tabBtnTracking.className = 'tab-button active flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition bg-white text-blue-900 shadow-sm';
+      tabBtnAssign.className = 'tab-button flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition';
+      panelTracking.classList.remove('hidden');
+      panelAssign.classList.add('hidden');
+      renderTasksTable();
+    });
+
+    // ========================================================
+    // 9. KHỞI CHẠY HỆ THỐNG
+    // ========================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      initUserSession();
+      populateStaffDropdown();
+      updateTaskKPIs();
+      renderTasksTable();
+      syncTasksFromCloud();
+    });
+  </script>
+</body>
+</html>

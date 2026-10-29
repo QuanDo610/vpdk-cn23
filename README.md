@@ -18,8 +18,8 @@ Hệ thống web portal tích hợp các phân hệ nghiệp vụ nội bộ ph�
 | **0** | **Cổng Dịch Vụ & Đăng Nhập CCCD** | [`index.html`](file:///Users/admin/Desktop/BINHDUONG/A_THANG/index.html) | ![Hoàn thành](https://img.shields.io/badge/-Hoàn%20thành-emerald) | Hub trung tâm xác thực CCCD, điều hướng 4 phân hệ |
 | **1** | **Đăng Ký Lịch Công Tác Tuần** | [`lich_tuan.html`](file:///Users/admin/Desktop/BINHDUONG/A_THANG/lich_tuan.html) | ![Hoàn thành](https://img.shields.io/badge/-Hoàn%20thành-emerald) | Đăng ký họp, tiếp dân; xuất Word chuẩn **Nghị định 30/2020** |
 | **2** | **IT Helpdesk & Báo Sự Cố Máy Tính** | [`it_helpdesk.html`](file:///Users/admin/Desktop/BINHDUONG/A_THANG/it_helpdesk.html) | ![Hoàn thành](https://img.shields.io/badge/-Hoàn%20thành-emerald) | Tiếp nhận hỏng hóc PC/mạng, dán ảnh `Ctrl+V`, Live Monitoring |
-| **3** | **Lãnh Đạo Giao Việc & Tiến Độ** | `giao_viec.html` | ![Đang triển khai](https://img.shields.io/badge/-Đang%20triển%20khai-amber) | Lãnh đạo giao việc cán bộ, bảng theo dõi tiến độ công việc |
-| **4** | **Báo Cáo Số Liệu Thực Hiện Cấp Tổ**| `bao_cao_to.html` | ![Đang triển khai](https://img.shields.io/badge/-Đang%20triển%20khai-amber) | Báo cáo 8 nhóm chỉ tiêu, theo dõi KPI & xuất Excel |
+| **3** | **Lãnh Đạo Giao Việc & Tiến Độ** | [`giao_viec.html`](file:///Users/admin/Desktop/BINHDUONG/A_THANG/giao_viec.html) | ![Hoàn thành](https://img.shields.io/badge/-Hoàn%20thành-emerald) | Lãnh đạo giao việc 82 cán bộ, đôn đốc tiến độ, in phiếu A4 |
+| **4** | **Báo Cáo Số Liệu Thực Hiện Cấp Tổ**| [`bao_cao_to.html`](file:///Users/admin/Desktop/BINHDUONG/A_THANG/bao_cao_to.html) | ![Hoàn thành](https://img.shields.io/badge/-Hoàn%20thành-emerald) | Báo cáo 8 nhóm chỉ tiêu, tự tính KPI, xuất Excel & in A4 |
 
 ---
 
@@ -31,8 +31,8 @@ A_THANG/
 ├── index.html                  # Cổng Dịch Vụ Nội Bộ (Hub & Đăng nhập CCCD)
 ├── lich_tuan.html              # Phân hệ 1: Đăng ký lịch tuần & Xuất Word NĐ30
 ├── it_helpdesk.html            # Phân hệ 2: IT Helpdesk tiếp nhận sự cố
-├── giao_viec.html              # Phân hệ 3: Lãnh đạo giao việc & Bảng tiến độ (sắp ra mắt)
-├── bao_cao_to.html             # Phân hệ 4: Báo cáo số liệu thực hiện cấp Tổ (sắp ra mắt)
+├── giao_viec.html              # Phân hệ 3: Lãnh đạo giao việc & Bảng tiến độ
+├── bao_cao_to.html             # Phân hệ 4: Báo cáo số liệu thực hiện cấp Tổ & KPI
 │
 ├── css/                        # Bảng định kiểu tập trung
 │   ├── style.css               # Design System chuẩn Family CN23

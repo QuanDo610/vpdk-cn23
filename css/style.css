@@ -1964,6 +1964,14 @@ span.flatpickr-weekday {
   background: linear-gradient(90deg, #1e40af, #3b82f6);
 }
 
+.hub-selection-card.card-task::before {
+  background: linear-gradient(90deg, #d97706, #f59e0b);
+}
+
+.hub-selection-card.card-report::before {
+  background: linear-gradient(90deg, #0d9488, #06b6d4);
+}
+
 .hub-selection-card:hover {
   transform: translateY(-6px);
   box-shadow: 0 16px 32px -6px rgba(15, 23, 42, 0.14);
@@ -1996,6 +2004,16 @@ span.flatpickr-weekday {
 .card-it .hub-card-icon {
   background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
   color: #1e40af;
+}
+
+.card-task .hub-card-icon {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #b45309;
+}
+
+.card-report .hub-card-icon {
+  background: linear-gradient(135deg, #ccfbf1 0%, #99f6e4 100%);
+  color: #0f766e;
 }
 
 .hub-card-titles h3 {
@@ -2082,6 +2100,20 @@ span.flatpickr-weekday {
 }
 .card-it .btn-enter-system:hover {
   background: #1d4ed8;
+}
+
+.card-task .btn-enter-system {
+  background: #b45309;
+}
+.card-task .btn-enter-system:hover {
+  background: #92400e;
+}
+
+.card-report .btn-enter-system {
+  background: #0f766e;
+}
+.card-report .btn-enter-system:hover {
+  background: #115e59;
 }
 
 /* --- Khung Bar Điều Hướng Lùi về Hub --- */

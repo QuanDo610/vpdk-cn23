@@ -15,20 +15,23 @@
 const SHEET_SCHEDULE_NAME = "LichTuan";
 const SHEET_USERS_NAME = "TaiKhoan";
 const SHEET_SUPPORT_NAME = "Tickets";
+const SHEET_TASKS_NAME = "GiaoViec";
+const SHEET_PERFORMANCE_NAME = "BaoCaoSoLieu";
 const DRIVE_FOLDER_NAME = "IT_Helpdesk_Uploads";
 
 /**
- * Tự động tạo menu tiện ích/**
  * Tự động tạo menu tiện ích "⭐ BINHDUONG23" trên thanh công cụ của Google Sheet
  */
 function onOpen() {
   try {
     SpreadsheetApp.getUi()
       .createMenu("⭐ BINHDUONG23")
-      .addItem("▶️ 1-Click: Cấu hình chuẩn hệ thống BINHDUONG23", "setupBinhDuong23")
+      .addItem("▶️ 1-Click: Cấu hình chuẩn toàn bộ 5 Phân hệ BINHDUONG23", "setupBinhDuong23")
       .addSeparator()
-      .addItem("👥 Định dạng tab TaiKhoan (Tài khoản lưu trên Sheet)", "seedAccountsOnly")
-      .addItem("🎫 Định dạng tab Tickets (Sự cố IT lưu trên Sheet)", "seedTicketsOnly")
+      .addItem("👥 Định dạng tab TaiKhoan (Tài khoản cán bộ)", "seedAccountsOnly")
+      .addItem("🎫 Định dạng tab Tickets (Sự cố IT Helpdesk)", "seedTicketsOnly")
+      .addItem("📋 Định dạng tab GiaoViec (Lãnh đạo giao việc & Bảng tiến độ)", "seedTasksOnly")
+      .addItem("📊 Định dạng tab BaoCaoSoLieu (Báo cáo số liệu thực hiện cấp tổ)", "seedPerformanceOnly")
       .addToUi();
   } catch (e) {}
 }
@@ -42,17 +45,25 @@ function setupBinhDuong23() {
   // 1. Đảm bảo tab Lịch Tuần an toàn
   getScheduleSheet(ss);
 
-  // 2. Nạp 70 tài khoản vào tab TaiKhoan
+  // 2. Nạp tài khoản vào tab TaiKhoan
   seedAccountsOnly();
 
-  // 3. Khởi tạo tab Tickets & nạp 4 ticket cũ sang
+  // 3. Khởi tạo tab Tickets
   seedTicketsOnly();
 
+  // 4. Khởi tạo tab GiaoViec
+  seedTasksOnly();
+
+  // 5. Khởi tạo tab BaoCaoSoLieu
+  seedPerformanceOnly();
+
   SpreadsheetApp.getUi().alert(
-    "✅ HỆ THỐNG BINHDUONG23 ĐÃ SẴN SÀNG!\n\n" +
+    "✅ HỆ THỐNG BINHDUONG23 ĐÃ SẴN SÀNG TOÀN BỘ 5 PHÂN HỆ!\n\n" +
     "1. Sheet 'LichTuan': Giữ nguyên toàn bộ dữ liệu lịch tuần.\n" +
-    "2. Sheet 'TaiKhoan': Đã định dạng chuẩn (quản lý trực tiếp trên Sheet).\n" +
-    "3. Sheet 'Tickets': Đã định dạng chuẩn (quản lý trực tiếp trên Sheet).\n\n" +
+    "2. Sheet 'TaiKhoan': Đã định dạng chuẩn nhân sự CN23.\n" +
+    "3. Sheet 'Tickets': Đã định dạng chuẩn IT Helpdesk.\n" +
+    "4. Sheet 'GiaoViec': Đã định dạng chuẩn Lãnh đạo giao việc.\n" +
+    "5. Sheet 'BaoCaoSoLieu': Đã định dạng chuẩn 8 nhóm chỉ tiêu chuyên môn.\n\n" +
     "Hệ thống đã sẵn sàng 100%!"
   );
 }
@@ -185,6 +196,122 @@ function getSupportSheet(ss) {
   if (!sheet) {
     seedTicketsOnly();
     sheet = ss.getSheetByName(SHEET_SUPPORT_NAME);
+  }
+  return sheet;
+}
+
+/**
+ * Lấy sheet Giao việc
+ */
+function getTasksSheet(ss) {
+  ss = ss || SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SHEET_TASKS_NAME);
+  if (!sheet) {
+    sheet = seedTasksOnly();
+  }
+  return sheet;
+}
+
+/**
+ * Lấy sheet Báo cáo số liệu
+ */
+function getPerformanceSheet(ss) {
+  ss = ss || SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SHEET_PERFORMANCE_NAME);
+  if (!sheet) {
+    sheet = seedPerformanceOnly();
+  }
+  return sheet;
+}
+
+/**
+ * Khởi tạo tab GiaoViec
+ */
+function seedTasksOnly() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SHEET_TASKS_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_TASKS_NAME);
+  }
+  if (sheet.getLastRow() === 0) {
+    const headers = [
+      "Mã việc",
+      "Lãnh đạo giao việc",
+      "Cán bộ nhận việc",
+      "Chức vụ",
+      "Tổ chuyên môn",
+      "Tiêu đề nhiệm vụ",
+      "Mức độ ưu tiên",
+      "Văn bản căn cứ",
+      "Ý kiến chỉ đạo",
+      "Hạn chót (Deadline)",
+      "Ghi chú",
+      "Trạng thái",
+      "Ngày tạo",
+      "Ngày hoàn thành"
+    ];
+    sheet.appendRow(headers);
+    sheet.getRange(1, 1, 1, headers.length)
+      .setBackground("#1e3a8a")
+      .setFontColor("#ffffff")
+      .setFontWeight("bold")
+      .setHorizontalAlignment("center");
+    sheet.setFrozenRows(1);
+  }
+  return sheet;
+}
+
+/**
+ * Khởi tạo tab BaoCaoSoLieu
+ */
+function seedPerformanceOnly() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SHEET_PERFORMANCE_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_PERFORMANCE_NAME);
+  }
+  if (sheet.getLastRow() === 0) {
+    const headers = [
+      "Mã báo cáo",
+      "Tổ chuyên môn",
+      "Loại kỳ",
+      "Tên kỳ báo cáo",
+      "Ngày chốt số liệu",
+      "Tiếp nhận trực tiếp",
+      "Tiếp nhận trực tuyến",
+      "Tổng tiếp nhận",
+      "Tỷ lệ trực tuyến",
+      "Trả trước hạn",
+      "Trả đúng hạn",
+      "Trả quá hạn",
+      "Tổng giải quyết",
+      "Tỷ lệ đúng hạn",
+      "Số thư xin lỗi",
+      "Tồn trong hạn",
+      "Tồn quá hạn",
+      "Tổng đang giải quyết",
+      "HS có NV tài chính",
+      "HS thanh toán TT",
+      "Tỷ lệ thanh toán TT",
+      "Tiền thanh toán TT",
+      "Số hóa đầu vào",
+      "Số hóa đầu ra",
+      "Tái sử dụng số hóa",
+      "Chứng thực bản sao ĐT",
+      "Đồng bộ VBDLIS",
+      "Lỗi nghẽn phần mềm",
+      "Tra cứu CSDL dân cư",
+      "Khó khăn vướng mắc",
+      "Đề xuất kiến nghị",
+      "Ngày tạo"
+    ];
+    sheet.appendRow(headers);
+    sheet.getRange(1, 1, 1, headers.length)
+      .setBackground("#0f766e")
+      .setFontColor("#ffffff")
+      .setFontWeight("bold")
+      .setHorizontalAlignment("center");
+    sheet.setFrozenRows(1);
   }
   return sheet;
 }
@@ -392,7 +519,17 @@ function doGet(e) {
       return jsonResponse({ success: true, data: users });
     }
 
-    // 4. FALLBACK GET
+    // 4. LẤY DANH SÁCH NHIỆM VỤ GIAO VIỆC
+    if (action === "getTasks") {
+      return jsonResponse(getTasksList(ss));
+    }
+
+    // 5. LẤY DANH SÁCH BÁO CÁO SỐ LIỆU CẤP TỔ
+    if (action === "getPerformanceReports") {
+      return jsonResponse(getPerformanceReportsList(ss));
+    }
+
+    // 6. FALLBACK GET
     if (action === "createTicket") {
       let ticketData = params;
       if (params.data) {
@@ -530,6 +667,25 @@ function doPost(e) {
     // 4. TIẾP NHẬN SỰ CỐ IT
     if (action === "createTicket") {
       return jsonResponse(handleCreateTicket(body, ss));
+    }
+
+    // 5. GIAO VIỆC & BẢNG TIẾN ĐỘ
+    if (action === "createTask") {
+      return jsonResponse(handleCreateTask(body, ss));
+    }
+    if (action === "updateTaskStatus") {
+      return jsonResponse(handleUpdateTaskStatus(body, ss));
+    }
+    if (action === "deleteTask") {
+      return jsonResponse(handleDeleteTask(body, ss));
+    }
+
+    // 6. BÁO CÁO SỐ LIỆU THỰC HIỆN CẤP TỔ
+    if (action === "createPerformanceReport") {
+      return jsonResponse(handleCreatePerformanceReport(body, ss));
+    }
+    if (action === "deletePerformanceRecord") {
+      return jsonResponse(handleDeletePerformanceRecord(body, ss));
     }
 
     return jsonResponse({ success: false, message: "Hành động (action) không hợp lệ!" });
@@ -759,6 +915,225 @@ function handleCreateTicket(data, ss) {
     timestamp: timeStr,
     imageUrl: imageUrl
   };
+}
+
+/**
+ * =========================================================================
+ * XỬ LÝ GIAO VIỆC & TIẾN ĐỘ (PHÂN HỆ 3)
+ * =========================================================================
+ */
+function handleCreateTask(data, ss) {
+  const sheet = getTasksSheet(ss);
+  const now = new Date();
+  const createdAt = data.createdAt || `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const taskId = data.id || ('TASK_' + Math.floor(1000 + Math.random() * 9000));
+
+  sheet.appendRow([
+    taskId,
+    data.leader || "",
+    data.assigneeName || "",
+    data.assigneeRole || "",
+    data.assigneeDept || "",
+    data.title || "",
+    data.priority || "Bình thường",
+    data.docRef || "",
+    data.guidance || "",
+    data.deadline || "",
+    data.note || "",
+    data.status || "Đang thực hiện",
+    createdAt,
+    data.completedAt || ""
+  ]);
+
+  const newRow = sheet.getLastRow();
+  sheet.getRange(newRow, 1).setHorizontalAlignment("center").setFontWeight("bold");
+
+  return {
+    success: true,
+    message: "Tạo phiếu giao việc thành công!",
+    taskId: taskId
+  };
+}
+
+function handleUpdateTaskStatus(data, ss) {
+  const sheet = getTasksSheet(ss);
+  const values = sheet.getDataRange().getDisplayValues();
+  const taskId = (data.id || data.taskId || "").toString().trim();
+  const newStatus = data.status || "Đang thực hiện";
+  const completedAt = newStatus === "Đã hoàn thành" ? (data.completedAt || new Date().toLocaleString("vi-VN")) : "";
+
+  for (let i = 1; i < values.length; i++) {
+    if (values[i][0] === taskId) {
+      sheet.getRange(i + 1, 12).setValue(newStatus);
+      sheet.getRange(i + 1, 14).setValue(completedAt);
+      return { success: true, message: `Đã cập nhật trạng thái nhiệm vụ ${taskId} thành ${newStatus}!` };
+    }
+  }
+  return { success: false, message: `Không tìm thấy nhiệm vụ ${taskId}` };
+}
+
+function handleDeleteTask(data, ss) {
+  const sheet = getTasksSheet(ss);
+  const values = sheet.getDataRange().getDisplayValues();
+  const taskId = (data.id || data.taskId || "").toString().trim();
+
+  for (let i = 1; i < values.length; i++) {
+    if (values[i][0] === taskId) {
+      sheet.deleteRow(i + 1);
+      return { success: true, message: `Đã xóa nhiệm vụ ${taskId} khỏi Google Sheet!` };
+    }
+  }
+  return { success: false, message: `Không tìm thấy nhiệm vụ ${taskId}` };
+}
+
+function getTasksList(ss) {
+  const sheet = getTasksSheet(ss);
+  const values = sheet.getDataRange().getDisplayValues();
+  const tasks = [];
+
+  for (let i = 1; i < values.length; i++) {
+    const r = values[i];
+    if (!r[0]) continue;
+    tasks.push({
+      id: r[0],
+      leader: r[1],
+      assigneeName: r[2],
+      assigneeRole: r[3],
+      assigneeDept: r[4],
+      title: r[5],
+      priority: r[6],
+      docRef: r[7],
+      guidance: r[8],
+      deadline: r[9],
+      note: r[10],
+      status: r[11],
+      createdAt: r[12],
+      completedAt: r[13] || ""
+    });
+  }
+  return { success: true, total: tasks.length, data: tasks };
+}
+
+/**
+ * =========================================================================
+ * XỬ LÝ BÁO CÁO SỐ LIỆU CẤP TỔ (PHÂN HỆ 4)
+ * =========================================================================
+ */
+function handleCreatePerformanceReport(data, ss) {
+  const sheet = getPerformanceSheet(ss);
+  const reportId = data.id || ('REC_' + Date.now());
+  const now = new Date();
+  const createdAt = data.createdAt || `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+  // Kiểm tra nếu đã có kỳ báo cáo của tổ này thì cập nhật
+  const values = sheet.getDataRange().getDisplayValues();
+  for (let i = 1; i < values.length; i++) {
+    if (values[i][1] === data.toChuyenMon && values[i][3] === data.tenKyBaoCao) {
+      sheet.deleteRow(i + 1);
+      break;
+    }
+  }
+
+  sheet.appendRow([
+    reportId,
+    data.toChuyenMon || "",
+    data.loaiKyBaoCao || "",
+    data.tenKyBaoCao || "",
+    data.ngayChotSoLieu || "",
+    data.tiepNhanTrucTiep || 0,
+    data.tiepNhanTrucTuyen || 0,
+    data.tongTiepNhan || 0,
+    data.tyLeTrucTuyen || "0.0%",
+    data.traTruocHan || 0,
+    data.traDungHan || 0,
+    data.traQuaHan || 0,
+    data.tongGiaiQuyet || 0,
+    data.tyLeDungHan || "0.0%",
+    data.soThuXinLoi || 0,
+    data.tonTrongHan || 0,
+    data.tonQuaHan || 0,
+    data.tongDangGiaiQuyet || 0,
+    data.hsCoNghiaVuTC || 0,
+    data.hsThanhToanTT || 0,
+    data.tyLeThanhToanTT || "0.0%",
+    data.soTienThanhToanTT || 0,
+    data.soHoaDauVao || 0,
+    data.soHoaDauRa || 0,
+    data.taiSuDungSoHoa || 0,
+    data.chungThucBanSaoDT || 0,
+    data.dongBoVBDLis || 0,
+    data.loiNghenPhanMem || 0,
+    data.traCuuCSDLDanCu || 0,
+    data.ghiChuVuongMac || "",
+    data.deXuatKienNghi || "",
+    createdAt
+  ]);
+
+  return {
+    success: true,
+    message: `Đã lưu số liệu báo cáo thành công cho ${data.toChuyenMon}!`,
+    reportId: reportId
+  };
+}
+
+function handleDeletePerformanceRecord(data, ss) {
+  const sheet = getPerformanceSheet(ss);
+  const values = sheet.getDataRange().getDisplayValues();
+  const reportId = (data.id || data.reportId || "").toString().trim();
+
+  for (let i = 1; i < values.length; i++) {
+    if (values[i][0] === reportId) {
+      sheet.deleteRow(i + 1);
+      return { success: true, message: `Đã xóa bản ghi ${reportId} khỏi Google Sheet!` };
+    }
+  }
+  return { success: false, message: `Không tìm thấy bản ghi ${reportId}` };
+}
+
+function getPerformanceReportsList(ss) {
+  const sheet = getPerformanceSheet(ss);
+  const values = sheet.getDataRange().getDisplayValues();
+  const reports = [];
+
+  for (let i = 1; i < values.length; i++) {
+    const r = values[i];
+    if (!r[0]) continue;
+    reports.push({
+      id: r[0],
+      toChuyenMon: r[1],
+      loaiKyBaoCao: r[2],
+      tenKyBaoCao: r[3],
+      ngayChotSoLieu: r[4],
+      tiepNhanTrucTiep: r[5],
+      tiepNhanTrucTuyen: r[6],
+      tongTiepNhan: r[7],
+      tyLeTrucTuyen: r[8],
+      traTruocHan: r[9],
+      traDungHan: r[10],
+      traQuaHan: r[11],
+      tongGiaiQuyet: r[12],
+      tyLeDungHan: r[13],
+      soThuXinLoi: r[14],
+      tonTrongHan: r[15],
+      tonQuaHan: r[16],
+      tongDangGiaiQuyet: r[17],
+      hsCoNghiaVuTC: r[18],
+      hsThanhToanTT: r[19],
+      tyLeThanhToanTT: r[20],
+      soTienThanhToanTT: r[21],
+      soHoaDauVao: r[22],
+      soHoaDauRa: r[23],
+      taiSuDungSoHoa: r[24],
+      chungThucBanSaoDT: r[25],
+      dongBoVBDLis: r[26],
+      loiNghenPhanMem: r[27],
+      traCuuCSDLDanCu: r[28],
+      ghiChuVuongMac: r[29],
+      deXuatKienNghi: r[30],
+      createdAt: r[31]
+    });
+  }
+  return { success: true, total: reports.length, data: reports };
 }
 
 /**
