@@ -28,6 +28,7 @@ function onOpen() {
       .createMenu("⭐ BINHDUONG23")
       .addItem("▶️ 1-Click: Cấu hình chuẩn toàn bộ 5 Phân hệ BINHDUONG23", "setupBinhDuong23")
       .addSeparator()
+      .addItem("🔤 Tự động tạo & điền Username (Quân ĐTM)", "autoFillUsernames")
       .addItem("👥 Định dạng tab TaiKhoan (Tài khoản cán bộ)", "seedAccountsOnly")
       .addItem("🎫 Định dạng tab Tickets (Sự cố IT Helpdesk)", "seedTicketsOnly")
       .addItem("📋 Định dạng tab GiaoViec (Lãnh đạo giao việc & Bảng tiến độ)", "seedTasksOnly")
@@ -45,8 +46,11 @@ function setupBinhDuong23() {
   // 1. Đảm bảo tab Lịch Tuần an toàn
   getScheduleSheet(ss);
 
-  // 2. Nạp tài khoản vào tab TaiKhoan
+  // 2. Nạp tài khoản vào tab TaiKhoan & cập nhật cột Username
   seedAccountsOnly();
+  try {
+    autoFillUsernames(ss);
+  } catch (e) {}
 
   // 3. Khởi tạo tab Tickets
   seedTicketsOnly();
@@ -60,12 +64,144 @@ function setupBinhDuong23() {
   SpreadsheetApp.getUi().alert(
     "✅ HỆ THỐNG BINHDUONG23 ĐÃ SẴN SÀNG TOÀN BỘ 5 PHÂN HỆ!\n\n" +
     "1. Sheet 'LichTuan': Giữ nguyên toàn bộ dữ liệu lịch tuần.\n" +
-    "2. Sheet 'TaiKhoan': Đã định dạng chuẩn nhân sự CN23.\n" +
+    "2. Sheet 'TaiKhoan': Đã định dạng chuẩn nhân sự CN23 & cột Username (Quân ĐTM).\n" +
     "3. Sheet 'Tickets': Đã định dạng chuẩn IT Helpdesk.\n" +
     "4. Sheet 'GiaoViec': Đã định dạng chuẩn Lãnh đạo giao việc.\n" +
     "5. Sheet 'BaoCaoSoLieu': Đã định dạng chuẩn 8 nhóm chỉ tiêu chuyên môn.\n\n" +
     "Hệ thống đã sẵn sàng 100%!"
   );
+}
+
+/**
+ * Hàm sinh Username theo quy chuẩn: Tên chính + Chữ cái đầu viết hoa của Họ và Tên lót
+ * Ví dụ: "Đỗ Trọng Minh Quân" -> "Quân ĐTM", "Nguyễn Văn An" -> "An NV"
+ */
+function generateUsernameFromFullname(fullname) {
+  if (!fullname) return "";
+  const parts = fullname.toString().trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "";
+  if (parts.length === 1) {
+    const w = parts[0];
+    return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+  }
+  const lastName = parts[parts.length - 1]; // Tên chính (từ cuối cùng)
+  const formattedLastName = lastName.charAt(0).toUpperCase() + lastName.slice(1).toLowerCase();
+  // Chữ cái đầu của Họ và các Tên lót viết hoa liền nhau
+  const initials = parts.slice(0, -1).map(function(p) {
+    return p.charAt(0).toUpperCase();
+  }).join("");
+  return formattedLastName + " " + initials;
+}
+
+/**
+ * Công thức tùy chỉnh trong Google Sheet: =TAO_USERNAME(C2)
+ * Giúp người dùng có thể kéo công thức trực tiếp trên trang tính nếu muốn
+ * @customfunction
+ */
+function TAO_USERNAME(fullname) {
+  return generateUsernameFromFullname(fullname);
+}
+
+/**
+ * Hàm loại bỏ dấu tiếng Việt để hỗ trợ tìm kiếm / so khớp linh hoạt khi đăng nhập
+ */
+function removeVietnameseTones(str) {
+  if (!str) return "";
+  str = str.toString();
+  str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+  str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+  str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+  str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+  str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+  str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+  str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+  str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+  str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+  str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+  str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+  str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+  str = str.replace(/đ/g, "d");
+  str = str.replace(/Đ/g, "D");
+  try {
+    str = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  } catch (e) {}
+  return str;
+}
+
+/**
+ * Tự động tạo cột "Username" ở cuối hàng (nếu chưa có)
+ * và điền Username chuẩn (Tên + Họ Tên lót viết tắt, VD: "Quân ĐTM") cho toàn bộ cán bộ
+ */
+function autoFillUsernames(ss) {
+  ss = ss || SpreadsheetApp.getActiveSpreadsheet();
+  let sheetUsers = ss.getSheetByName(SHEET_USERS_NAME);
+  if (!sheetUsers) {
+    seedAccountsOnly();
+    sheetUsers = ss.getSheetByName(SHEET_USERS_NAME);
+  }
+
+  const lastRow = sheetUsers.getLastRow();
+  if (lastRow < 1) {
+    seedAccountsOnly();
+    return { success: true, updatedCount: 0 };
+  }
+
+  const data = sheetUsers.getDataRange().getDisplayValues();
+  const headerRow = data[0];
+  
+  // Tìm cột Họ và tên & Username
+  let colName = -1;
+  let colUsername = -1;
+
+  for (let c = 0; c < headerRow.length; c++) {
+    const h = (headerRow[c] || "").toString().trim().toLowerCase();
+    if (h.includes("họ và tên") || h.includes("họ tên") || h.includes("fullname") || h.includes("tên cán bộ")) {
+      colName = c;
+    }
+    if (h === "username" || h === "tên đăng nhập" || h.includes("username") || h.includes("tên đăng nhập")) {
+      colUsername = c;
+    }
+  }
+
+  if (colName === -1) colName = 0; // Cột A: Họ và tên
+  if (colUsername === -1) colUsername = 1; // Cột B: Username
+
+  // Nếu vị trí colUsername chưa có tiêu đề, gán tiêu đề "Username"
+  if (!headerRow[colUsername] || !headerRow[colUsername].toString().toLowerCase().includes("username")) {
+    sheetUsers.getRange(1, colUsername + 1).setValue("Username")
+      .setFontWeight("bold")
+      .setBackground("#1e40af")
+      .setFontColor("#ffffff")
+      .setHorizontalAlignment("center");
+  }
+  sheetUsers.getRange(1, colUsername + 1, Math.max(sheetUsers.getMaxRows(), 2), 1).setNumberFormat("@");
+
+  // Điền Username cho từng cán bộ từ dòng 2
+  let updatedCount = 0;
+  for (let r = 1; r < data.length; r++) {
+    const currentUsername = (data[r][colUsername] || "").toString().trim();
+    const fullname = (data[r][colName] || "").toString().trim();
+    
+    // Nếu ô username đang trống hoặc cần sinh lại từ Họ tên
+    if (!currentUsername && fullname) {
+      const generatedUsername = generateUsernameFromFullname(fullname);
+      sheetUsers.getRange(r + 1, colUsername + 1).setValue(generatedUsername);
+      updatedCount++;
+    }
+  }
+
+  sheetUsers.autoResizeColumn(colUsername + 1);
+
+  try {
+    SpreadsheetApp.getUi().alert(
+      "✅ ĐÃ ĐỒNG BỘ CỘT USERNAME THÀNH CÔNG!\n\n" +
+      "- Cột 'Username' đã được định vị/thiết lập ở Cột " + (colUsername === 1 ? "B (Cột thứ 2)" : ("thứ " + (colUsername + 1))) + ".\n" +
+      "- Đã cập nhật Username (ví dụ: Quân ĐTM) cho " + updatedCount + " cán bộ.\n" +
+      "- Cán bộ có thể đăng nhập ngay bằng Username mới và Mật khẩu!"
+    );
+  } catch (e) {}
+
+  return { success: true, updatedCount: updatedCount, colIndex: colUsername + 1 };
 }
 
 /**
@@ -79,13 +215,15 @@ function seedAccountsOnly() {
     sheetUsers = ss.insertSheet(SHEET_USERS_NAME);
   }
 
-  // Nếu sheet mới tạo hoặc trống, khởi tạo hàng tiêu đề chuẩn
+  // Nếu sheet mới tạo hoặc trống, khởi tạo hàng tiêu đề chuẩn 10 cột theo đúng thứ tự
+  // 1: Họ và tên | 2: Username | 3: Mật khẩu | 4: Chức danh / Chức vụ | 5: Số điện thoại | 6: Đơn vị / Bộ phận | 7: Số CCCD | 8: Trạng thái | 9: Vai trò | 10: Ngày tạo
   if (sheetUsers.getLastRow() === 0) {
     const headers = [
-      "Số ĐT (Username)",
-      "Mật khẩu",
       "Họ và tên",
+      "Username",
+      "Mật khẩu",
       "Chức danh / Chức vụ",
+      "Số điện thoại",
       "Đơn vị / Bộ phận",
       "Số CCCD",
       "Trạng thái",
@@ -100,9 +238,11 @@ function seedAccountsOnly() {
     sheetUsers.setRowHeight(1, 35);
     sheetUsers.setFrozenRows(1);
 
-    sheetUsers.getRange("A:A").setNumberFormat("@");
-    sheetUsers.getRange("F:F").setNumberFormat("@");
-    sheetUsers.autoResizeColumns(1, 9);
+    sheetUsers.getRange("B:B").setNumberFormat("@"); // Username
+    sheetUsers.getRange("C:C").setNumberFormat("@"); // Mật khẩu
+    sheetUsers.getRange("E:E").setNumberFormat("@"); // Số điện thoại
+    sheetUsers.getRange("G:G").setNumberFormat("@"); // Số CCCD
+    sheetUsers.autoResizeColumns(1, 10);
   }
 }
 
@@ -156,8 +296,7 @@ function getScheduleSheet(ss) {
     const headers = [
       "ID",
       "Thời điểm gửi",
-      "Số ĐT / Email",
-      "Họ và tên",
+      "Người đăng ký (Username)",
       "Ngày (DD/MM/YYYY)",
       "Thứ",
       "Thời điểm làm việc",
@@ -169,7 +308,7 @@ function getScheduleSheet(ss) {
     sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#15803d").setFontColor("#ffffff");
     sheet.setFrozenRows(1);
     sheet.getRange("C:C").setNumberFormat("@");
-    sheet.autoResizeColumns(1, 10);
+    sheet.autoResizeColumns(1, 9);
   }
   return sheet;
 }
@@ -380,7 +519,7 @@ function doGet(e) {
 
     // 0.1 XÁC THỰC ĐĂNG NHẬP TRỰC TIẾP TỪ GOOGLE SHEET (HỖ TRỢ GET)
     if (action === "login") {
-      const identifier = (params.cccd || params.username || params.phone || params.email || "").toString();
+      const identifier = (params.username || params.cccd || params.identifier || params.phone || params.email || "").toString();
       const password = (params.password || "").toString();
       return jsonResponse(handleLogin(identifier, password, ss));
     }
@@ -397,10 +536,26 @@ function doGet(e) {
       const sheetUsers = ss.getSheetByName(SHEET_USERS_NAME);
       if (sheetUsers) {
         const uData = sheetUsers.getDataRange().getDisplayValues();
-        for (let u = 1; u < uData.length; u++) {
-          const p = (uData[u][0] || "").replace(/^'+/, "").toLowerCase().trim();
-          const n = (uData[u][2] || "").trim();
-          if (p && n) userMap[p] = n;
+        if (uData.length > 1) {
+          const uHeaders = uData[0].map(function(h) { return (h || "").toString().trim().toLowerCase(); });
+          let uColName = uHeaders.findIndex(function(h) { return h.includes("họ và tên") || h.includes("họ tên"); });
+          if (uColName === -1) uColName = 0;
+          let uColUser = uHeaders.findIndex(function(h) { return h.includes("username") || h.includes("tên đăng nhập"); });
+          if (uColUser === -1) uColUser = 1;
+          let uColPhone = uHeaders.findIndex(function(h) { return h.includes("điện thoại") || h.includes("sđt") || h.includes("phone"); });
+          if (uColPhone === -1) uColPhone = 4;
+          let uColCccd = uHeaders.findIndex(function(h) { return h.includes("cccd") || h.includes("căn cước"); });
+          if (uColCccd === -1) uColCccd = 6;
+
+          for (let u = 1; u < uData.length; u++) {
+            const name = (uData[u][uColName] || "").trim();
+            const phone = (uData[u][uColPhone] || "").replace(/^'+/, "").toLowerCase().trim();
+            const usr = (uData[u][uColUser] || "").replace(/^'+/, "").toLowerCase().trim();
+            const cccd = (uData[u][uColCccd] || "").replace(/^'+/, "").toLowerCase().trim();
+            if (phone && name) userMap[phone] = name;
+            if (usr && name) userMap[usr] = name;
+            if (cccd && name) userMap[cccd] = name;
+          }
         }
       }
 
@@ -411,12 +566,12 @@ function doGet(e) {
         const r = data[i];
         if (!r[0] && !r[2]) continue;
 
-        let phoneOrEmail = (r[2] || "").replace(/^'+/, "").trim();
+        let registrant = (r[2] || "").replace(/^'+/, "").trim();
         let name = "";
         let dateVal = "", dayVal = "", timeVal = "", contentVal = "", attVal = "", locVal = "";
 
         if (hasNameCol) {
-          name = r[3] || userMap[phoneOrEmail.toLowerCase()] || "";
+          name = r[3] || userMap[registrant.toLowerCase()] || registrant || "";
           dateVal = r[4] || "";
           dayVal = r[5] || "";
           timeVal = r[6] || "";
@@ -424,7 +579,7 @@ function doGet(e) {
           attVal = r[8] || "";
           locVal = r[9] || "";
         } else {
-          name = userMap[phoneOrEmail.toLowerCase()] || "";
+          name = userMap[registrant.toLowerCase()] || registrant || "";
           dateVal = r[3] || "";
           dayVal = r[4] || "";
           timeVal = r[5] || "";
@@ -436,8 +591,11 @@ function doGet(e) {
         rows.push({
           id: r[0],
           timestamp: r[1],
-          phone: phoneOrEmail,
+          username: registrant,
+          phone: registrant,
+          email: registrant,
           name: name,
+          fullname: name,
           date: dateVal,
           dayOfWeek: dayVal,
           time: timeVal,
@@ -503,18 +661,44 @@ function doGet(e) {
       const sheet = getUsersSheet(ss);
       const data = sheet.getDataRange().getDisplayValues();
       const users = [];
-      for (let i = 1; i < data.length; i++) {
-        const r = data[i];
-        if (!r[0] && !r[2]) continue;
-        users.push({
-          phone: (r[0] || "").replace(/^'+/, ""),
-          fullname: r[2],
-          position: r[3],
-          department: r[4],
-          cccd: (r[5] || "").replace(/^'+/, ""),
-          status: r[6] || "Đang làm việc",
-          role: r[7] || "user"
-        });
+      if (data.length > 1) {
+        const headers = data[0].map(function(h) { return (h || "").toString().trim().toLowerCase(); });
+        let colName = headers.findIndex(function(h) { return h.includes("họ và tên") || h.includes("họ tên") || h.includes("fullname"); });
+        if (colName === -1) colName = 0;
+        let colUsername = headers.findIndex(function(h) { return h === "username" || h.includes("username") || h.includes("tên đăng nhập"); });
+        if (colUsername === -1) colUsername = 1;
+        let colPos = headers.findIndex(function(h) { return h.includes("chức danh") || h.includes("chức vụ") || h.includes("position"); });
+        if (colPos === -1) colPos = 3;
+        let colPhone = headers.findIndex(function(h) { return h.includes("điện thoại") || h.includes("sđt") || h.includes("phone"); });
+        if (colPhone === -1) colPhone = 4;
+        let colDept = headers.findIndex(function(h) { return h.includes("đơn vị") || h.includes("bộ phận") || h.includes("department"); });
+        if (colDept === -1) colDept = 5;
+        let colCccd = headers.findIndex(function(h) { return h.includes("cccd") || h.includes("căn cước") || h.includes("cmnd"); });
+        if (colCccd === -1) colCccd = 6;
+        let colStatus = headers.findIndex(function(h) { return h.includes("trạng thái") || h.includes("status"); });
+        if (colStatus === -1) colStatus = 7;
+        let colRole = headers.findIndex(function(h) { return h.includes("vai trò") || h.includes("quyền") || h.includes("role"); });
+        if (colRole === -1) colRole = 8;
+        let colDate = headers.findIndex(function(h) { return h.includes("ngày tạo") || h.includes("date"); });
+        if (colDate === -1) colDate = 9;
+
+        for (let i = 1; i < data.length; i++) {
+          const r = data[i];
+          const name = (r[colName] || "").trim();
+          if (!name && !r[colPhone] && !r[colUsername]) continue;
+          const uName = (r[colUsername] || "").trim() || generateUsernameFromFullname(name);
+          users.push({
+            fullname: name,
+            username: uName,
+            position: (r[colPos] || "Cán bộ").trim(),
+            phone: (r[colPhone] || "").replace(/^'+/, "").trim(),
+            department: (r[colDept] || "Chi nhánh số 23").trim(),
+            cccd: (r[colCccd] || "").replace(/^'+/, "").trim(),
+            status: (r[colStatus] || "Đang làm việc").trim(),
+            role: (r[colRole] && r[colRole].toLowerCase().includes("admin")) ? "admin" : "user",
+            createdDate: (colDate !== -1 && r[colDate]) ? r[colDate].trim() : ""
+          });
+        }
       }
       return jsonResponse({ success: true, data: users });
     }
@@ -600,7 +784,7 @@ function doPost(e) {
 
     // 1. XÁC THỰC ĐĂNG NHẬP TRỰC TIẾP TỪ GOOGLE SHEET (HỖ TRỢ POST)
     if (action === "login") {
-      const identifier = (body.cccd || body.username || body.phone || body.email || "").toString();
+      const identifier = (body.username || body.cccd || body.identifier || body.phone || body.email || "").toString();
       const password = (body.password || "").toString();
       return jsonResponse(handleLogin(identifier, password, ss));
     }
@@ -613,6 +797,7 @@ function doPost(e) {
       const position = (body.position || "").toString().trim();
       const department = (body.department || "Chi nhánh số 23").toString().trim();
       const cccd = (body.cccd || "").toString().trim();
+      const username = (body.username || "").toString().trim() || generateUsernameFromFullname(fullname);
 
       if (!phone || !password || !fullname) {
         return jsonResponse({ success: false, message: "Vui lòng điền đủ Họ tên, Số điện thoại và Mật khẩu!" });
@@ -622,8 +807,14 @@ function doPost(e) {
 
       const sheetUsers = getUsersSheet(ss);
       const data = sheetUsers.getDataRange().getDisplayValues();
+      let colPhone = 4;
+      if (data.length > 0) {
+        const hRow = data[0].map(function(h) { return (h || "").toString().trim().toLowerCase(); });
+        const pIdx = hRow.findIndex(function(h) { return h.includes("điện thoại") || h.includes("sđt") || h.includes("phone"); });
+        if (pIdx !== -1) colPhone = pIdx;
+      }
       for (let i = 1; i < data.length; i++) {
-        let rowPhone = (data[i][0] || "").toString().trim().replace(/^'+/, "");
+        let rowPhone = (data[i][colPhone] || "").toString().trim().replace(/^'+/, "");
         if (rowPhone.length === 9 && !rowPhone.startsWith("0")) rowPhone = "0" + rowPhone;
         if (rowPhone === phone) {
           return jsonResponse({ success: false, message: "Số điện thoại này đã được đăng ký tài khoản trên hệ thống!" });
@@ -633,24 +824,26 @@ function doPost(e) {
       const now = new Date();
       const dateStr = Utilities.formatDate(now, "Asia/Ho_Chi_Minh", "dd/MM/yyyy");
       sheetUsers.appendRow([
-        "'" + phone,
-        password,
-        fullname,
-        position,
-        department,
-        "'" + cccd,
-        "Đang làm việc",
-        "user",
-        dateStr
+        fullname,                         // 0. Họ và tên
+        username,                         // 1. Username
+        password,                         // 2. Mật khẩu
+        position,                         // 3. Chức danh / Chức vụ
+        "'" + phone,                      // 4. Số điện thoại
+        department,                       // 5. Đơn vị / Bộ phận
+        "'" + cccd,                       // 6. Số CCCD
+        "Đang làm việc",                  // 7. Trạng thái
+        "user",                           // 8. Vai trò
+        dateStr                           // 9. Ngày tạo
       ]);
 
       return jsonResponse({
         success: true,
         message: "Tạo tài khoản thành công!",
         user: {
-          phone: phone,
           fullname: fullname,
+          username: username,
           position: position,
+          phone: phone,
           department: department,
           cccd: cccd,
           status: "Đang làm việc",
@@ -698,56 +891,127 @@ function doPost(e) {
  * Xử lý thêm 1 mục Lịch Tuần
  */
 /**
- * Hàm xác thực Đăng nhập trực tiếp từ Google Sheet bằng CCCD & Mật khẩu
+ * Hàm xác thực Đăng nhập trực tiếp từ Google Sheet bằng Username / CCCD / SĐT & Mật khẩu
  * Hỗ trợ tạo user mới bên Sheet hoặc đổi mật khẩu bên Sheet sẽ có hiệu lực ngay lập tức
  */
 function handleLogin(identifier, password, ss) {
   try {
     ss = ss || SpreadsheetApp.getActiveSpreadsheet();
-    identifier = (identifier || "").toString().trim().replace(/[\s\.\-]+/g, "").replace(/^'+/, "");
+    const rawIdentifier = (identifier || "").toString().trim().replace(/^'+/, "");
     password = (password || "").toString().trim();
 
-    if (!identifier || !password) {
-      return { success: false, message: "Vui lòng nhập đầy đủ Số CCCD và Mật khẩu!" };
+    if (!rawIdentifier || !password) {
+      return { success: false, message: "Vui lòng nhập đầy đủ Người dùng và Mật khẩu!" };
     }
 
     const sheetUsers = getUsersSheet(ss);
     const data = sheetUsers.getDataRange().getDisplayValues();
+    if (data.length <= 1) {
+      return { success: false, message: "Hệ thống chưa có dữ liệu tài khoản cán bộ trong sheet TaiKhoan!" };
+    }
+
+    // Tự động nhận diện các cột theo tiêu đề (nếu có), dự phòng theo thứ tự chuẩn mới:
+    // 0: Họ và tên | 1: Username | 2: Mật khẩu | 3: Chức danh / Chức vụ | 4: Số điện thoại | 5: Đơn vị / Bộ phận | 6: Số CCCD | 7: Trạng thái | 8: Vai trò | 9: Ngày tạo
+    const headers = data[0].map(function(h) { return (h || "").toString().trim().toLowerCase(); });
+    
+    let colName = headers.findIndex(function(h) { return h.includes("họ và tên") || h.includes("họ tên") || h.includes("fullname") || h.includes("tên cán bộ"); });
+    if (colName === -1) colName = 0;
+
+    let colUsername = headers.findIndex(function(h) { return h === "username" || h === "tên đăng nhập" || h.includes("username") || h.includes("tên đăng nhập"); });
+    if (colUsername === -1) colUsername = 1;
+
+    let colPass = headers.findIndex(function(h) { return h.includes("mật khẩu") || h.includes("password") || h.includes("pass"); });
+    if (colPass === -1) colPass = 2;
+
+    let colPos = headers.findIndex(function(h) { return h.includes("chức danh") || h.includes("chức vụ") || h.includes("position"); });
+    if (colPos === -1) colPos = 3;
+
+    let colPhone = headers.findIndex(function(h) { return h.includes("điện thoại") || h.includes("sđt") || h.includes("phone"); });
+    if (colPhone === -1) colPhone = 4;
+
+    let colDept = headers.findIndex(function(h) { return h.includes("đơn vị") || h.includes("bộ phận") || h.includes("phòng ban") || h.includes("department"); });
+    if (colDept === -1) colDept = 5;
+
+    let colCccd = headers.findIndex(function(h) { return h.includes("cccd") || h.includes("căn cước") || h.includes("cmnd"); });
+    if (colCccd === -1) colCccd = 6;
+
+    let colStatus = headers.findIndex(function(h) { return h.includes("trạng thái") || h.includes("status"); });
+    if (colStatus === -1) colStatus = 7;
+
+    let colRole = headers.findIndex(function(h) { return h.includes("vai trò") || h.includes("quyền") || h.includes("role"); });
+    if (colRole === -1) colRole = 8;
+
     let matchedUser = null;
     let identifierFound = false;
 
-    // Chuẩn hóa CCCD tìm kiếm: hỗ trợ cả số bỏ số 0 ở đầu nếu sheet lưu dạng số
-    const normSearch = identifier.toLowerCase();
-    const strippedSearch = normSearch.replace(/^0+/, "");
+    // Chuẩn hóa input tìm kiếm
+    const searchTrimmed = rawIdentifier.toLowerCase();
+    const searchNoSpace = searchTrimmed.replace(/[\s\.\-]+/g, "");
+    const searchNoTone = removeVietnameseTones(searchTrimmed).replace(/[\s\.\-]+/g, "");
+    const searchDigitStripped = searchNoSpace.replace(/^0+/, "");
 
     for (let i = 1; i < data.length; i++) {
-      const rowA = (data[i][0] || "").toString().trim().replace(/[\s\.\-]+/g, "").replace(/^'+/, "");
-      const rowPass = (data[i][1] || "").toString().trim();
-      const rowFullname = (data[i][2] || "").trim();
-      const rowPosition = (data[i][3] || "").trim();
-      const rowDept = (data[i][4] || "").trim();
-      const rowCccd = (data[i][5] || "").toString().trim().replace(/[\s\.\-]+/g, "").replace(/^'+/, "");
-      const rowStatus = (data[i][6] || "").trim() || "Đang làm việc";
-      const rowRole = (data[i][7] && data[i][7].toLowerCase().includes("admin")) ? "admin" : "user";
+      const rowPhone = (data[i][colPhone] || "").toString().trim().replace(/^'+/, "");
+      const rowPass = (data[i][colPass] || "").toString().trim();
+      const rowFullname = (data[i][colName] || "").trim();
+      const rowPosition = (data[i][colPos] || "").trim();
+      const rowDept = (data[i][colDept] || "").trim();
+      const rowCccd = (data[i][colCccd] || "").toString().trim().replace(/^'+/, "");
+      const rowStatus = (data[i][colStatus] || "").trim() || "Đang làm việc";
+      const rowRole = (data[i][colRole] && data[i][colRole].toLowerCase().includes("admin")) ? "admin" : "user";
 
-      // So khớp CCCD ưu tiên ở cột F (Số CCCD), dự phòng ở cột A (nếu quản trị viên nhập CCCD vào cột A)
-      const normCccd = rowCccd.toLowerCase();
-      const strippedCccd = normCccd.replace(/^0+/, "");
-      const normA = rowA.toLowerCase();
-      const strippedA = normA.replace(/^0+/, "");
+      // Lấy username từ cột sheet hoặc tự động sinh từ Họ và tên (VD: "Quân ĐTM")
+      let rowUsername = colUsername !== -1 ? (data[i][colUsername] || "").toString().trim() : "";
+      if (!rowUsername && rowFullname) {
+        rowUsername = generateUsernameFromFullname(rowFullname);
+      }
 
-      const isMatch = (
-        (normCccd && (normCccd === normSearch || (strippedSearch.length >= 8 && strippedCccd === strippedSearch))) ||
-        (normA && (normA === normSearch || (strippedSearch.length >= 8 && strippedA === strippedSearch)))
-      );
+      // 1. So khớp theo Username (ưu tiên số 1: ví dụ "Quân ĐTM")
+      let isUsernameMatch = false;
+      if (rowUsername) {
+        const uRow = rowUsername.toLowerCase();
+        const uRowNoSpace = uRow.replace(/[\s\.\-]+/g, "");
+        const uRowNoTone = removeVietnameseTones(uRow).replace(/[\s\.\-]+/g, "");
+
+        if (
+          uRow === searchTrimmed ||
+          uRowNoSpace === searchNoSpace ||
+          (searchNoTone.length >= 3 && uRowNoTone === searchNoTone)
+        ) {
+          isUsernameMatch = true;
+        }
+      }
+
+      // 2. So khớp theo Số CCCD (ưu tiên số 2)
+      let isCccdMatch = false;
+      if (rowCccd) {
+        const normCccd = rowCccd.toLowerCase().replace(/[\s\.\-]+/g, "");
+        const strippedCccd = normCccd.replace(/^0+/, "");
+        if (normCccd === searchNoSpace || (searchDigitStripped.length >= 8 && strippedCccd === searchDigitStripped)) {
+          isCccdMatch = true;
+        }
+      }
+
+      // 3. So khớp theo Số điện thoại / Cột E (dự phòng số 3)
+      let isPhoneMatch = false;
+      if (rowPhone) {
+        const normPhone = rowPhone.toLowerCase().replace(/[\s\.\-]+/g, "");
+        const strippedPhone = normPhone.replace(/^0+/, "");
+        if (normPhone === searchNoSpace || (searchDigitStripped.length >= 8 && strippedPhone === searchDigitStripped)) {
+          isPhoneMatch = true;
+        }
+      }
+
+      const isMatch = isUsernameMatch || isCccdMatch || isPhoneMatch;
 
       if (isMatch) {
         identifierFound = true;
         if (rowPass === password) {
           matchedUser = {
-            cccd: (data[i][5] || "").replace(/^'+/, "").trim() || rowA,
-            phone: rowA,
-            fullname: rowFullname || ("Cán bộ " + identifier),
+            username: rowUsername || generateUsernameFromFullname(rowFullname),
+            cccd: rowCccd || rowPhone,
+            phone: rowPhone,
+            fullname: rowFullname || ("Cán bộ " + rawIdentifier),
             position: rowPosition || "Cán bộ",
             department: rowDept || "Chi nhánh số 23",
             status: rowStatus,
@@ -761,7 +1025,7 @@ function handleLogin(identifier, password, ss) {
     if (!identifierFound) {
       return {
         success: false,
-        message: "Số CCCD này chưa được đăng ký trong danh sách trên hệ thống!"
+        message: "Người dùng (" + rawIdentifier + ") chưa được đăng ký trong danh sách trên hệ thống!"
       };
     }
 
@@ -791,8 +1055,10 @@ function handleLogin(identifier, password, ss) {
 }
 
 function handleAddSchedule(data, ss) {
-  const phone = (data.phone || data.email || "").toString().trim();
-  const name = (data.name || data.fullname || "").toString().trim();
+  const registrant = (data.username || data.name || data.fullname || data.phone || data.email || "").toString().trim();
+  const name = (data.fullname || data.name || registrant).toString().trim();
+  const registrantVal = (/^\d+$/.test(registrant)) ? ("'" + registrant) : registrant;
+
   const date = (data.date || "").toString().trim();
   const dayOfWeek = (data.dayOfWeek || "").toString().trim();
   const time = (data.time || "").toString().trim();
@@ -818,7 +1084,7 @@ function handleAddSchedule(data, ss) {
     sheet.appendRow([
       id,
       timestamp,
-      "'" + phone,
+      registrantVal,
       name,
       "'" + date,
       dayOfWeek,
@@ -831,7 +1097,7 @@ function handleAddSchedule(data, ss) {
     sheet.appendRow([
       id,
       timestamp,
-      "'" + phone,
+      registrantVal,
       "'" + date,
       dayOfWeek,
       "'" + time,
