@@ -28,7 +28,7 @@ function onOpen() {
       .createMenu("⭐ BINHDUONG23")
       .addItem("▶️ 1-Click: Cấu hình chuẩn toàn bộ 5 Phân hệ BINHDUONG23", "setupBinhDuong23")
       .addSeparator()
-      .addItem("🔤 Tự động tạo & điền Username (Quân ĐTM)", "autoFillUsernames")
+      .addItem("🔤 Tự động tạo & điền Username (quandtm)", "autoFillUsernames")
       .addItem("👥 Định dạng tab TaiKhoan (Tài khoản cán bộ)", "seedAccountsOnly")
       .addItem("🎫 Định dạng tab Tickets (Sự cố IT Helpdesk)", "seedTicketsOnly")
       .addItem("📋 Định dạng tab GiaoViec (Lãnh đạo giao việc & Bảng tiến độ)", "seedTasksOnly")
@@ -64,7 +64,7 @@ function setupBinhDuong23() {
   SpreadsheetApp.getUi().alert(
     "✅ HỆ THỐNG BINHDUONG23 ĐÃ SẴN SÀNG TOÀN BỘ 5 PHÂN HỆ!\n\n" +
     "1. Sheet 'LichTuan': Giữ nguyên toàn bộ dữ liệu lịch tuần.\n" +
-    "2. Sheet 'TaiKhoan': Đã định dạng chuẩn nhân sự CN23 & cột Username (Quân ĐTM).\n" +
+    "2. Sheet 'TaiKhoan': Đã định dạng chuẩn nhân sự CN23 & cột Username (quandtm).\n" +
     "3. Sheet 'Tickets': Đã định dạng chuẩn IT Helpdesk.\n" +
     "4. Sheet 'GiaoViec': Đã định dạng chuẩn Lãnh đạo giao việc.\n" +
     "5. Sheet 'BaoCaoSoLieu': Đã định dạng chuẩn 8 nhóm chỉ tiêu chuyên môn.\n\n" +
@@ -73,24 +73,24 @@ function setupBinhDuong23() {
 }
 
 /**
- * Hàm sinh Username theo quy chuẩn: Tên chính + Chữ cái đầu viết hoa của Họ và Tên lót
- * Ví dụ: "Đỗ Trọng Minh Quân" -> "Quân ĐTM", "Nguyễn Văn An" -> "An NV"
+ * Hàm sinh Username theo quy chuẩn: Tên + Họ & Tên lót viết tắt chữ cái đầu (viết thường, không dấu)
+ * Ví dụ: "Đỗ Trọng Minh Quân" -> "quandtm", "Nguyễn Văn An" -> "annv"
  */
 function generateUsernameFromFullname(fullname) {
   if (!fullname) return "";
   const parts = fullname.toString().trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "";
   if (parts.length === 1) {
-    const w = parts[0];
-    return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+    return removeVietnameseTones(parts[0]).toLowerCase();
   }
   const lastName = parts[parts.length - 1]; // Tên chính (từ cuối cùng)
-  const formattedLastName = lastName.charAt(0).toUpperCase() + lastName.slice(1).toLowerCase();
-  // Chữ cái đầu của Họ và các Tên lót viết hoa liền nhau
+  const normLastName = removeVietnameseTones(lastName).toLowerCase();
+  // Chữ cái đầu của Họ và các Tên lót viết thường
   const initials = parts.slice(0, -1).map(function(p) {
-    return p.charAt(0).toUpperCase();
+    const norm = removeVietnameseTones(p);
+    return norm ? norm.charAt(0).toLowerCase() : "";
   }).join("");
-  return formattedLastName + " " + initials;
+  return normLastName + initials;
 }
 
 /**
@@ -130,7 +130,7 @@ function removeVietnameseTones(str) {
 
 /**
  * Tự động tạo cột "Username" ở cuối hàng (nếu chưa có)
- * và điền Username chuẩn (Tên + Họ Tên lót viết tắt, VD: "Quân ĐTM") cho toàn bộ cán bộ
+ * và điền Username chuẩn (Tên + Họ Tên lót viết tắt, VD: "quandtm") cho toàn bộ cán bộ
  */
 function autoFillUsernames(ss) {
   ss = ss || SpreadsheetApp.getActiveSpreadsheet();
