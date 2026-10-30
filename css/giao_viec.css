@@ -1,0 +1,36 @@
+/* =========================================================================
+   GIAO_VIEC.CSS: GIAO DIỆN PHÂN HỆ LÃNH ĐẠO GIAO VIỆC & BẢNG TIẾN ĐỘ
+   Hệ Thống Web Portal - Văn Phòng Đăng Ký Đất Đai Chi Nhánh Số 23
+   ========================================================================= */
+
+@import url("base.css");
+
+/* ==================== 1. KPI CARDS ==================== */
+.kpi-metric-card {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* ==================== 2. THẺ TAB ĐIỀU HƯỚNG GIAO VIỆC ==================== */
+.tab-button.active {
+  background-color: #ffffff;
+  color: var(--color-primary);
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ==================== 3. BẢNG TIẾN ĐỘ NHIỆM VỤ ==================== */
+.task-row-clickable {
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.task-row-clickable:hover {
+  background-color: #f8fafc;
+}

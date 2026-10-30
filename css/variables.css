@@ -1,0 +1,88 @@
+/* =========================================================================
+   VARIABLES.CSS: BẢNG DESIGN TOKENS CHUẨN HỆ THỐNG (CSS CUSTOM PROPERTIES)
+   Hệ Thống Web Portal - Văn Phòng Đăng Ký Đất Đai Chi Nhánh Số 23
+   ========================================================================= */
+
+:root {
+  /* ==================== 1. DẢI MÀU THƯƠNG HIỆU (BRAND COLORS) ==================== */
+  /* Màu chủ đạo: Xanh Hoàng Gia (Royal Navy) */
+  --color-primary: #1e3a8a;          /* Blue 900 - Nền Header & Sidebar chính */
+  --color-primary-dark: #172554;     /* Blue 950 - Khối nhận diện & viền tối */
+  --color-primary-hover: #1d4ed8;    /* Blue 700 - Hover nút bấm & menu */
+  --color-primary-focus: #2563eb;    /* Blue 600 - Focus viền input */
+  --color-primary-light: #eff6ff;    /* Blue 50 - Nền thẻ được chọn, badge mềm */
+  --color-primary-border: #93c5fd;   /* Blue 300 - Viền điểm nhấn */
+
+  /* Màu nhận diện Chi nhánh 23: Vàng Kim (CN23 Gold / Amber) */
+  --color-accent: #f59e0b;           /* Amber 500 - Đường chỉ Header & Active Indicator */
+  --color-accent-hover: #d97706;     /* Amber 600 - Hover nút vàng */
+  --color-accent-light: #fbbf24;     /* Amber 400 - Icon ngôi sao, huy hiệu nổi bật */
+  --color-accent-soft: #fef3c7;      /* Amber 50 - Nền nhãn cảnh báo nhẹ */
+  --color-accent-glow: rgba(245, 158, 11, 0.35);
+
+  /* ==================== 2. MÀU TRẠNG THÁI NGHIỆP VỤ (SEMANTIC COLORS) ==================== */
+  --color-success: #15803d;          /* Green 700 - Đã hoàn thành, đúng hạn */
+  --color-success-bg: #dcfce7;       /* Green 100 */
+  --color-success-border: #86efac;   /* Green 300 */
+
+  --color-warning: #b45309;          /* Amber 700 - Đang xử lý, chú ý */
+  --color-warning-bg: #ffedd5;       /* Orange 100 */
+  --color-warning-border: #fdba74;   /* Orange 300 */
+
+  --color-danger: #dc2626;           /* Red 600 - Quá hạn, lỗi, hỏa tốc, đăng xuất */
+  --color-danger-bg: #fee2e2;        /* Red 100 */
+  --color-danger-border: #fca5a5;    /* Red 300 */
+
+  --color-info: #0284c7;             /* Sky 600 - Thông tin, hướng dẫn */
+  --color-info-bg: #e0f2fe;          /* Sky 100 */
+  --color-info-border: #7dd3fc;      /* Sky 300 */
+
+  /* ==================== 3. NỀN & MÀU TRUNG TÍNH (NEUTRALS & SURFACES) ==================== */
+  --color-bg-canvas: #f8fafc;        /* Slate 50 - Nền toàn trang web */
+  --color-bg-surface: #ffffff;       /* Trắng tinh - Nền thẻ Card & Bảng */
+  --color-bg-subtle: #f1f5f9;        /* Slate 100 - Nền header bảng, ô tìm kiếm */
+  
+  --color-border-subtle: #e2e8f0;    /* Slate 200 - Viền thẻ, đường phân cách */
+  --color-border-active: #cbd5e1;    /* Slate 300 - Viền ô input bình thường */
+  --color-border-strong: #94a3b8;    /* Slate 400 */
+
+  --color-text-main: #0f172a;        /* Slate 900 - Chữ đen đậm chính */
+  --color-text-secondary: #334155;   /* Slate 700 - Chữ nội dung */
+  --color-text-muted: #64748b;       /* Slate 500 - Chữ ghi chú, thời gian phụ */
+  --color-text-light: #ffffff;       /* Chữ trắng trên nền tối */
+
+  /* ==================== 4. THÔNG SỐ KHUNG BỐ CỤC (LAYOUT SPECS) ==================== */
+  --header-height: 62px;             /* Chiều cao Header cố định phía trên */
+  --sidebar-width: 250px;            /* Chiều rộng Sidebar khi mở rộng */
+  --sidebar-width-collapsed: 68px;   /* Chiều rộng Sidebar khi thu gọn Icon-only */
+  --sidebar-border: rgba(255, 255, 255, 0.15); /* Viền mờ ngăn cách Sidebar */
+  --container-max-width: 1280px;     /* Độ rộng chuẩn 1280px cho Workspace */
+
+  /* ==================== 5. PHÔNG CHỮ & KÍCH THƯỚC (TYPOGRAPHY) ==================== */
+  --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --font-size-xs: 0.75rem;           /* 12px */
+  --font-size-sm: 0.84rem;           /* 13.5px */
+  --font-size-base: 0.92rem;         /* 14.7px */
+  --font-size-md: 1rem;              /* 16px */
+  --font-size-lg: 1.15rem;           /* 18.4px */
+  --font-size-xl: 1.35rem;           /* 21.6px */
+  --font-size-2xl: 1.65rem;          /* 26.4px */
+
+  /* ==================== 6. ĐỘ BO GÓC & ĐỔ BÓNG (RADIUS & SHADOWS) ==================== */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 2px 8px -2px rgba(15, 23, 42, 0.06), 0 1px 3px -1px rgba(15, 23, 42, 0.04);
+
+  /* Hiệu ứng chuyển động mượt mà */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}

@@ -1,0 +1,40 @@
+/* =========================================================================
+   BAO_CAO_TO.CSS: GIAO DIỆN PHÂN HỆ BÁO CÁO SỐ LIỆU CẤP TỔ & KPI
+   Hệ Thống Web Portal - Văn Phòng Đăng Ký Đất Đai Chi Nhánh Số 23
+   ========================================================================= */
+
+@import url("base.css");
+
+/* ==================== 1. NHÓM CHỈ TIÊU CHUYÊN MÔN ==================== */
+.report-group-card {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 20px;
+}
+
+.report-group-title {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-main);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-border-subtle);
+  margin-bottom: 16px;
+}
+
+/* ==================== 2. BẢNG LỊCH SỬ BÁO CÁO ==================== */
+.history-row-clickable {
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.history-row-clickable:hover {
+  background-color: #f8fafc;
+}

@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cổng Dịch Vụ Nội Bộ - VPĐK Chi Nhánh 23</title>
+  
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Giao diện đồng bộ hệ sinh thái (Modular CSS) -->
+  <link rel="stylesheet" href="css/hub.css">
+  <!-- Dữ liệu 200 câu nói tinh hoa của các vĩ nhân thế giới -->
+  <script src="js/quotes_data.js"></script>
+  <!-- Layout Controller (Full-Width Topbar + Collapsible Sidebar) -->
+  <script src="js/layout.js" defer></script>
+</head>
+<body>
+
+  <!-- Thông báo Toast Notification -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- ==================== NỘI DUNG CHÍNH ==================== -->
+  <main class="main-content">
+
+    <!-- ==================== 1. MÀN HÌNH ĐĂNG NHẬP ==================== -->
+    <section id="loginSection" class="login-wrapper">
+      <div class="login-card">
+        <!-- Đầu form: Xếp DỌC (TRÊN DƯỚI) hoàn toàn, không chia 2 cột -->
+        <div class="login-card-header">
+          <div class="login-icon-box">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <h2 class="login-title">ĐĂNG NHẬP HỆ THỐNG</h2>
+          <p class="login-subtitle">Cổng Dịch Vụ Cán Bộ &bull; Chi Nhánh Số 23</p>
+        </div>
+
+        <div class="login-card-body">
+          <form id="loginForm" autocomplete="on">
+            <div class="form-group">
+              <label for="loginUsername" class="form-label">
+                <span>Tên người dùng</span>
+                <span class="required">*</span>
+              </label>
+              <div class="input-with-icon">
+                <i class="fa-solid fa-circle-user input-icon-left"></i>
+                <input type="text" id="loginUsername" class="form-control" placeholder="Nhập tên người dùng (ví dụ: quandtm)" required autocomplete="username">
+              </div>
+              <small class="field-hint">
+                <i class="fa-solid fa-circle-info"></i> Ví dụ: Đỗ Trọng Minh Quân &rarr; <strong>quandtm</strong>
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label for="loginPassword" class="form-label">
+                <span>Mật khẩu truy cập</span>
+                <span class="required">*</span>
+              </label>
+              <div class="input-with-icon password-input-group">
+                <i class="fa-solid fa-lock input-icon-left"></i>
+                <input type="password" id="loginPassword" class="form-control" placeholder="Nhập mật khẩu của bạn" required autocomplete="current-password">
+                <button type="button" class="btn-toggle-password" id="btnToggleLoginPassword" title="Hiện/ẩn mật khẩu">
+                  <i class="fa-regular fa-eye"></i>
+                </button>
+              </div>
+              <small class="field-hint">
+                <i class="fa-solid fa-key"></i> Mật khẩu do Quản trị viên cấp
+              </small>
+            </div>
+
+            <div class="login-options-row">
+              <label class="checkbox-label">
+                <input type="checkbox" id="rememberMe" checked>
+                <span>Ghi nhớ đăng nhập</span>
+              </label>
+              <button type="button" id="btnForgotPassword" class="btn-forgot-password">Quên mật khẩu?</button>
+            </div>
+
+            <button type="submit" id="btnLogin" class="btn btn-primary btn-block btn-login-submit">
+              <i class="fa-solid fa-arrow-right-to-bracket mr-1"></i>
+              <span class="btn-text">Đăng Nhập Vào Hệ Thống</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Huy hiệu chứng thực bảo mật dưới form -->
+      <div class="login-security-tag">
+        <i class="fa-solid fa-shield-check"></i>
+        <span>Hệ thống nội bộ Văn phòng Đăng ký đất đai TP.HCM &bull; Chi nhánh 23</span>
+      </div>
+    </section>
+
+    <!-- ==================== 2. TRANG CHỦ / PORTAL HUB ==================== -->
+    <section id="portalHubSection" class="hub-section" style="display: none;">
+      <!-- Hero Banner với Lời chào thời gian thực & Thẻ Danh ngôn vĩ nhân (Mặc định Xanh Sương Băng Ice Glacier) -->
+      <div class="hub-hero-banner theme-ice" id="hubHeroBanner">
+        <div class="hub-hero-top-row">
+          <div class="hub-greeting-box">
+            <div class="hub-time-icon" id="hubTimeIcon">
+              <i class="fa-solid fa-sun" style="color: #f59e0b;"></i>
+            </div>
+            <div>
+              <h2 class="hub-greeting-title">
+                <span id="hubTimeGreeting">Chào buổi sáng / Good morning</span>, <span id="hubGreetingName">Đồng chí</span>!
+              </h2>
+              <p class="hub-greeting-sub" id="hubGreetingSub">
+                Chúc đồng chí một ngày làm việc hiệu quả, thuận lợi và tràn đầy năng lượng!
+              </p>
+            </div>
+          </div>
+
+          <div class="hub-hero-meta-cluster">
+            <div class="hero-theme-selector" id="heroThemeSelector" title="Chọn tông màu nền Banner">
+              <span class="theme-selector-label"><i class="fa-solid fa-palette mr-1"></i> Tông màu:</span>
+              <button type="button" class="theme-dot-btn theme-ice active" data-theme="theme-ice" title="Xanh sương băng (Mát mẻ, trong trẻo - Đang áp dụng)"></button>
+              <button type="button" class="theme-dot-btn theme-latte" data-theme="theme-latte" title="Cà phê sữa (Ấm áp, trang nhã)"></button>
+              <button type="button" class="theme-dot-btn theme-silver" data-theme="theme-silver" title="Xám bạc (Hiện đại, thanh lịch)"></button>
+              <button type="button" class="theme-dot-btn theme-sand" data-theme="theme-sand" title="Cát sa mạc (Nhẹ nhàng, tri thức)"></button>
+            </div>
+            <div class="hub-hero-meta">
+              <div class="hub-hero-meta-item">
+                <i class="fa-solid fa-building-user text-amber-500"></i>
+                <span>Đơn vị: <strong>Chi nhánh số 23</strong></span>
+              </div>
+              <div class="hub-hero-meta-item">
+                <i class="fa-solid fa-id-badge text-blue-600"></i>
+                <span id="hubUserRole">Chức vụ: <strong>Cán bộ</strong></span>
+              </div>
+              <div class="hub-hero-meta-item">
+                <i class="fa-solid fa-address-card text-emerald-600"></i>
+                <span id="hubUserAccount">Tài khoản: <strong>Đang tải...</strong></span>
+              </div>
+              <div class="hub-hero-meta-item">
+                <i class="fa-solid fa-calendar-day text-amber-600"></i>
+                <span id="hubCurrentDate">Hôm nay</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- THẺ DANH NGÔN TINH HOA VĨ NHÂN TRUYỀN CẢM HỨNG -->
+        <div class="hub-quote-card" id="hubQuoteCard">
+          <div class="hub-quote-header">
+            <div class="quote-header-left">
+              <span class="quote-pill-tag">
+                <i class="fa-solid fa-feather-pointed mr-1"></i> DANH NGÔN TINH HOA THẾ GIỚI
+              </span>
+              <span class="quote-category-tag" id="quoteCategory">Trí tuệ & Học hỏi</span>
+            </div>
+            <div class="quote-header-right">
+              <span class="quote-index-tag" id="quoteIndexBadge">#1 / 610</span>
+              <button type="button" class="btn-quote-action" id="btnRandomQuote" title="Đổi câu nói khác ngẫu nhiên">
+                <i class="fa-solid fa-dice"></i>
+                <span>Đổi câu khác</span>
+              </button>
+              <button type="button" class="btn-quote-action btn-quote-copy" id="btnCopyQuote" title="Sao chép câu nói này">
+                <i class="fa-regular fa-copy"></i>
+                <span>Sao chép</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="hub-quote-body" id="quoteBodyContent">
+            <i class="fa-solid fa-quote-left quote-watermark-icon"></i>
+            <blockquote class="quote-vietnamese" id="quoteTextVi">
+              "Học từ ngày hôm qua, sống cho ngày hôm nay, hy vọng vào ngày mai. Điều quan trọng nhất là không bao giờ ngừng đặt câu hỏi."
+            </blockquote>
+            <p class="quote-english" id="quoteTextEn">
+              "Learn from yesterday, live for today, hope for tomorrow. The important thing is not to stop questioning."
+            </p>
+          </div>
+
+          <div class="hub-quote-footer">
+            <div class="quote-author-cluster">
+              <div class="quote-author-avatar-icon">
+                <i class="fa-solid fa-user-graduate"></i>
+              </div>
+              <div class="quote-author-details">
+                <div class="quote-author-name-row">
+                  <strong class="quote-author-name" id="quoteAuthorName">Albert Einstein</strong>
+                  <span class="quote-author-era" id="quoteAuthorEra">(Thế kỷ 20)</span>
+                </div>
+                <div class="quote-author-title" id="quoteAuthorTitle">
+                  Nhà vật lý lý thuyết đoạt giải Nobel, cha đẻ thuyết tương đối
+                </div>
+              </div>
+            </div>
+            <div class="quote-source-badge" id="quoteSource">
+              <i class="fa-solid fa-book-bookmark"></i>
+              <span>Xuất xứ: Tạp chí LIFE (1955)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TIÊU ĐỀ KHU VỰC PHÂN HỆ LÀM VIỆC -->
+      <div class="modules-section-header">
+        <div>
+          <h3 class="modules-heading">
+            <i class="fa-solid fa-cubes-stacked text-blue-600 mr-2"></i>
+            PHÂN HỆ NGHIỆP VỤ NỘI BỘ
+          </h3>
+          <p class="modules-subheading">Truy cập nhanh vào các hệ thống chuyên môn của Chi nhánh số 23:</p>
+        </div>
+        <div>
+          <a href="https://drive.google.com/drive/folders/1T2LVJKymM-52KBLNeabYxtAT4zfXneND" target="_blank" class="btn-drive-quick" title="Mở kho phần mềm và driver cài đặt cơ quan trên Google Drive">
+            <i class="fa-solid fa-cloud-arrow-down mr-1"></i> Kho Cài Đặt (Drive)
+          </a>
+        </div>
+      </div>
+
+      <!-- GRID 4 PHÂN HỆ GỌN GÀNG, NHỎ NHẮN, KHÔNG DÀI DÒNG THỪA THÃI -->
+      <div class="compact-modules-grid">
+        <!-- Module 1: Đăng Ký Lịch Công Tác Tuần -->
+        <a href="lich_tuan.html" class="compact-module-card card-mod-schedule" title="Truy cập Phân hệ Đăng ký lịch công tác tuần">
+          <div class="mod-icon-wrapper">
+            <i class="fa-solid fa-calendar-week"></i>
+          </div>
+          <div class="mod-info">
+            <span class="mod-badge">Hành chính</span>
+            <h4 class="mod-title">LỊCH CÔNG TÁC TUẦN</h4>
+          </div>
+          <div class="mod-action-arrow">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <!-- Module 2: IT Helpdesk -->
+        <a href="it_helpdesk.html" class="compact-module-card card-mod-it" title="Truy cập Phân hệ IT Helpdesk">
+          <div class="mod-icon-wrapper">
+            <i class="fa-solid fa-headset"></i>
+          </div>
+          <div class="mod-info">
+            <span class="mod-badge">Tin học & Thiết bị</span>
+            <h4 class="mod-title">IT HELPDESK</h4>
+          </div>
+          <div class="mod-action-arrow">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <!-- Module 3: Lãnh Đạo Giao Việc -->
+        <a href="giao_viec.html" class="compact-module-card card-mod-task" title="Truy cập Phân hệ Lãnh đạo giao việc và theo dõi tiến độ">
+          <div class="mod-icon-wrapper">
+            <i class="fa-solid fa-list-check"></i>
+          </div>
+          <div class="mod-info">
+            <span class="mod-badge">Điều hành</span>
+            <h4 class="mod-title">LÃNH ĐẠO GIAO VIỆC</h4>
+          </div>
+          <div class="mod-action-arrow">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <!-- Module 4: Báo Cáo Tổ & KPI -->
+        <a href="bao_cao_to.html" class="compact-module-card card-mod-report" title="Truy cập Phân hệ Báo cáo số liệu tổ và KPI">
+          <div class="mod-icon-wrapper">
+            <i class="fa-solid fa-chart-pie"></i>
+          </div>
+          <div class="mod-info">
+            <span class="mod-badge">Chỉ tiêu KPI</span>
+            <h4 class="mod-title">BÁO CÁO TỔ & KPI</h4>
+          </div>
+          <div class="mod-action-arrow">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== SCRIPT XỬ LÝ ĐĂNG NHẬP & HUB ==================== -->
+  <script>
+    // Link kết nối trực tiếp đến Google Apps Script & Google Sheet
+    const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLjARkYWp2TegCCdMcfVc3W6qQm6PmhFz71-y8zB_xFXxXbRXpsUhk6aPbJtqVqUHE/exec";
+    
+    // Toast Notification
+    function showToast(message, type = "info") {
+      const container = document.getElementById("toastContainer");
+      if (!container) return;
+      const toast = document.createElement("div");
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `<span class="toast-icon">${type === "success" ? "✓" : (type === "error" ? "✗" : "ℹ")}</span><span class="toast-message">${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // Toggle Password Visibility
+    const btnToggle = document.getElementById("btnToggleLoginPassword");
+    const passInput = document.getElementById("loginPassword");
+    if (btnToggle && passInput) {
+      btnToggle.addEventListener("click", () => {
+        const isPass = passInput.type === "password";
+        passInput.type = isPass ? "text" : "password";
+        btnToggle.innerHTML = isPass ? '<i class="fa-regular fa-eye-slash"></i>' : '<i class="fa-regular fa-eye"></i>';
+      });
+    }
+
+    // Forgot Password
+    const btnForgot = document.getElementById("btnForgotPassword");
+    if (btnForgot) {
+      btnForgot.addEventListener("click", () => {
+        alert("THÔNG BÁO QUÊN MẬT KHẨU:\n\nVui lòng liên hệ Tổ Hành chính - Tổng hợp (Đ/c Tuyền - SĐT: 0909736435) hoặc Quản trị viên để được cấp lại mật khẩu đăng nhập.");
+      });
+    }
+
+    // Cập nhật ngày hôm nay
+    function updateCurrentDate() {
+      const now = new Date();
+      const days = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+      const dd = String(now.getDate()).padStart(2, "0");
+      const mm = String(now.getMonth() + 1).padStart(2, "0");
+      const yyyy = now.getFullYear();
+      const el = document.getElementById("hubCurrentDate");
+      if (el) el.textContent = `${days[now.getDay()]}, ${dd}/${mm}/${yyyy}`;
+    }
+
+    // ==================== QUẢN LÝ DANH NGÔN VĨ NHÂN TINH HOA ====================
+    let currentQuoteIndex = -1;
+
+    function renderQuote(index, animate = false) {
+      const quotes = window.QUOTES_DATA || [];
+      if (!quotes.length) return;
+      if (index < 0 || index >= quotes.length) {
+        index = Math.floor(Math.random() * quotes.length);
+      }
+      currentQuoteIndex = index;
+      const q = quotes[index];
+
+      const bodyEl = document.getElementById("quoteBodyContent");
+      if (animate && bodyEl) {
+        bodyEl.style.opacity = "0.2";
+      }
+
+      setTimeout(() => {
+        const textVi = document.getElementById("quoteTextVi");
+        const textEn = document.getElementById("quoteTextEn");
+        const authorName = document.getElementById("quoteAuthorName");
+        const authorEra = document.getElementById("quoteAuthorEra");
+        const authorTitle = document.getElementById("quoteAuthorTitle");
+        const category = document.getElementById("quoteCategory");
+        const source = document.getElementById("quoteSource");
+        const indexBadge = document.getElementById("quoteIndexBadge");
+
+        if (textVi) textVi.textContent = `"${q.quote_vi}"`;
+        if (textEn) textEn.textContent = q.quote_en ? `"${q.quote_en}"` : "";
+        if (authorName) authorName.textContent = q.author;
+        if (authorEra) authorEra.textContent = q.era ? `(${q.era})` : "";
+        if (authorTitle) authorTitle.textContent = q.author_title || "Danh nhân thế giới";
+        if (category) category.textContent = q.category || "Danh ngôn";
+        if (source) source.innerHTML = `<i class="fa-solid fa-book-bookmark"></i> <span>Xuất xứ: ${q.source || "Kinh điển"}</span>`;
+        if (indexBadge) indexBadge.textContent = `#${q.id} / ${quotes.length}`;
+
+        if (animate && bodyEl) {
+          bodyEl.style.opacity = "1";
+        }
+      }, animate ? 150 : 0);
+    }
+
+    function rollRandomQuote() {
+      const quotes = window.QUOTES_DATA || [];
+      if (!quotes.length) return;
+      let nextIndex = Math.floor(Math.random() * quotes.length);
+      if (quotes.length > 1 && nextIndex === currentQuoteIndex) {
+        nextIndex = (currentQuoteIndex + 1) % quotes.length;
+      }
+      renderQuote(nextIndex, true);
+    }
+
+    // Sao chép câu nói vào bộ nhớ tạm
+    function copyCurrentQuote() {
+      const quotes = window.QUOTES_DATA || [];
+      if (currentQuoteIndex < 0 || !quotes[currentQuoteIndex]) return;
+      const q = quotes[currentQuoteIndex];
+      const textToCopy = `"${q.quote_vi}"\n— ${q.author} (${q.author_title})\n[Xuất xứ: ${q.source}]`;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          showToast("Đã sao chép câu nói danh ngôn vào bộ nhớ tạm!", "success");
+        }).catch(() => {
+          fallbackCopyText(textToCopy);
+        });
+      } else {
+        fallbackCopyText(textToCopy);
+      }
+    }
+
+    function fallbackCopyText(text) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        showToast("Đã sao chép câu nói danh ngôn vào bộ nhớ tạm!", "success");
+      } catch (err) {
+        showToast("Không thể tự động sao chép!", "error");
+      }
+      document.body.removeChild(ta);
+    }
+
+    // Lời chào theo thời gian thực (Good morning / afternoon / evening)
+    function updateTimeGreeting() {
+      const hour = new Date().getHours();
+      const greetingEl = document.getElementById("hubTimeGreeting");
+      const iconEl = document.getElementById("hubTimeIcon");
+      const subEl = document.getElementById("hubGreetingSub");
+
+      let greetingText = "Chào buổi sáng / Good morning";
+      let iconHtml = '<i class="fa-solid fa-sun" style="color: #f59e0b;"></i>';
+      let subText = "Chúc đồng chí một ngày mới tràn đầy năng lượng và làm việc hiệu quả!";
+
+      if (hour >= 12 && hour < 18) {
+        greetingText = "Chào buổi chiều / Good afternoon";
+        iconHtml = '<i class="fa-solid fa-cloud-sun" style="color: #38bdf8;"></i>';
+        subText = "Chúc đồng chí buổi chiều làm việc tập trung, thuận lợi và hoàn thành tốt nhiệm vụ!";
+      } else if (hour >= 18 || hour < 5) {
+        greetingText = "Chào buổi tối / Good evening";
+        iconHtml = '<i class="fa-solid fa-moon" style="color: #c084fc;"></i>';
+        subText = "Chúc đồng chí buổi tối bình an, thư thái bên gia đình sau ngày làm việc cống hiến!";
+      }
+
+      if (greetingEl) greetingEl.textContent = greetingText;
+      if (iconEl) iconEl.innerHTML = iconHtml;
+      if (subEl) subEl.textContent = subText;
+    }
+
+    // ==================== TÙY CHỌN TÔNG MÀU NỀN HERO BANNER (CÀ PHÊ SỮA, XÁM BẠC, CÁT SA MẠC, XANH BĂNG) ====================
+    function setHeroBannerTheme(themeName) {
+      const banner = document.getElementById("hubHeroBanner");
+      if (!banner) return;
+
+      const themes = ["theme-latte", "theme-silver", "theme-sand", "theme-ice"];
+      themes.forEach(t => banner.classList.remove(t));
+      banner.classList.add(themeName);
+
+      // Cập nhật trạng thái active trên các nút chọn tông màu
+      document.querySelectorAll(".theme-dot-btn").forEach(btn => {
+        if (btn.getAttribute("data-theme") === themeName) {
+          btn.classList.add("active");
+        } else {
+          btn.classList.remove("active");
+        }
+      });
+
+      try {
+        localStorage.setItem("vpdk_hero_theme", themeName);
+      } catch (e) {}
+    }
+
+    function initHeroTheme() {
+      let savedTheme = "theme-ice";
+      try {
+        savedTheme = localStorage.getItem("vpdk_hero_theme") || "theme-ice";
+      } catch (e) {}
+
+      setHeroBannerTheme(savedTheme);
+
+      document.querySelectorAll(".theme-dot-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const t = btn.getAttribute("data-theme");
+          if (t) setHeroBannerTheme(t);
+        });
+      });
+    }
+
+    // Gắn sự kiện cho các nút điều khiển Quote
+    const btnRandom = document.getElementById("btnRandomQuote");
+    if (btnRandom) {
+      btnRandom.addEventListener("click", rollRandomQuote);
+    }
+
+    const btnCopy = document.getElementById("btnCopyQuote");
+    if (btnCopy) {
+      btnCopy.addEventListener("click", copyCurrentQuote);
+    }
+
+    // Hiển thị giao diện Hub
+    function showHub(user) {
+      document.getElementById("loginSection").style.display = "none";
+      document.getElementById("portalHubSection").style.display = "block";
+      const headerArea = document.getElementById("headerUserArea");
+      if (headerArea) headerArea.style.display = "flex";
+      if (window.FamilyLayout) {
+        FamilyLayout.showSession(user);
+      }
+
+      const name = user.fullname || user.ho_ten || user.name || "Cán bộ";
+      const username = user.username || "";
+      const phone = user.phone || user.so_dien_thoai || "";
+      const role = user.position || user.chuc_vu || "Cán bộ";
+
+      const nameEl = document.getElementById("displayUserName");
+      if (nameEl) nameEl.textContent = name;
+      const roleEl = document.getElementById("displayUserRole");
+      if (roleEl) roleEl.textContent = role;
+      document.getElementById("hubGreetingName").textContent = name;
+      document.getElementById("hubUserRole").innerHTML = `Chức vụ: <strong>${role}</strong>`;
+      const accountEl = document.getElementById("hubUserAccount") || document.getElementById("hubUserCccd");
+      if (accountEl) {
+        let displayStr = username || name;
+        if (phone) displayStr += ` • SĐT: ${phone}`;
+        accountEl.innerHTML = `Tài khoản: <strong>${displayStr || "Đã xác thực"}</strong>`;
+      }
+      updateCurrentDate();
+      updateTimeGreeting();
+      rollRandomQuote();
+    }
+
+    // Hiển thị giao diện Đăng nhập
+    function showLogin() {
+      document.getElementById("loginSection").style.display = "flex";
+      document.getElementById("portalHubSection").style.display = "none";
+      const headerArea = document.getElementById("headerUserArea");
+      if (headerArea) headerArea.style.display = "none";
+      if (window.FamilyLayout) {
+        FamilyLayout.hideSession();
+      }
+    }
+
+    // Kiểm tra phiên đăng nhập: Mở mới luôn yêu cầu đăng nhập, chỉ duy trì trong cùng phiên sessionStorage
+    function checkSession() {
+      // Dọn dẹp dứt điểm các key rác cũ từ phiên bản thử nghiệm trước (tránh auto-login ngoài ý muốn)
+      localStorage.removeItem("vpdk_current_user");
+      sessionStorage.removeItem("vpdk_current_user");
+      localStorage.removeItem("binhduong_user");
+
+      // Khôi phục Người dùng đã ghi nhớ (nếu có) để người dùng đỡ phải gõ lại
+      const rememberedAccount = localStorage.getItem("vpdk_remembered_username") || localStorage.getItem("vpdk_remembered_cccd");
+      const usernameInput = document.getElementById("loginUsername") || document.getElementById("loginCccd");
+      if (rememberedAccount && usernameInput) {
+        usernameInput.value = rememberedAccount;
+      }
+
+      // Chỉ duy trì đăng nhập nếu người dùng đang trong cùng một phiên duyệt web (sessionStorage)
+      const raw = sessionStorage.getItem("binhduong_user");
+      if (raw) {
+        try {
+          const user = JSON.parse(raw);
+          showHub(user);
+          return true;
+        } catch (e) {
+          sessionStorage.removeItem("binhduong_user");
+        }
+      }
+
+      // Mặc định khi mở mới: Luôn luôn hiển thị màn hình ĐĂNG NHẬP để cán bộ nhập Mật khẩu
+      showLogin();
+      return false;
+    }
+
+    // Xử lý Đăng xuất
+    const btnLogout = document.getElementById("btnLogout");
+    if (btnLogout) {
+      btnLogout.addEventListener("click", () => {
+        sessionStorage.removeItem("binhduong_user");
+        sessionStorage.removeItem("vpdk_current_user");
+        localStorage.removeItem("binhduong_user");
+        localStorage.removeItem("vpdk_current_user");
+        showToast("Đã đăng xuất khỏi hệ thống thành công.", "info");
+        showLogin();
+      });
+    }
+
+    // XỬ LÝ ĐĂNG NHẬP: HỖ TRỢ USERNAME (quandtm) - KIỂM TRA TRỰC TIẾP TỪ GOOGLE SHEET
+    const loginForm = document.getElementById("loginForm");
+    if (loginForm) {
+      loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const inputEl = document.getElementById("loginUsername") || document.getElementById("loginCccd");
+        let identifier = (inputEl ? inputEl.value : "").trim().replace(/^'+/, "");
+        const password = (document.getElementById("loginPassword").value || "").trim();
+        const remember = document.getElementById("rememberMe").checked;
+
+        if (!identifier || !password) {
+          showToast("Vui lòng nhập đầy đủ Người dùng và Mật khẩu!", "error");
+          return;
+        }
+
+        const btnLogin = document.getElementById("btnLogin");
+        btnLogin.disabled = true;
+        btnLogin.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang xác thực...';
+
+        let result = null;
+
+        // 1. Gửi trực tiếp lên máy chủ qua POST
+        try {
+          const res = await fetch(DEFAULT_SCRIPT_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({ action: "login", username: identifier, cccd: identifier, password: password })
+          });
+          result = await res.json();
+        } catch (postErr) {
+          console.warn("POST error, fallback to GET:", postErr);
+        }
+
+        // 2. Dự phòng qua GET nếu POST bị mạng chặn
+        if (!result) {
+          try {
+            const getUrl = `${DEFAULT_SCRIPT_URL}?action=login&username=${encodeURIComponent(identifier)}&cccd=${encodeURIComponent(identifier)}&password=${encodeURIComponent(password)}&t=${Date.now()}`;
+            const resGet = await fetch(getUrl);
+            result = await resGet.json();
+          } catch (getErr) {
+            console.warn("GET error:", getErr);
+          }
+        }
+
+        btnLogin.disabled = false;
+        btnLogin.innerHTML = '<i class="fa-solid fa-arrow-right-to-bracket mr-1"></i> <span class="btn-text">Đăng Nhập Vào Hệ Thống</span>';
+
+        if (result) {
+          if (result.success && result.user) {
+            const u = result.user;
+            if (u.status === "Đã nghỉ") {
+              alert(`❌ CẢNH BÁO TRUY CẬP:\n\nCán bộ ${u.fullname} đã được ghi nhận trạng thái ĐÃ NGHỈ LÀM VIỆC trên hệ thống nội bộ.\nTài khoản đã bị vô hiệu hóa.`);
+              return;
+            }
+
+            const userObj = {
+              username: u.username || identifier,
+              fullname: u.fullname || ("Cán bộ " + (u.username || identifier)),
+              name: u.fullname || ("Cán bộ " + (u.username || identifier)),
+              cccd: u.cccd || "",
+              phone: u.phone || "",
+              email: u.email || u.username || identifier,
+              position: u.position || "Cán bộ",
+              department: u.department || "Chi nhánh số 23",
+              role: u.role || "user",
+              status: u.status || "Đang làm việc"
+            };
+
+            // Ghi nhớ tài khoản nếu người dùng tích chọn
+            if (remember) {
+              localStorage.setItem("vpdk_remembered_username", userObj.username || identifier);
+            } else {
+              localStorage.removeItem("vpdk_remembered_username");
+              localStorage.removeItem("vpdk_remembered_cccd");
+            }
+
+            // Phiên làm việc chỉ lưu trong sessionStorage để bảo mật, đóng trình duyệt là hết phiên
+            sessionStorage.setItem("binhduong_user", JSON.stringify(userObj));
+            sessionStorage.setItem("vpdk_current_user", JSON.stringify(userObj));
+            sessionStorage.setItem("currentUser", JSON.stringify(userObj));
+            localStorage.removeItem("binhduong_user");
+            localStorage.removeItem("vpdk_current_user");
+
+            if (window.FamilySidebar) {
+              FamilySidebar.updateUser(userObj.fullname, userObj.position || userObj.department);
+            }
+
+            showHub(userObj);
+            return;
+          } else {
+            if (result.isRetired) {
+              alert(`❌ CẢNH BÁO TRUY CẬP:\n\n${result.message}`);
+            } else {
+              showToast(result.message || "Tên người dùng hoặc Mật khẩu không chính xác!", "error");
+            }
+            return;
+          }
+        } else {
+          // Lỗi mất kết nối Internet hoàn toàn
+          showToast("Không thể kết nối đến máy chủ hệ thống! Vui lòng kiểm tra lại đường truyền mạng.", "error");
+        }
+      });
+    }
+
+    // Khởi chạy khi load trang
+    document.addEventListener("DOMContentLoaded", () => {
+      initHeroTheme();
+      checkSession();
+    });
+  </script>
+</body>
+</html>

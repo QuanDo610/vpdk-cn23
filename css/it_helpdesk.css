@@ -1,0 +1,58 @@
+/* =========================================================================
+   IT_HELPDESK.CSS: GIAO DIỆN PHÂN HỆ TIẾP NHẬN SỰ CỐ MÁY TÍNH
+   Hệ Thống Web Portal - Văn Phòng Đăng Ký Đất Đai Chi Nhánh Số 23
+   ========================================================================= */
+
+@import url("base.css");
+
+/* ==================== 1. KHÔNG GIAN LÀM VIỆC 2 CỘT ==================== */
+.workspace-grid {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 1023px) {
+  .workspace-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==================== 2. HÀNG ĐỢI SỰ CỐ & THẺ TICKET ==================== */
+.ticket-row-clickable {
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.ticket-row-clickable:hover {
+  background-color: #f8fafc;
+}
+
+.ticket-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.ticket-status-new {
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger-border);
+}
+
+.ticket-status-processing {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
+  border: 1px solid var(--color-warning-border);
+}
+
+.ticket-status-done {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid var(--color-success-border);
+}
