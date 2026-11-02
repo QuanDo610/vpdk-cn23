@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Khung Mẫu Phân Hệ Chuẩn (Base Template) - VPĐK Chi Nhánh 23</title>
+
+  <!-- ==================== 0. RÀO CHẮN BẢO MẬT (ZERO-TRUST ROUTE GUARD) ==================== -->
+  <script src="js/auth.js"></script>
+  <script>FamilyAuth.requireAuth();</script>
+
+  <!-- ==================== 1. THƯ VIỆN BỔ TRỢ CHUẨN ==================== -->
+  <!-- Font Awesome 6 Icons (Free CDN) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Bộ Class Tiện Ích Tĩnh Cục Bộ (Thay thế hoàn toàn Tailwind Play CDN) -->
+  <link rel="stylesheet" href="css/utilities.css">
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- ==================== 2. HỆ THỐNG GIAO DIỆN CỐT LÕI (DESIGN SYSTEM) ==================== -->
+  <!-- Bảng định kiểu cơ sở (Base CSS - Tự động nạp variables.css & utilities.css) -->
+  <link rel="stylesheet" href="css/base.css">
+
+  <!-- CSS riêng của phân hệ mới: Ví dụ href="css/ten_module.css" -->
+
+  <!-- ==================== 3. SCRIPTS ĐIỀU KHIỂN & NGHIỆP VỤ (DEFER) ==================== -->
+  <!-- Bộ điều khiển Layout dùng chung (Tự động nạp Header cố định & Footer đồng bộ) -->
+  <script src="js/layout.js" defer></script>
+  <!-- Logic JS riêng của phân hệ mới: Ví dụ src="js/ten_module.js" với defer -->
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
+
+  <!-- Khung hiển thị thông báo Toast Notification toàn cục -->
+  <div id="toastContainer" class="fixed top-20 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- =========================================================================
+       KHU VỰC NỘI DUNG CHÍNH (MAIN WORKSPACE)
+       Container chuẩn 1280px (max-w-7xl) - Desktop First - Chống tràn ngang
+       ========================================================================= -->
+  <main class="main-content app-container flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-5 space-y-6">
+
+    <!-- 1. THANH TIÊU ĐỀ PHÂN HỆ (PAGE TITLE STRIP) -->
+    <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200">
+      <div>
+        <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-1">
+          <a href="index.html" class="hover:text-blue-900 transition flex items-center gap-1">
+            <i class="fa-solid fa-house"></i>
+            <span>Cổng Dịch Vụ</span>
+          </a>
+          <i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i>
+          <span class="text-blue-900 font-bold">Tên Phân Hệ Mới</span>
+        </div>
+        <h1 class="text-xl sm:text-2xl font-black text-blue-900 tracking-tight flex items-center gap-2.5">
+          <span class="w-9 h-9 rounded-xl bg-amber-500 text-slate-900 flex items-center justify-center text-lg shadow-sm">
+            <i class="fa-solid fa-layer-group"></i>
+          </span>
+          <span>TIÊU ĐỀ CHÍNH CỦA PHÂN HỆ</span>
+        </h1>
+        <p class="text-xs sm:text-sm text-slate-500 mt-1">
+          Văn phòng Đăng ký đất đai TP. Hồ Chí Minh &bull; Chi nhánh số 23
+        </p>
+      </div>
+
+      <!-- Khu vực các nút bấm tác vụ nhanh phía trên -->
+      <div class="flex items-center gap-2.5">
+        <button type="button" class="btn btn-outline-primary text-xs sm:text-sm" id="btnRefreshModule">
+          <i class="fa-solid fa-arrows-rotate mr-1.5"></i>
+          <span>Làm mới</span>
+        </button>
+        <button type="button" class="btn btn-primary text-xs sm:text-sm" id="btnActionPrimary">
+          <i class="fa-solid fa-plus mr-1.5"></i>
+          <span>Thêm Mới Dữ Liệu</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 2. KHU VỰC THẺ NỘI DUNG NGHIỆP VỤ (VÍ DỤ CARDS HOẶC BẢNG) -->
+    <section class="module-card">
+      <h2 class="text-base font-bold text-slate-900 mb-3 flex items-center gap-2">
+        <i class="fa-solid fa-circle-info text-blue-700"></i>
+        <span>Hướng Dẫn Phát Triển Phân Hệ Mới (Theo docs/QUY_CHUAN_MA_NGUON.md)</span>
+      </h2>
+      <p class="text-sm text-slate-600 leading-relaxed mb-4">
+        Tệp này là <strong>Base Template chuẩn</strong> được xây dựng theo kiến trúc tối giản & hiện đại:
+      </p>
+      <ul class="text-xs sm:text-sm text-slate-600 space-y-2 list-disc list-inside bg-slate-50 p-4 rounded-xl border border-slate-200">
+        <li><strong>Zero-Trust Route Guard:</strong> Kiểm tra xác thực ngay trong <code class="text-blue-800 font-mono">&lt;head&gt;</code> trước khi nạp DOM/CSS.</li>
+        <li><strong>Header cố định (Topbar):</strong> Tự động nạp qua <code class="text-blue-800 font-mono">js/layout.js</code> với avatar và dropdown đăng xuất.</li>
+        <li><strong>Module hóa 100%:</strong> Tuyệt đối không viết inline <code class="text-blue-800 font-mono">&lt;style&gt;</code> hoặc <code class="text-blue-800 font-mono">&lt;script&gt;</code>. Toàn bộ logic viết vào <code class="text-blue-800 font-mono">js/ten_module.js</code> và <code class="text-blue-800 font-mono">css/ten_module.css</code>.</li>
+        <li><strong>Tải song song hiệu năng cao:</strong> Nạp file JavaScript với thuộc tính <code class="text-blue-800 font-mono">defer</code> trong <code class="text-blue-800 font-mono">&lt;head&gt;</code>.</li>
+      </ul>
+    </section>
+
+  </main>
+
+</body>
+</html>

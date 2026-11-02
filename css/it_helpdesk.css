@@ -1,21 +1,15 @@
 /* =========================================================================
    IT_HELPDESK.CSS: GIAO DIỆN PHÂN HỆ TIẾP NHẬN SỰ CỐ MÁY TÍNH
    Hệ Thống Web Portal - Văn Phòng Đăng Ký Đất Đai Chi Nhánh Số 23
+   Quy chuẩn: .agent/rules.md (Royal Navy & Gold - 60-30-10)
+   Kiến trúc: Đồng bộ với Lịch Tuần (2 Tab: Bảng theo dõi & Báo sự cố mới)
    ========================================================================= */
 
 @import url("base.css");
 
-/* ==================== 1. KHÔNG GIAN LÀM VIỆC 2 CỘT ==================== */
-.workspace-grid {
-  display: grid;
-  grid-template-columns: 380px 1fr;
-  gap: 20px;
-}
-
-@media (max-width: 1023px) {
-  .workspace-grid {
-    grid-template-columns: 1fr;
-  }
+/* ==================== 1. KHUNG LÀM VIỆC CHÍNH ==================== */
+.helpdesk-workspace {
+  width: 100%;
 }
 
 /* ==================== 2. HÀNG ĐỢI SỰ CỐ & THẺ TICKET ==================== */
@@ -37,6 +31,7 @@
   font-size: var(--font-size-xs);
   font-weight: 700;
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 .ticket-status-new {
@@ -55,4 +50,40 @@
   background-color: var(--color-success-bg);
   color: var(--color-success);
   border: 1px solid var(--color-success-border);
+}
+
+/* ==================== 3. DRAG & DROP & UPLOAD ==================== */
+.drop-zone {
+  border: 2px dashed #cbd5e1;
+  transition: all 0.2s ease;
+}
+
+.drop-zone.dragover {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+}
+
+/* ==================== 4. PHÂN HỆ FORM THOÁNG ĐÃNG ==================== */
+.form-card {
+  background-color: var(--color-bg-surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-card);
+}
+
+/* ==================== 5. BỐ CỤC BẢNG DESKTOP VÀ THẺ MOBILE CHỐNG XUNG ĐỘT ==================== */
+.helpdesk-desktop-table {
+  display: block;
+}
+.helpdesk-mobile-cards {
+  display: none !important;
+}
+
+@media (max-width: 767px) {
+  .helpdesk-desktop-table {
+    display: none !important;
+  }
+  .helpdesk-mobile-cards {
+    display: block !important;
+  }
 }

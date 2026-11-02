@@ -34,3 +34,8 @@
 .task-row-clickable:hover {
   background-color: #f8fafc;
 }
+
+.task-data-table {
+  table-layout: fixed;
+  min-width: 1200px;
+}

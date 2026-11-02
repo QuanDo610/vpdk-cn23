@@ -71,7 +71,7 @@ Tuy nhiên, do tốc độ phát triển tính năng nhanh trong thời gian ng�
 * **Phân tích rủi ro:**
   - Dự án được đẩy lên GitHub công khai (`https://github.com/QuanDo610/vpdk-cn23.git`) và chạy qua GitHub Pages (`https://quando610.github.io/vpdk-cn23/index.html`).
   - Bất kỳ người ngoài nào xem mã nguồn trang web (hoặc gọi API `?action=getUsers`) đều có thể trích xuất trọn vẹn danh bạ, số điện thoại, số CCCD và tình trạng nhân sự nội bộ của cơ quan.
-  - Điểm này vi phạm trực tiếp **QUY TẮC 5: BẢO MẬT DỮ LIỆU & AN TOÀN THÔNG TIN (ZERO LEAK)** đã được quy định trong [`A_THANG/docs/RULE.md`](file:///Users/admin/Desktop/FAMILY_CN23/docs/RULE.md#L42-L46).
+  - Điểm này vi phạm trực tiếp **QUY TẮC BẢO MẬT DỮ LIỆU & AN TOÀN THÔNG TIN (ZERO LEAK)** đã được quy định trong [`.agent/rules.md`](file:///Users/admin/Desktop/FAMILY_CN23/.agent/rules.md).
 * **Đề xuất khắc phục:**
   1. Xóa bỏ hoàn toàn mảng danh sách cứng (`KNOWN_USERS_MAP`, `STAFF_CN23`) ra khỏi các file HTML/JS đẩy lên Git.
   2. Dữ liệu nhân sự chỉ được nạp động từ Google Apps Script sau khi cán bộ đã đăng nhập thành công.

@@ -37,84 +37,13 @@ let googleScriptUrl = (savedScriptUrl && savedScriptUrl.startsWith("https://scri
 // Email Quản trị viên duy nhất được phép xem và cấu hình Server API
 const ADMIN_EMAIL = "quan.vpdk@gmail.com";
 
-// Danh mục định danh người dùng: Hiển thị Họ và tên đầy đủ thay vì email thô
+// Danh mục định danh người dùng: nạp động từ sheet TaiKhoan và bộ nhớ đệm
 const KNOWN_USERS_MAP = {
-  "0918606045": "Nguyễn Thị Lệ Hằng",
-  "0913975579": "Đặng Huy Cường",
-  "0907259775": "Nguyễn Thành Như Bảo",
-  "0907259775": "Đoàn Thị Hoàng An",
-  "0942245858": "Nguyễn Duy Tấn",
-  "0985992556": "Lê Ngọc Bảo Ngân",
-  "0984506056": "Nguyễn Thị Mai",
-  "0903523534": "Nguyễn Thị Ngọc Thảo",
-  "0928517724": "Trần Đình Siêu",
-  "0982436448": "Phạm Hoàng Oanh",
-  "0911496161": "Nguyễn Thanh Điền",
-  "0918856839": "Nguyễn Văn Khánh",
-  "0927988753": "Nguyễn Tiến Thịnh",
-  "0813441815": "Nguyễn Hoàng Tiến",
-  "0855572555": "Nguyễn Trung Thành",
-  "0909736435": "Nguyễn Thị Bích Tuyền",
-  "0356039473": "Hồ Lê Thanh Vũ",
-  "0945859956": "Nguyễn Thị Thùy Trang",
-  "0919266474": "Trần Thanh Triết",
-  "0909409961": "Nguyễn Bích Ngọc",
-  "0933991003": "Phạm Nguyễn Lan Anh",
-  "0937496139": "Nguyễn Thị Dáng",
-  "0387805470": "Đỗ Thị Yến",
-  "0918047179": "Phạm Thị Yến Nhi",
-  "0914645945": "Hoàng Minh Tú",
-  "0917339468": "Trần Thị Thùy Trang",
-  "0916646669": "Trần Nguyễn Hoài Lam",
-  "0395780608": "Nguyễn Anh Khôi",
-  "0974118474": "Đoàn Văn Sang",
-  "0906395984": "Hồ Thị Hồng Linh",
-  "0945004594": "Vương Ánh Xuân",
-  "0342242523": "Nguyễn Thảo Tuyết Nhi",
-  "0902373837": "Nguyễn Khánh Duy",
-  "0917711148": "Nguyễn Thị Thu Minh",
-  "0815433332": "Huỳnh Thành Duy",
-  "0786186199": "Nguyễn Trần Thảo Vy",
-  "0913789990": "Nguyễn Hoàng Xuân",
-  "0839676646": "Phạm Minh Trí",
-  "0909364549": "Ngô Thị Cẩm Thúy",
-  "0961395817": "Trương Ngô Hồng Duyên",
-  "0909195709": "Huỳnh Tấn Nguyên",
-  "0974751752": "Nguyễn Thị Lệ Thu",
-  "0795300995": "Nguyễn Tuấn Anh",
-  "0972888838": "Phạm Thành Vũ",
-  "0903052099": "Nguyễn Thị Ngọc Trản",
-  "0335817578": "Quản Nguyễn Thảo Nguyên",
-  "0909348840": "Phạm Trần Hồng Như",
-  "0917540409": "Trần Quốc Hưng",
-  "0919037479": "Võ Phi Trúc",
-  "0983771739": "Nguyễn Thị Huỳnh Mai",
-  "0334505304": "Đặng Thị Tuyết Trinh",
-  "0918352101": "Nguyễn Hoàng Duy",
-  "0972709729": "Lê Thị Phương Mai",
-  "0839655449": "Nguyễn Nhật Quyền Trinh",
-  "0947810655": "Lê Sơn Thanh",
-  "0964610889": "Huỳnh Thị Ái Nhi",
-  "0934043647": "Lý Minh Tân",
-  "0373445790": "Đoàn Thanh Phong",
-  "0918983455": "Bùi Thị Minh Nguyệt",
-  "0938940303": "Tạ Nguyễn Bích Trang",
-  "0918949878": "Lê Quang Khoa",
-  "0949309399": "Phan Trọng Hiệp",
-  "0917624629": "Nguyễn Thị Trúc Phương",
-  "0978945739": "Ân Văn Tuấn",
-  "0936688880": "Lê Thị Thùy Duyên",
-  "0906488008": "Nguyễn Thanh Sang",
-  "0963252038": "Nguyễn Quốc Danh",
-  "0868644860": "Nguyễn Tuấn Kiệt",
-  "0909912281": "Lưu Văn Tuấn",
-  "0977000369": "Phạm Minh Hoàng",
   "quan.vpdk@gmail.com": "Đỗ Trọng Minh Quân",
   "tuyen.vpdk@gmail.com": "Nguyễn Thị Bích Tuyền",
   "trangntt.vpdk@gmail.com": "Nguyễn Thị Thùy Trang",
   "thangnc.vpdk@gmail.com": "Nguyễn Chiến Thắng",
-  "thang.vpdk@gmail.com": "Nguyễn Chiến Thắng",
-  "nhanvien@gmail.com": "Nguyễn Văn An"
+  "thang.vpdk@gmail.com": "Nguyễn Chiến Thắng"
 };
 
 // Nạp thêm danh mục người dùng đã được đồng bộ từ Sheet TaiKhoan lưu trong localStorage
@@ -231,6 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Kiểm tra thời gian thực (real-time) mỗi 60 giây để cập nhật trạng thái cuộc họp
   setInterval(() => {
+    if (document.hidden) return; // Tạm dừng khi tab đang ẩn dưới nền để tiết kiệm CPU và pin
     if (scheduleData && scheduleData.length > 0) {
       renderScheduleTable(currentFilteredList.length > 0 ? currentFilteredList : scheduleData);
     }
@@ -736,7 +666,6 @@ function checkAutoLogin() {
         username: u.username || "",
         name: u.fullname || u.name || u.ho_ten || u.username || "Cán bộ",
         fullname: u.fullname || u.name || u.ho_ten || u.username || "Cán bộ",
-        cccd: u.cccd || "",
         phone: u.phone || u.so_dien_thoai || "",
         email: u.username || u.email || u.phone || "user",
         department: u.department || u.don_vi || "Chi nhánh số 23",
@@ -771,7 +700,7 @@ function showWorkspaceUI() {
 
   const displayName = (currentUser && (currentUser.fullname || currentUser.name)) || getSenderDisplayName(currentUser);
   document.getElementById("displayUserName").textContent = displayName;
-  const userSub = (currentUser && currentUser.username) ? ("Tài khoản: " + currentUser.username) : ((currentUser && currentUser.cccd) ? ("CCCD: " + currentUser.cccd) : ((currentUser && currentUser.phone) || ""));
+  const userSub = (currentUser && currentUser.username) ? ("Tài khoản: " + currentUser.username) : ((currentUser && currentUser.phone) ? ("SĐT: " + currentUser.phone) : ((currentUser && currentUser.department) || ""));
   const emailEl = document.getElementById("displayUserEmail");
   if (emailEl) emailEl.textContent = userSub;
 
@@ -932,7 +861,7 @@ async function handleRegister(e) {
 
   // Xác định định danh và tên người gửi
   const userUsername = (currentUser && currentUser.username) ? currentUser.username : "";
-  const userIdentifier = userUsername || (currentUser ? (currentUser.phone || currentUser.cccd || "") : "");
+  const userIdentifier = userUsername || (currentUser ? (currentUser.phone || "") : "");
   const userSenderName = (currentUser && (currentUser.fullname || currentUser.name)) || userIdentifier || "Cán bộ";
 
   // Tạo đối tượng lịch đăng ký hoàn chỉnh
@@ -2321,3 +2250,57 @@ function escapeHtml(string) {
   };
   return String(string).replace(/[&<>"']/g, s => entityMap[s]);
 }
+
+/**
+ * =========================================================================
+ * CHUYỂN ĐỔI TAB & ĐIỀU HƯỚNG GIAO DIỆN (EVENT DELEGATION)
+ * =========================================================================
+ */
+function switchScheduleTab(tab) {
+  const listSec = document.getElementById("listSection");
+  const formSec = document.getElementById("formSection");
+  const btnList = document.getElementById("tabBtnScheduleList");
+  const btnForm = document.getElementById("tabBtnScheduleRegister");
+  if (!listSec || !formSec) return;
+
+  if (tab === "form") {
+    listSec.style.display = "none";
+    formSec.style.display = "block";
+    if (btnList) btnList.classList.remove("active");
+    if (btnForm) btnForm.classList.add("active");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  } else {
+    listSec.style.display = "block";
+    formSec.style.display = "none";
+    if (btnList) btnList.classList.add("active");
+    if (btnForm) btnForm.classList.remove("active");
+  }
+}
+
+// Gán lắng nghe sự kiện Tab & Form chuyển tab tự động
+document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("click", (e) => {
+    const tabBtn = e.target.closest("[data-tab-action]");
+    if (tabBtn) {
+      e.preventDefault();
+      const targetTab = tabBtn.dataset.tabAction;
+      switchScheduleTab(targetTab);
+    }
+  });
+
+  const form = document.getElementById("registerForm");
+  if (form) {
+    form.addEventListener("submit", () => {
+      setTimeout(() => switchScheduleTab("list"), 800);
+    });
+  }
+
+  const btnContactIT = document.getElementById("btnContactAdminIT");
+  if (btnContactIT) {
+    btnContactIT.addEventListener("click", (e) => {
+      e.preventDefault();
+      alert("Vui lòng liên hệ trực tiếp Tổ CNTT Chi nhánh 23 hoặc gửi yêu cầu qua IT Helpdesk!");
+    });
+  }
+});
+

@@ -1,6 +1,6 @@
 # TÀI LIỆU BÀN GIAO CÔNG VIỆC DỰ ÁN "FAMILY CN23"
 > **Hệ thống Cổng Dịch Vụ Nội Bộ - Văn Phòng Đăng Ký Đất Đai Chi Nhánh Số 23**  
-> *Ngày cập nhật: 30/10/2026 | Phiên bản hoàn thiện: v3.7-FullWidthNav & ZeroBreak Table*
+> *Ngày cập nhật: 30/10/2026 | Phiên bản hoàn thiện: v3.8-UnifiedBaseLayout & DropdownAuth*
 
 ---
 
@@ -81,6 +81,25 @@
    - Toàn bộ 4 thẻ đều đang ở trạng thái kích hoạt (Active), bấm vào bất kỳ đâu trên thẻ đều chuyển trang tức thì.
    - Bổ sung nút liên kết nhanh tới **Kho phần mềm cài đặt cơ quan trên Google Drive** gọn gàng bên góc phải.
 
+### 2.6. Chuẩn Hóa Base Layout Thống Nhất Toàn Hệ Thống (Header Tinh Gọn, User Dropdown, Slim Footer & 60-30-10 Palette)
+1. **Tinh gọn Header (Topbar):**
+   - Loại bỏ hoàn toàn thanh tab ngang rườm rà ở giữa để giải phóng diện tích, tạo không gian làm việc rộng rãi, hiện đại theo chuẩn Enterprise Portal.
+   - Nút Icon Tòa nhà (`fa-solid fa-landmark`): Thiết kế hộp vàng kim công vụ nổi bật (`#d97706`), rê chuột có hiệu ứng phóng to và hào quang ánh sáng; click vào icon lập tức điều hướng về Trang chủ (`index.html`).
+2. **Tích hợp Đăng xuất vào Menu Dropdown Cán Bộ:**
+   - Khi nhấp vào Huy hiệu Cán bộ (Avatar + Tên + Chức danh) ở góc phải Header, menu Dropdown sổ xuống với hiệu ứng mượt mà.
+   - Hiển thị đầy đủ: Ảnh đại diện cán bộ, họ tên, chức danh, nhãn trạng thái "Đang trực tuyến" (chấm xanh), liên kết về Trang chủ và Kho cài đặt nội bộ.
+   - Nút "Đăng xuất tài khoản" màu đỏ cảnh báo (`#b91c1c`), tích hợp hộp thoại xác nhận an toàn, dọn dẹp sạch sẽ `sessionStorage` (`family_user`) và `localStorage`.
+   - Hỗ trợ đóng tự động khi click ra ngoài hoặc bấm phím `Escape`.
+3. **Chân trang mỏng gọn, trang nhã (Slim Compact Footer):**
+   - Được `js/layout.js` và `css/base.css` tự động gắn vào cuối `<body>` của tất cả các phân hệ theo cơ chế Sticky Footer với chiều cao mỏng gọn (padding 10px), không chiếm diện tích màn hình.
+   - Nội dung súc tích: *© 2026 VPĐKĐĐ TP.HCM - Chi nhánh số 23 • Phần mềm được phát triển bởi Đỗ Trọng Minh Quân*.
+4. **Áp dụng Bảng màu 60-30-10 chuẩn `.agent/rules.md`:**
+   - Cập nhật `css/variables.css` theo đúng quy chuẩn: 60% Nền trắng xám (`--color-bg-app: #f8fafc`), 30% Royal Navy (`--color-brand-navy: #1e3a8a`, `--color-brand-navy-dark: #0f172a`), 10% Vàng kim công vụ (`--color-accent: #d97706`).
+   - Loại bỏ bộ chuyển "Tông màu" (theme switcher) trên Banner Danh ngôn vĩ nhân tại `index.html` để giao diện thuần nhất, trang trọng.
+5. **Cung cấp Base Template & Tài liệu kiến trúc kế thừa:**
+   - Tạo file `templates/base_app_template.html` làm khung mẫu chuẩn cho bất kỳ phân hệ nào được phát triển thêm trong tương lai.
+   - Cập nhật tài liệu kiến trúc tại `docs/HUONG_DAN_TRIEN_KHAI.md` và `.agent/rules.md`.
+
 ---
 
 ## 2. TỔNG HỢP CÁC CÔNG VIỆC HOÀN TẤT TRONG PHIÊN BẢN v3.6
@@ -94,8 +113,8 @@
    - Đảm bảo các bảng biểu dữ liệu chuyên môn (Lịch tuần, Tiến độ, Báo cáo) đều có `table-layout: fixed; min-width: 1200px;` đặt trong wrapper `overflow-x: auto;`.
 
 2. **Cập nhật Bộ Quy Chuẩn Kỹ Thuật:**
-   - Bổ sung **Mục 5: Kiến Trúc Bố Cục 1200px Grid System & Flexbox Responsive Hiện Đại** vào `docs/SKILL.md`.
-   - Bổ sung **Quy Tắc 10: Tiêu Chuẩn Container 1200px & Chống Vỡ Layout (Zero Broken Layout)** vào `docs/RULE.md`.
+   - Hợp nhất **Kiến Trúc Bố Cục 1280px & Flexbox Responsive Hiện Đại** vào [`.agent/rules.md`](file:///Users/admin/Desktop/FAMILY_CN23/.agent/rules.md).
+   - Thiết lập **Tiêu Chuẩn Container 1280px & Chống Vỡ Layout (Zero Broken Layout)** làm quy tắc bắt buộc.
 
 ### 2.2. Hoàn Thành Chuyên Đề Tư Vấn Kiến Trúc Dữ Liệu & Khả Năng Mở Rộng
 - Phân tích chi tiết 3 mô hình: **Google Sheets + Apps Script** vs **JSON Flat File** vs **Database Thực Thụ (Supabase/PostgreSQL/Firebase)**.
@@ -104,7 +123,7 @@
 - Đề xuất lộ trình công nghệ 2 giai đoạn:
   * **Giai đoạn 1 (Hiện tại):** Hybrid Caching (`localStorage` phản hồi tức thì 0ms + Background Sync lên Google Sheets).
   * **Giai đoạn 2 (Tương lai khi > 30.000 dòng hoặc mở rộng toàn TP):** Chuyển sang Supabase (PostgreSQL) kèm cơ chế sao lưu tự động (Mirror Backup) về Google Drive.
-- Cập nhật đầy đủ vào **Mục 6: Kiến Trúc Dữ Liệu & Khả Năng Mở Rộng** trong `docs/SKILL.md`.
+- Cập nhật đầy đủ vào tài liệu kiến trúc kỹ thuật của hệ thống.
 
 ### 2.3. Nâng Cấp Hệ Thống Menu Cố Định Bên Trái (Solid Royal Navy & Chế Độ Thu Gọn 3 Gạch)
 1. **Màu sắc Solid Royal Navy thuần nhất:**
@@ -158,7 +177,7 @@
   2. **5 Thẻ KPI Giám Sát Tiến Độ:**
      - Tổng công việc, Đang thực hiện, Quá hạn Deadline (cảnh báo đỏ nhấp nháy), Đã hoàn thành, Tỷ lệ hoàn thành (%).
   3. **Bảng Desktop-First Theo Dõi Tiến Độ:**
-     - Thiết kế theo chuẩn `SKILL.md` chống rớt chữ: cố định độ rộng cột, văn bản dài tự động rút gọn `...`, rê chuột xem tooltip hoặc click vào bất kỳ dòng nào để mở **Modal Popup xem toàn văn chi tiết**.
+     - Thiết kế chống rớt chữ: cố định độ rộng cột, văn bản dài tự động rút gọn `...`, rê chuột xem tooltip hoặc click vào bất kỳ dòng nào để mở **Modal Popup xem toàn văn chi tiết**.
      - Bộ lọc trạng thái (Đang làm, Hoàn thành, Quá hạn), bộ lọc tổ, và ô tìm kiếm tức thì.
      - Nút đánh dấu Hoàn thành ✓ / Mở lại ↩, In phiếu giao việc chuẩn A4 có quốc hiệu và chữ ký, Xuất bảng danh sách ra Excel CSV.
      - Tích hợp lưu trữ kép: `localStorage` offline phản hồi tức thì + tự động đồng bộ ngầm lên Google Sheet qua API (`createTask`, `updateTaskStatus`, `deleteTask`, `getTasks`).
@@ -201,7 +220,7 @@
 
 ### 2.5. Nâng Cấp Backend Google Apps Script (`backend/google_apps_script.js`)
 - Hỗ trợ toàn bộ 5 tab trên Google Sheet:
-  - `TaiKhoan`: Xác thực CCCD & Mật khẩu
+  - `TaiKhoan`: Quản lý tài khoản (Username, Mật khẩu, Chức vụ, Phòng ban)
   - `LichTuan`: Đăng ký lịch tuần
   - `Tickets`: Sự cố tin học & lưu ảnh Drive
   - `GiaoViec`: Quản lý 14 trường thông tin giao việc
@@ -225,17 +244,37 @@
   - Tự động nhận diện cột `Username` ở bất kỳ vị trí nào trong tab `TaiKhoan` (ưu tiên cột cuối bảng do người dùng thêm vào).
   - So khớp linh hoạt: không phân biệt hoa thường (`Quân ĐTM`, `quân đtm`), cho phép gõ liền (`quandtm`), và hỗ trợ gõ không dấu (`Quan DTM`).
   - Dự phòng 100%: Nếu ô `Username` trên Google Sheet chưa kịp điền, hệ thống tự động suy luận Username từ cột Họ tên để cán bộ đăng nhập ngay lập tức.
-  - Vẫn giữ nguyên khả năng đăng nhập dự phòng bằng số CCCD hoặc Số điện thoại.
+  - Hỗ trợ đăng nhập linh hoạt bằng Username hoặc Số điện thoại (Bảo mật tối đa thông tin cá nhân, không hiển thị số CCCD lên website).
 - **Đồng bộ giao diện Web Portal (`index.html`):**
-  - Ô đăng nhập hỗ trợ nhập Username hoặc CCCD, bỏ ràng buộc `numeric` để cán bộ thoải mái gõ chữ.
+  - Ô đăng nhập hỗ trợ nhập Username (ví dụ `quandtm`), bỏ ràng buộc `numeric` để cán bộ thoải mái gõ chữ.
   - Nhãn hiển thị và cơ chế lưu trữ phiên làm việc cập nhật đồng bộ.
+
+---
+
+### 2.6. Đồng Bộ Giao Diện IT Helpdesk Theo Chuẩn Lịch Tuần (2-Tab UX & Container 1280px)
+1. **Thiết kế lại phân hệ IT Helpdesk theo UX Lịch Tuần:**
+   - **Mặc định khi vào trang:** Hiển thị toàn màn hình (100% width) Bảng Theo Dõi & Hàng Đợi Xử Lý (`#listSection`), giải phóng hoàn toàn không gian chật chội của bố cục 2 cột cũ.
+   - **Thanh chuyển Tab đồng bộ (`.schedule-tab-nav`):**
+     * Tab 1: `1. Bảng Theo Dõi Sự Cố (Monitoring)` (active mặc định).
+     * Tab 2: `2. Báo Sự Cố Mới (Tạo Ticket)` (kèm nút nhanh `+ Báo Sự Cố Mới`).
+   - **Form đăng ký rộng rãi (`#formSection`):** Đặt ở vị trí trung tâm thoáng đãng (`max-width: 880px; margin: 0 auto; width: 100%`), có nút "Quay lại bảng sự cố" tiện lợi.
+   - **Tự động chuyển view:** Sau khi nộp ticket thành công, hệ thống tự động chuyển về Tab 1 (`list`) để cán bộ thấy ngay ticket vừa tạo ở đầu danh sách.
+   - **Tương tác bong bóng hỗ trợ:** Nút Zalo/IT ở góc dưới bên phải được liên kết kích hoạt chuyển trực tiếp sang Tab nộp ticket.
+   - **Bảo toàn 100% chức năng:** Giữ nguyên toàn bộ ID và logic kết nối Google Apps Script (`SCRIPT_URL`), tự động quét thông số máy/IP, hỗ trợ `Ctrl+V` nén ảnh canvas siêu nhẹ, 3 modal (Chi tiết ticket, Phóng to ảnh Drive, Thông báo thành công).
+
+2. **Chuẩn hóa chiều rộng Container 1280px trên toàn bộ hệ thống:**
+   - Áp dụng thống nhất class `main-content app-container max-w-7xl` trên tất cả 4 phân hệ (`lich_tuan.html`, `it_helpdesk.html`, `giao_viec.html`, `bao_cao_to.html`) và `templates/base_app_template.html`.
+   - Đảm bảo layout không bị co lệch, vỡ dòng hay lệch mép khi cán bộ chuyển đổi qua lại giữa các phân hệ trên màn hình máy tính cơ quan.
 
 ---
 
 ## 3. CẤU TRÚC THƯ MỤC HOÀN CHỈNH HIỆN TẠI
 
 ```text
-A_THANG/
+FAMILY_CN23/
+│
+├── .agent/
+│   └── rules.md                    # QUY CHUẨN DUY NHẤT & TỐI THƯỢNG (Single Source of Truth)
 │
 ├── index.html                      # Cổng Dịch Vụ Nội Bộ Hub (Lưới 4 phân hệ)
 ├── lich_tuan.html                  # Phân hệ 1: Đăng ký lịch tuần & Xuất Word NĐ 30
@@ -243,40 +282,43 @@ A_THANG/
 ├── giao_viec.html                  # Phân hệ 3: Lãnh đạo giao việc & Bảng tiến độ
 ├── bao_cao_to.html                 # Phân hệ 4: Báo cáo số liệu thực hiện cấp Tổ & KPI
 │
-├── css/                            # Bảng định kiểu phân tầng (Modular CSS)
-│   ├── variables.css               # Design System Tokens (:root biến toàn cục)
-│   ├── base.css                    # Khung giao diện App Shell, Reset & Bootstrap-like Utilities
+├── css/                            # Bảng định kiểu phân tầng (Modular CSS, No CDN)
+│   ├── variables.css               # Design System Tokens (:root biến toàn cục, 60-30-10)
+│   ├── base.css                    # Khung giao diện App Shell, Reset & Utilities
+│   ├── utilities.css               # Bộ tiện ích CSS tĩnh thuần thay thế Tailwind Play CDN
 │   ├── hub.css                     # Stylesheet chuyên biệt Cổng Hub trung tâm & Đăng nhập
 │   ├── lich_tuan.css               # Stylesheet chuyên biệt Đăng ký Lịch tuần & 2-Tab Switcher
 │   ├── it_helpdesk.css             # Stylesheet chuyên biệt IT Helpdesk Máy Tính
 │   ├── giao_viec.css               # Stylesheet chuyên biệt Lãnh Đạo Giao Việc & Tiến Độ
 │   ├── bao_cao_to.css              # Stylesheet chuyên biệt Báo Cáo Số Liệu Tổ & KPI
-│   └── flatpickr.min.css           # Thư viện chọn ngày tháng
+│   └── flatpickr.min.css           # Thư viện chọn ngày tháng offline
 │
-├── js/                             # JavaScript thuần (Vanilla JS ES6+)
-│   ├── layout.js                   # Layout Controller (Full-Width Topbar + Collapsible Sidebar)
+├── js/                             # JavaScript thuần (Vanilla JS ES6+ Modular)
+│   ├── auth.js                     # Module Route Guard & Xác thực phiên family_user
+│   ├── layout.js                   # Layout Controller (Topbar 60px tinh gọn, User Dropdown, Slim Footer)
 │   ├── app.js                      # Logic phân hệ Lịch tuần
-│   ├── flatpickr.min.js            # Thư viện Datepicker
+│   ├── flatpickr.min.js            # Thư viện Datepicker offline
 │   └── test_suite.js               # Bộ kiểm thử tự động
 │
 ├── backend/                        # Mã nguồn máy chủ Google Apps Script
 │   └── google_apps_script.js       # API Gateway xử lý Auth, 5 Sheet Tabs, Drive upload
 │
-├── assets/                         # Toàn bộ tài nguyên tĩnh
+├── assets/                         # Toàn bộ tài nguyên tĩnh duy nhất
 │   ├── icons/                      # Bộ nhận diện Pikachu & VPĐK (.ico)
 │   ├── images/                     # Ảnh xem trước (preview png)
 │   ├── installer/                  # Bộ cài đặt phím tắt Desktop 1-Click (.bat, .zip)
 │   └── templates/                  # Biểu mẫu gốc BM_bao_cao...html & Word mẫu
 │
+├── templates/                      # Khung mẫu phân hệ chuẩn tái sử dụng
+│   └── base_app_template.html      # Khung HTML tích hợp sẵn Base Layout & Route Guard
+│
 ├── docs/                           # TẬP TRUNG TOÀN BỘ FILE TÀI LIỆU (.md)
-│   ├── GEMINI.md                   # Kiến trúc hệ thống & nguyên tắc phát triển
-│   ├── AGENT.md                    # Vai trò, tác phong & nguyên tắc bảo mật của AI
-│   ├── SKILL.md                    # Kỹ năng Vanilla Web, CDN & Bảng mã màu chuẩn
-│   ├── RULE.md                     # 7 nguyên tắc vàng cốt lõi (Desktop-first, Zero leak)
-│   ├── README.md                   # Thuyết minh chi tiết tính năng toàn hệ thống
+│   ├── QUY_CHUAN_MA_NGUON.md       # Cẩm nang tham chiếu viết mã nguồn (HTML, CSS, JS, Markdown)
+│   ├── QUY_TRINH_SDLC.md           # Quy trình phát triển linh hoạt (Agile Frontend) & Kế hoạch bảo mật
+│   ├── SPEC_WORKFLOW_TESTING.md    # Đặc tả nghiệp vụ & Kịch bản kiểm thử (cho AI khác/test runner)
+│   ├── BAO_CAO_AN_NINH.md          # Báo cáo đánh giá an toàn thông tin & khắc phục lỗ hổng
+│   ├── HUONG_DAN_TRIEN_KHAI.md     # Hướng dẫn cấu hình Google Sheet & Google Apps Script
 │   ├── HANDOFF.md                  # Nhật ký bàn giao kỹ thuật này
-│   ├── HD_TRIEN_KHAI.md            # Hướng dẫn nâng cấp 5 tab trên Google Sheet
-│   ├── req.md                      # Yêu cầu nghiệp vụ
 │   └── task.md                     # Quản lý danh mục nhiệm vụ
 │
 ├── pikachu_badge.ico               # Giữ tại root phục vụ URL tải trực tiếp từ GitHub

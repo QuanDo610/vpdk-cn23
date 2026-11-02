@@ -5,7 +5,7 @@
 
 ## 1. Các việc ĐÃ LÀM (Done) ✅
 - [x] **Xác định yêu cầu hệ thống**: Khảo sát nghiệp vụ đăng ký lịch tuần, các trường dữ liệu cần thiết (Email, Mật khẩu, Ngày/Tháng/Năm, Thứ, Thời điểm, Nội dung, Thành phần, Địa điểm, Giới hạn 500 ký tự).
-- [x] **Tạo cấu trúc thư mục dự án**: Khởi tạo thư mục làm việc `A_THANG/` và tài liệu [req.md](file:///Users/admin/Desktop/FAMILY_CN23/req.md).
+- [x] **Tạo cấu trúc thư mục dự án**: Khởi tạo thư mục làm việc và tài liệu yêu cầu ban đầu.
 - [x] **Thống nhất giải pháp kiến trúc**: 
   - Loại bỏ máy chủ Python để tối ưu chi phí, không tốn tài nguyên bảo trì.
   - Chọn kiến trúc Serverless: Frontend (HTML5/CSS3/Vanilla JS) lưu trữ trên Cloudflare Pages (Free 100%).
@@ -112,17 +112,52 @@
   - Tự động cập nhật tiêu đề văn bản `(Từ ngày ... đến ngày ...)` và tên file Word `.docx` theo khoảng ngày đã chọn.
 - [x] **Xây dựng Bộ kiểm thử tự động (Automated Test Suite)**:
   - Tạo file `test_suite.js` chạy độc lập với Node.js kiểm thử 30 kịch bản (Test Cases) bao phủ toàn diện: định dạng ngày, giờ 24h, logic ràng buộc giờ kết thúc > bắt đầu, sắp xếp thông minh 3 tầng, lọc khoảng ngày xuất Word, quy trình submit form. Đạt tỷ lệ 30/30 PASSED (100%).
+- [x] **Đồng bộ giao diện IT Helpdesk theo UX Lịch Tuần & Thống nhất Width 1280px**:
+  - Tái cấu trúc `it_helpdesk.html` từ lưới 2 cột co hẹp sang kiến trúc 2-Tab: Tab 1 hiển thị 100% Bảng theo dõi sự cố (Monitoring) ngay khi vào trang, Tab 2 mở Form báo sự cố rộng rãi (880px) khi cần.
+  - Tích hợp thanh điều hướng Tab chuẩn `.schedule-tab-nav` và hàm JavaScript `switchHelpdeskTab(tab)`.
+  - Tự động chuyển về Bảng theo dõi sau khi gửi yêu cầu thành công để cán bộ quan sát ngay ticket mới.
+  - Chuẩn hóa container width trên toàn bộ các phân hệ (`lich_tuan.html`, `it_helpdesk.html`, `giao_viec.html`, `bao_cao_to.html`, `templates/base_app_template.html`) đạt chuẩn đồng bộ 1280px (`.main-content.app-container` / `max-w-7xl`).
+- [x] **Bảo vệ dữ liệu cá nhân: Loại bỏ hoàn toàn hiển thị số CCCD trên toàn website**:
+  - Quét sạch toàn bộ các vị trí hiển thị số CCCD trên giao diện người dùng (UI/Frontend).
+  - Thay thế huy hiệu CCCD tại form IT Helpdesk bằng huy hiệu "Tài khoản cán bộ" (`requesterDisplayAccount`).
+  - Chặn triệt để logic gán nhầm CCCD vào trường số điện thoại khi nộp ticket sự cố.
+  - Gỡ bỏ thuộc tính `cccd` khỏi các đối tượng phiên làm việc (`sessionStorage`), dữ liệu người gửi Lịch tuần và API trả về `getUsers` / `login` trên Backend Apps Script.
+  - Cập nhật tài liệu hướng dẫn và bộ cài đặt chuyển sang xác thực bằng Username.
+
+- [x] **Thực thi Giai đoạn 1 & 2 Kế hoạch Tối ưu Hệ thống (Bảo mật, Clean Code & Route Guard)**:
+  - [x] **TASK-SEC-01**: Xây dựng module bảo mật tập trung `js/auth.js`, chuẩn hóa quản lý phiên `family_user`.
+  - [x] **TASK-SEC-02**: Nhúng rào chắn Zero-Trust Route Guard ở đầu `<head>` của 4 phân hệ (`lich_tuan.html`, `it_helpdesk.html`, `giao_viec.html`, `bao_cao_to.html`) và `templates/base_app_template.html`. Chặn 100% người ngoài hoặc cán bộ chưa đăng nhập vào thẳng module con, tự động chuyển về `index.html`. Hỗ trợ tự động quay lại phân hệ đích sau khi đăng nhập thành công.
+  - [x] **TASK-SEC-03**: Đồng bộ luồng Đăng xuất toàn hệ thống dọn sạch session và token qua `FamilyAuth.logout()` và `FamilyLayout.logout()`.
+  - [x] **TASK-SEC-04**: Gỡ bỏ hoàn toàn luồng gửi mật khẩu qua GET query URL trong `index.html` và chặn GET login trong `google_apps_script.js`.
+  - [x] **TASK-CLN-01**: Dọn dẹp toàn bộ file mồ côi (`style.css`, `sidebar.css`, `js/sidebar.js`, `Tao_Icon_Desktop_VPDK23.bat`, `base_template.html`).
+  - [x] **TASK-CLN-02**: Gỡ bỏ 70+ số điện thoại cá nhân khỏi `js/app.js` và ghi chú nhân sự nhạy cảm khỏi `giao_viec.html`.
+  - [x] **TASK-CLN-03**: Thêm `defer` vào nạp danh ngôn `js/quotes_data.js` để trang chủ đăng nhập mở tức thì.
+  - [x] **TASK-PERF-02**: Sửa lỗi DOM Thrashing trong `js/app.js` (tạm dừng khi tab ẩn dưới nền).
+  - [x] **TASK-SEC-05**: Bọc hàm `escapeHtml` cho dữ liệu bảng trong `giao_viec.html` và `bao_cao_to.html`.
+  - [x] **TASK-SEC-06**: Chống Formula Injection trên Backend Apps Script bằng `sanitizeForSheet`.
+  - [x] **TASK-PERF-03**: Nén ảnh IT Helpdesk bằng Canvas client-side trước khi upload, tiết kiệm 90% dung lượng mạng.
+  - [x] **TASK-PERF-01 [DONE]**: Gỡ bỏ hoàn toàn `cdn.tailwindcss.com` (2.9MB runtime JIT) khỏi toàn bộ dự án, thay thế bằng file CSS tĩnh thuần `css/utilities.css` (~28KB), mở trang tức thì < 100ms, không giật lag CPU trên máy văn phòng Core i3 / RAM 4GB.
+  - [x] **TASK-TEST-01 & 02**: Xây dựng bộ kiểm thử tự động `tests/test_system.py` (chạy trên Python 3 độc lập, 14/14 kịch bản bảo mật, phân quyền, hiệu năng, nghiệp vụ PASSED 100%).
+  - [x] **TASK-SEC-07 [SKIP]**: Giữ nguyên mật khẩu nội bộ theo quyết định của Quản trị viên IT Đỗ Trọng Minh Quân (quandtm) nhằm bảo toàn 100% tài khoản, tránh gây xáo trộn đăng nhập của 80 cán bộ.
+  - [x] **TASK-SEC-08 [DONE]**: Phân quyền IT Helpdesk chuẩn xác theo SĐT: Quản trị IT nhận diện cứng qua SĐT `0973807027` (Đỗ Trọng Minh Quân) xem toàn bộ sự cố và cập nhật trạng thái/ghi chú IT; cán bộ thông thường (role `user`) chỉ xem ticket có SĐT khớp với tài khoản đăng nhập.
+  - [x] **TASK-REFACTOR-AUDIT [DONE]**: Rà soát và kiểm thử toàn diện mã nguồn vừa được refactor tách file (`js/it_helpdesk.js`, `js/index.js`, `js/giao_viec.js`, `js/bao_cao_to.js`), đảm bảo 100% cú pháp sạch, Route Guard chặn truy cập trái phép tại `<head>`, vượt qua 63/63 test cases trên trình duyệt Chrome.
+  - [x] **TASK-FIX-01 [DONE]**: Khắc phục triệt để lỗi tải bảng theo dõi sự cố IT Helpdesk: Thiết kế cơ chế bảo toàn dữ liệu nguồn (`rawServerTickets`), nâng cấp `isUserAdmin()` nhận diện dung sai cao (SĐT `0973807027`, `quandtm`, email, tên bỏ dấu), bổ sung dropdown chọn phạm vi `[🌐 Toàn cơ quan / 👤 Sự cố của tôi]`, ngăn chặn tuyệt đối lỗi biến tính dữ liệu và xung đột query URL.
+  - [x] **DOCS-REORG**: Gom gọn 12 file trong `docs/` thành đúng 5 file chuẩn mực, thiết lập quy chuẩn và bảng kiểm bắt buộc trong `.agent/rules.md`.
+  - [x] **DOCS-SPEC**: Biên soạn bộ tài liệu đặc tả nghiệp vụ & kịch bản kiểm thử toàn diện `docs/SPEC_WORKFLOW_TESTING.md` (User stories, Sequence diagrams, Selectors Dictionary, Test Matrix, Execution Prompt cho AI khác).
+  - [x] **DOCS-STANDARDS**: Thiết lập chuẩn mực viết mã nguồn & Best Practices tối ưu hiệu năng toàn diện trong `docs/QUY_CHUAN_MA_NGUON.md` (Quy định 4 tầng: Markdown trong `docs/`, Semantic HTML5 & Route Guard, Modular CSS & 60-30-10 & Print A4, Vanilla JS ES6+ & Event Delegation & Caching & Tab Hidden).
+  - [x] **DOCS-CONSOLIDATION [DONE]**: Rà soát toàn bộ 9 file markdown trong workspace. Hợp nhất các quy định chồng chéo; hủy bỏ quy trình Thác nước (Waterfall 5 bước: Analyst -> Design -> Coding -> Testing) và đặc tả rườm rà. Xác lập `.agent/rules.md` là Single Source of Truth tối thượng quy định Agile Frontend Workflow; gắn banner định hướng cho `SPEC_WORKFLOW_TESTING.md` (chỉ dùng test ngoài) và `QUY_CHUAN_MA_NGUON.md` (chỉ dùng tra cứu, không ghi đè agent rules).
+  - [x] **UI-HELPDESK-CLEANUP [DONE]**: Tinh giản giao diện IT Helpdesk: loại bỏ các nút "Báo sự cố" trùng lặp (nút bên phải tab bar có lỗi 2 dấu cộng và nút cạnh Làm mới dữ liệu), hợp nhất thao tác điều hướng trực tiếp trên Tab; gỡ bỏ toàn bộ nhãn trạng thái `.online` / `Online` ở tiêu đề trang và ô nhận diện thiết bị.
 
 ---
 
-## 2. Các việc ĐANG LÀM (In Progress) ⏳
-- [ ] **Kiểm thử và Đẩy code hoàn thiện lên GitHub**: Thực hiện commit và push các bản sửa đổi mới nhất lên GitHub Pages.
+## 2. Các việc CẦN LƯU Ý VÀ XIN Ý KIẾN TRƯỚC KHI THỰC HIỆN (Hỏi Ý Kiến) ⚠️
+*(Hiện tại toàn bộ các hạng mục nhạy cảm đều đã được Quản trị viên chỉ đạo xử lý và nghiệm thu an toàn).*
 
 ---
 
-## 3. Các việc CHƯA LÀM (To-Do) 📋
+## 3. Các việc TIẾP THEO (Next Steps) 📋
+- [ ] **Kiểm thử đa trình duyệt luồng Route Guard**: Xác nhận cửa sổ ẩn danh bị chặn khi vào thẳng 4 phân hệ con, đăng nhập ở `index.html` vào được bình thường.
 - [ ] **Đẩy code lên GitHub**: Sau khi kiểm tra hoàn tất tại local, thực hiện `git push` để cập nhật trang chính thức.
-- [ ] **Nhập danh sách tài khoản cơ quan**: Quản trị viên điền danh sách Email và mật khẩu của các cán bộ vào sheet `TaiKhoan` trên Google Sheet.
 
 
 

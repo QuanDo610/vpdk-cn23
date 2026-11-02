@@ -1,39 +1,52 @@
 /**
  * =========================================================================
- * LAYOUT.JS: QUẢN LÝ HEADER ĐỒNG BỘ TOÀN HỆ THỐNG (FULL-WIDTH TOPBAR + NAV TABS)
- * Hệ Thống Web Portal - Văn Phòng Đăng Ký Đất Đai Chi Nhánh Số 23
+ * LAYOUT.JS: BỘ ĐIỀU KHIỂN HEADER & FOOTER ĐỒNG BỘ TOÀN HỆ THỐNG
+ * Hệ Thống Cổng Dịch Vụ Cán Bộ - Văn Phòng Đăng Ký Đất Đai Chi Nhánh Số 23
  * =========================================================================
+ * 
+ * Tính năng chính:
+ * 1. Tự động khởi tạo Header cố định chuẩn nhận diện cơ quan:
+ *    - Nút Icon Tòa nhà (Landmark): Bấm vào để quay về Trang chủ Cổng Dịch Vụ (index.html).
+ *    - Tên cơ quan & Chi nhánh chuẩn thể thức.
+ *    - Loại bỏ hoàn toàn thanh điều hướng tab rườm rà ở giữa.
+ *    - Khu vực Cán bộ bên phải tích hợp Menu Dropdown (Avatar, Thông tin, Đang hoạt động, Đăng xuất).
+ * 2. Tự động chèn Footer chuẩn thể thức Nghị định 30/2020/NĐ-CP và bản quyền cơ quan.
+ * 3. Cung cấp API toàn cục window.FamilyLayout để các phân hệ cập nhật phiên làm việc dễ dàng.
  */
 
 (function () {
   "use strict";
 
-  // Danh mục 5 phân hệ nghiệp vụ + 1 Kho cài đặt (Điều hướng ngang tiện lợi)
-  const NAV_ITEMS = [
-    { id: "hub", label: "Trang chủ", href: "index.html", icon: "fa-solid fa-house" },
-    { id: "lich", label: "Lịch tuần", href: "lich_tuan.html", icon: "fa-solid fa-calendar-week" },
-    { id: "it", label: "IT Helpdesk", href: "it_helpdesk.html", icon: "fa-solid fa-headset" },
-    { id: "giao-viec", label: "Giao việc", href: "giao_viec.html", icon: "fa-solid fa-list-check" },
-    { id: "bao-cao", label: "Báo cáo tổ", href: "bao_cao_to.html", icon: "fa-solid fa-chart-pie" },
-    {
-      id: "kho",
-      label: "Kho cài đặt",
-      href: "https://drive.google.com/drive/folders/1T2LVJKymM-52KBLNeabYxtAT4zfXneND",
-      icon: "fa-solid fa-cloud-arrow-down",
-      target: "_blank"
+  // Hàm thực hiện Đăng xuất toàn diện
+  function performLogout() {
+    if (confirm("Đồng chí có chắc chắn muốn đăng xuất khỏi hệ thống?")) {
+      try {
+        sessionStorage.clear();
+        localStorage.removeItem("loginRememberToken");
+        localStorage.removeItem("family_user");
+        localStorage.removeItem("binhduong_user");
+        localStorage.removeItem("vpdk_current_user");
+        localStorage.removeItem("currentUser");
+        localStorage.removeItem("currentStaff");
+      } catch (e) {
+        console.warn("Lỗi xóa session:", e);
+      }
+      window.location.href = "index.html";
     }
-  ];
+  }
 
-  function initAppLayout() {
+  // 1. TẠO THANH HEADER CỐ ĐỊNH PHÍA TRÊN (TOPBAR)
+  function initAppHeader() {
     if (document.getElementById("appTopbar")) return;
 
-    // Đọc thông tin cán bộ đăng nhập
+    // Đọc thông tin cán bộ từ phiên đăng nhập (ưu tiên khóa chuẩn family_user)
     let userName = "Cán bộ";
     let userRole = "Chi nhánh số 23";
     let hasSession = false;
 
     try {
-      const storedUser = sessionStorage.getItem("currentUser") || 
+      const storedUser = sessionStorage.getItem("family_user") ||
+                         sessionStorage.getItem("currentUser") || 
                          sessionStorage.getItem("binhduong_user") || 
                          sessionStorage.getItem("vpdk_current_user") || 
                          sessionStorage.getItem("currentStaff");
@@ -41,7 +54,10 @@
         hasSession = true;
         const parsed = JSON.parse(storedUser);
         userName = parsed.fullname || parsed.name || parsed.ho_ten || parsed.username || "Cán bộ";
-        userRole = parsed.position || parsed.department || parsed.role || "Chi nhánh 23";
+        userRole = parsed.position || parsed.department || parsed.role || parsed.chuc_vu || "Chi nhánh 23";
+        if (!sessionStorage.getItem("family_user")) {
+          sessionStorage.setItem("family_user", JSON.stringify(parsed));
+        }
         if (!sessionStorage.getItem("currentUser")) {
           sessionStorage.setItem("currentUser", JSON.stringify(parsed));
         }
@@ -59,25 +75,15 @@
     const currentPath = window.location.pathname.split("/").pop() || "index.html";
     const isHubLogin = (currentPath === "index.html" || currentPath === "" || currentPath.endsWith("index.html")) && !hasSession;
 
-    // Tạo các nút Tab điều hướng ngang
-    const navTabsHtml = NAV_ITEMS.map((item) => {
-      const isActive = currentPath === item.href || (item.id === "hub" && (currentPath === "" || currentPath === "index.html"));
-      return `
-        <a href="${item.href}" class="nav-tab-btn ${isActive ? 'active' : ''}" target="${item.target || '_self'}" rel="${item.target ? 'noopener noreferrer' : ''}" data-id="${item.id}" title="${item.label}">
-          <i class="${item.icon}"></i>
-          <span>${item.label}</span>
-        </a>
-      `;
-    }).join("");
-
-    // 1. TẠO THANH HEADER CỐ ĐỊNH CHẠY DÀI TRÊN CÙNG (FULL-WIDTH TOPBAR)
+    // Tạo phần tử header
     const topbarElement = document.createElement("header");
     topbarElement.id = "appTopbar";
     topbarElement.className = "app-topbar";
     topbarElement.innerHTML = `
+      <!-- Cụm bên trái: Icon Tòa nhà (Nút về trang chủ) & Tên cơ quan -->
       <div class="topbar-left">
-        <a href="index.html" class="topbar-brand" title="Trang chủ Cổng Dịch Vụ - VPĐK Chi Nhánh 23">
-          <div class="topbar-logo-box">
+        <a href="index.html" class="topbar-brand" id="topbarBrandHome" title="Quay về Trang chủ Cổng Dịch Vụ">
+          <div class="topbar-logo-box" id="topbarHomeIcon" title="Quay về Trang chủ (Cổng Dịch Vụ)">
             <i class="fa-solid fa-landmark"></i>
           </div>
           <div class="topbar-titles">
@@ -87,84 +93,210 @@
         </a>
       </div>
 
-      <!-- Thanh điều hướng ngang nằm giữa Header -->
-      <nav class="topbar-nav" id="topbarNav" style="${isHubLogin ? 'display: none;' : 'display: flex;'}">
-        ${navTabsHtml}
-      </nav>
-
-      <!-- Thông tin cán bộ & Đăng xuất nằm bên phải -->
+      <!-- Cụm bên phải: Huy hiệu Cán bộ & Menu Dropdown (Tích hợp Đăng xuất) -->
       <div class="topbar-right" id="headerUserArea" style="${isHubLogin ? 'display: none;' : 'display: flex;'}">
-        <div class="topbar-user-badge" id="topbarUserBadge" title="${userName} - ${userRole}">
-          <div class="topbar-user-avatar">
-            <i class="fa-solid fa-user-tie"></i>
-          </div>
-          <div class="topbar-user-text">
-            <span class="topbar-user-name" id="displayUserName">${userName}</span>
-            <span class="topbar-user-role" id="displayUserRole">${userRole}</span>
-            <span id="displayUserEmail" style="display: none;"></span>
-            <span id="headerUserName" style="display: none;">${userName}</span>
-            <span id="headerUserRole" style="display: none;">${userRole}</span>
-            <span id="itUserName" style="display: none;">${userName}</span>
+        <div class="topbar-user-dropdown-wrapper" id="topbarUserDropdownWrapper">
+          <!-- Nút kích hoạt Dropdown -->
+          <button type="button" class="topbar-user-badge" id="topbarUserBtn" aria-haspopup="true" aria-expanded="false" title="Nhấp để xem menu tài khoản: ${userName}">
+            <div class="topbar-user-avatar">
+              <i class="fa-solid fa-user-tie"></i>
+            </div>
+            <div class="topbar-user-text">
+              <span class="topbar-user-name" id="displayUserName">${userName}</span>
+              <span class="topbar-user-role" id="displayUserRole">${userRole}</span>
+              <!-- Các span ẩn để tương thích ngược 100% với code các module cũ -->
+              <span id="displayUserEmail" style="display: none;"></span>
+              <span id="headerUserName" style="display: none;">${userName}</span>
+              <span id="headerUserRole" style="display: none;">${userRole}</span>
+              <span id="itUserName" style="display: none;">${userName}</span>
+            </div>
+            <i class="fa-solid fa-chevron-down topbar-user-caret" id="topbarUserCaret"></i>
+          </button>
+
+          <!-- Menu Dropdown sổ xuống -->
+          <div class="topbar-user-dropdown-menu" id="topbarUserDropdownMenu">
+            <!-- Tóm tắt hồ sơ cán bộ -->
+            <div class="user-dropdown-header">
+              <div class="user-dropdown-header-avatar">
+                <i class="fa-solid fa-circle-user"></i>
+              </div>
+              <div class="user-dropdown-header-info">
+                <div class="user-dropdown-fullname" id="dropdownUserName">${userName}</div>
+                <div class="user-dropdown-role" id="dropdownUserRole">${userRole}</div>
+                <div class="user-dropdown-status">
+                  <span class="status-indicator-dot"></span>
+                  <span>Đang trực tuyến</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="user-dropdown-divider"></div>
+
+            <!-- Các liên kết tiện ích -->
+            <div class="user-dropdown-links">
+              <a href="index.html" class="user-dropdown-item" id="dropdownLinkHome" title="Quay về Trang chủ Cổng Dịch Vụ">
+                <i class="fa-solid fa-house"></i>
+                <span>Trang chủ Cổng Dịch Vụ</span>
+              </a>
+              <a href="https://drive.google.com/drive/folders/1T2LVJKymM-52KBLNeabYxtAT4zfXneND" target="_blank" rel="noopener noreferrer" class="user-dropdown-item" title="Tải các phần mềm nội bộ">
+                <i class="fa-solid fa-cloud-arrow-down"></i>
+                <span>Kho cài đặt nội bộ</span>
+              </a>
+            </div>
+
+            <div class="user-dropdown-divider"></div>
+
+            <!-- Nút Đăng xuất tích hợp bên trong dropdown -->
+            <button type="button" class="user-dropdown-item user-dropdown-logout" id="btnDropdownLogout" title="Đăng xuất khỏi hệ thống">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i>
+              <span>Đăng xuất tài khoản</span>
+            </button>
+            <button type="button" id="btnTopbarLogout" style="display: none;" title="Fallback logout button"></button>
           </div>
         </div>
-
-        <button type="button" id="btnTopbarLogout" class="topbar-logout-btn" title="Đăng xuất khỏi hệ thống">
-          <i class="fa-solid fa-arrow-right-from-bracket"></i>
-          <span class="hidden sm:inline">Đăng xuất</span>
-        </button>
       </div>
     `;
 
     // Chèn vào đầu body
     document.body.prepend(topbarElement);
 
-    // Nút đăng xuất trên Header
-    const btnLogout = document.getElementById("btnTopbarLogout");
-    if (btnLogout) {
-      btnLogout.addEventListener("click", function () {
-        if (confirm("Đồng chí có chắc chắn muốn đăng xuất khỏi hệ thống?")) {
-          sessionStorage.clear();
-          localStorage.removeItem("loginRememberToken");
-          window.location.href = "index.html";
+    // Gắn sự kiện đóng/mở Dropdown
+    const dropdownWrapper = document.getElementById("topbarUserDropdownWrapper");
+    const dropdownBtn = document.getElementById("topbarUserBtn");
+    if (dropdownBtn && dropdownWrapper) {
+      dropdownBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        const isOpen = dropdownWrapper.classList.toggle("is-open");
+        dropdownBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      });
+    }
+
+    // Đóng Dropdown khi click ra ngoài
+    document.addEventListener("click", function (e) {
+      if (dropdownWrapper && dropdownWrapper.classList.contains("is-open")) {
+        if (!dropdownWrapper.contains(e.target)) {
+          dropdownWrapper.classList.remove("is-open");
+          if (dropdownBtn) dropdownBtn.setAttribute("aria-expanded", "false");
         }
+      }
+    });
+
+    // Đóng Dropdown khi bấm phím Escape
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && dropdownWrapper && dropdownWrapper.classList.contains("is-open")) {
+        dropdownWrapper.classList.remove("is-open");
+        if (dropdownBtn) dropdownBtn.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    // Gắn sự kiện Đăng xuất
+    const btnDropdownLogout = document.getElementById("btnDropdownLogout");
+    if (btnDropdownLogout) {
+      btnDropdownLogout.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        performLogout();
+      });
+    }
+    const btnTopbarLogout = document.getElementById("btnTopbarLogout");
+    if (btnTopbarLogout) {
+      btnTopbarLogout.addEventListener("click", performLogout);
+    }
+
+    // Đảm bảo click vào icon Tòa nhà luôn điều hướng về index.html
+    const homeIcon = document.getElementById("topbarHomeIcon");
+    if (homeIcon) {
+      homeIcon.addEventListener("click", function (e) {
+        window.location.href = "index.html";
       });
     }
   }
 
-  // Khởi chạy khi DOM sẵn sàng
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initAppLayout);
-  } else {
-    initAppLayout();
+  // 2. TẠO CHÂN TRANG ĐỒNG BỘ TOÀN HỆ THỐNG (FOOTER TINH GỌN)
+  function initAppFooter() {
+    if (document.getElementById("appFooter")) return;
+
+    // Dọn dẹp footer tĩnh cũ nếu có (ví dụ trong lịch tuần cũ)
+    const existingFooters = document.querySelectorAll("footer.app-footer");
+    existingFooters.forEach((el) => {
+      if (el.id !== "appFooter") el.remove();
+    });
+
+    const footerElement = document.createElement("footer");
+    footerElement.id = "appFooter";
+    footerElement.className = "app-footer";
+    footerElement.innerHTML = `
+      <div class="footer-container">
+        <p class="footer-text">
+          &copy; 2026 VPĐKĐĐ TP.HCM - Chi nhánh số 23 &bull; Phần mềm được phát triển bởi <strong>Đỗ Trọng Minh Quân</strong>
+        </p>
+      </div>
+    `;
+
+    document.body.appendChild(footerElement);
   }
 
-  // Xuất API toàn cục
+  // Khởi chạy cả Header và Footer
+  function initLayout() {
+    initAppHeader();
+    initAppFooter();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initLayout);
+  } else {
+    initLayout();
+  }
+
+  // Xuất API toàn cục để các phân hệ và file con dễ dàng kế thừa / gọi lại
   window.FamilyLayout = {
+    // Cập nhật tên và chức vụ cán bộ trên toàn bộ Header và Dropdown
     updateUser: function (name, role) {
       const nameEl = document.getElementById("displayUserName");
       const roleEl = document.getElementById("displayUserRole");
+      const dropNameEl = document.getElementById("dropdownUserName");
+      const dropRoleEl = document.getElementById("dropdownUserRole");
+      
       if (nameEl && name) nameEl.textContent = name;
       if (roleEl && role) roleEl.textContent = role;
+      if (dropNameEl && name) dropNameEl.textContent = name;
+      if (dropRoleEl && role) dropRoleEl.textContent = role;
+
+      // Cập nhật các ID cũ để tương thích ngược các module
+      const hName = document.getElementById("headerUserName");
+      const hRole = document.getElementById("headerUserRole");
+      const itName = document.getElementById("itUserName");
+      if (hName && name) hName.textContent = name;
+      if (hRole && role) hRole.textContent = role;
+      if (itName && name) itName.textContent = name;
     },
+
+    // Hiển thị thanh Cán bộ khi đăng nhập thành công
     showSession: function (user) {
-      const topbarNav = document.getElementById("topbarNav");
       const headerUserArea = document.getElementById("headerUserArea");
-      if (topbarNav) topbarNav.style.display = "flex";
       if (headerUserArea) headerUserArea.style.display = "flex";
       if (user) {
-        const name = user.fullname || user.name || user.ho_ten || user.username;
-        const role = user.position || user.department || user.role;
+        const name = user.fullname || user.name || user.ho_ten || user.username || "Cán bộ";
+        const role = user.position || user.department || user.role || user.chuc_vu || "Chi nhánh 23";
         this.updateUser(name, role);
       }
     },
+
+    // Ẩn thanh Cán bộ (khi về màn hình đăng nhập)
     hideSession: function () {
-      const topbarNav = document.getElementById("topbarNav");
       const headerUserArea = document.getElementById("headerUserArea");
-      if (topbarNav) topbarNav.style.display = "none";
       if (headerUserArea) headerUserArea.style.display = "none";
-    }
+      const dropdownWrapper = document.getElementById("topbarUserDropdownWrapper");
+      if (dropdownWrapper) dropdownWrapper.classList.remove("is-open");
+    },
+
+    // Kích hoạt đăng xuất chủ động từ script
+    logout: performLogout,
+
+    // Khởi chạy lại nếu DOM thay đổi hoặc nạp động
+    init: initLayout
   };
 
-  // Hỗ trợ tương thích ngược với code cũ gọi FamilySidebar
+  // Tương thích ngược với code cũ gọi FamilySidebar
   window.FamilySidebar = window.FamilyLayout;
 })();

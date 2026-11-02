@@ -271,7 +271,7 @@ function seedTicketsOnly() {
       "Mô tả hiện tượng",
       "Ảnh chụp lỗi (Link)",
       "Trạng thái",
-      "Ghi chú IT",
+      "Username",
       "IP & Cấu hình máy"
     ];
     sheetSupport.appendRow(headers);
@@ -517,11 +517,12 @@ function doGet(e) {
       });
     }
 
-    // 0.1 XÁC THỰC ĐĂNG NHẬP TRỰC TIẾP TỪ GOOGLE SHEET (HỖ TRỢ GET)
+    // 0.1 XÁC THỰC ĐĂNG NHẬP (CHẶN GET ĐỂ BẢO VỆ MẬT KHẨU)
     if (action === "login") {
-      const identifier = (params.username || params.cccd || params.identifier || params.phone || params.email || "").toString();
-      const password = (params.password || "").toString();
-      return jsonResponse(handleLogin(identifier, password, ss));
+      return jsonResponse({
+        success: false,
+        message: "Xác thực đăng nhập bắt buộc sử dụng phương thức POST để bảo mật thông tin!"
+      });
     }
 
     // 1. LẤY DANH SÁCH LỊCH TUẦN
@@ -607,20 +608,105 @@ function doGet(e) {
       return jsonResponse({ success: true, data: rows });
     }
 
-    // 2. LẤY DANH SÁCH TICKET IT HELPDESK
+    // 2. LẤY DANH SÁCH TICKET IT HELPDESK (PHÂN QUYỀN: QUANDTM XEM TOÀN BỘ, CÁN BỘ XEM CỦA MÌNH)
     if (action === "getTickets") {
       const sheet = getSupportSheet(ss);
       const data = sheet.getDataRange().getDisplayValues();
       const formulas = sheet.getDataRange().getFormulas();
 
       if (data.length <= 1) {
-        return jsonResponse({ success: true, total: 0, tickets: [] });
+        return jsonResponse({ success: true, isAdmin: false, total: 0, tickets: [] });
       }
+
+      const reqUser = (params.username || params.user || params.identifier || "").toString().trim().toLowerCase();
+      const reqRole = (params.role || "").toString().trim().toLowerCase();
+      const reqPhone = (params.phone || "").toString().trim().replace(/^'+/, "").replace(/[\s\.\-]+/g, "").replace(/^0+/, "");
+      const reqFullname = (params.fullname || "").toString().trim().toLowerCase();
+
+      // Quyền Quản trị IT: quandtm / quan.vpdk@gmail.com / admin / 0973807027 / Đỗ Trọng Minh Quân được xem toàn bộ
+      const noToneReqName = removeVietnameseTones(reqFullname);
+      const isAdmin = (
+        reqUser === "quandtm" ||
+        reqUser === "quan.vpdk@gmail.com" ||
+        reqUser.includes("quandtm") ||
+        reqRole === "admin" ||
+        reqRole === "it" ||
+        reqPhone === "973807027" ||
+        reqPhone === "0973807027" ||
+        noToneReqName.includes("do trong minh quan") ||
+        noToneReqName.includes("quan dtm") ||
+        reqFullname.includes("đỗ trọng minh quân") ||
+        reqFullname.includes("quân đtm")
+      );
+
+      // Tra cứu tài khoản (username) theo SĐT và Họ tên từ sheet TaiKhoan để bổ trợ dữ liệu cũ
+      const phoneToUser = {};
+      const nameToUser = {};
+      try {
+        const uSheet = getUsersSheet(ss);
+        const uData = uSheet.getDataRange().getDisplayValues();
+        if (uData.length > 1) {
+          const uHeaders = uData[0].map(function(h) { return (h || "").toString().trim().toLowerCase(); });
+          let cName = uHeaders.findIndex(function(h) { return h.includes("họ và tên") || h.includes("họ tên") || h.includes("fullname"); });
+          if (cName === -1) cName = 0;
+          let cUser = uHeaders.findIndex(function(h) { return h === "username" || h.includes("username") || h.includes("tên đăng nhập"); });
+          if (cUser === -1) cUser = 1;
+          let cPhone = uHeaders.findIndex(function(h) { return h.includes("điện thoại") || h.includes("sđt") || h.includes("phone"); });
+          if (cPhone === -1) cPhone = 4;
+
+          for (let ui = 1; ui < uData.length; ui++) {
+            const ur = uData[ui];
+            const uFull = (ur[cName] || "").toString().trim();
+            const uNormFull = removeVietnameseTones(uFull.toLowerCase());
+            const uAcc = (ur[cUser] || "").toString().trim();
+            const uRawPh = (ur[cPhone] || "").toString().trim().replace(/^'+/, "");
+            const uNormPh = uRawPh.replace(/[\s\.\-]+/g, "").replace(/^0+/, "");
+            if (uNormPh && uAcc) phoneToUser[uNormPh] = uAcc;
+            if (uNormFull && uAcc) nameToUser[uNormFull] = uAcc;
+          }
+        }
+      } catch (eUser) {}
 
       const tickets = [];
       for (let i = 1; i < data.length; i++) {
         const r = data[i];
         if (!r[0] && !r[2]) continue;
+
+        const ticketFullname = (r[2] || "").toString().trim();
+        const rawTicketPhone = (r[3] || "").toString().trim().replace(/^'+/, "");
+        const normTicketPhone = rawTicketPhone.replace(/[\s\.\-]+/g, "").replace(/^0+/, "");
+        const ticketSpecs = (r[12] || "").toString();
+
+        // Cột 11 (index 11) hiện tại đã đổi thành Username
+        let ticketUsername = (r[11] || "").toString().trim();
+        if (!ticketUsername) {
+          // Bóc tách nếu trước đó được ghi vào clientSpecs: [User: xyz]
+          const mUser = ticketSpecs.match(/\[User:\s*([^\]]+)\]/i);
+          if (mUser && mUser[1]) {
+            ticketUsername = mUser[1].trim();
+          } else if (normTicketPhone && phoneToUser[normTicketPhone]) {
+            ticketUsername = phoneToUser[normTicketPhone];
+          } else if (nameToUser[removeVietnameseTones(ticketFullname.toLowerCase())]) {
+            ticketUsername = nameToUser[removeVietnameseTones(ticketFullname.toLowerCase())];
+          } else if (ticketFullname) {
+            ticketUsername = generateUsernameFromFullname(ticketFullname);
+          }
+        }
+
+        // PHÂN QUYỀN RBAC:
+        // Nếu là Admin (quandtm / 0973807027): xem toàn bộ ticket
+        // Nếu không phải admin và có thông tin đăng nhập: chỉ xem ticket của chính mình
+        if (!isAdmin && (reqUser || reqPhone || reqFullname)) {
+          const matchUser = reqUser && (ticketUsername.toLowerCase() === reqUser);
+          const matchPhone = reqPhone && (normTicketPhone === reqPhone);
+          const matchName = reqFullname && (
+            ticketFullname.toLowerCase() === reqFullname ||
+            removeVietnameseTones(ticketFullname.toLowerCase()) === noToneReqName
+          );
+          if (!matchUser && !matchPhone && !matchName) {
+            continue; // Bỏ qua ticket của cán bộ khác
+          }
+        }
 
         let imgLink = r[9] || "";
         if (formulas[i] && formulas[i][9]) {
@@ -632,7 +718,7 @@ function doGet(e) {
           id: r[0],
           timestamp: r[1],
           fullname: r[2],
-          phone: (r[3] || "").replace(/^'+/, ""),
+          phone: rawTicketPhone,
           department: r[4],
           machineName: r[5],
           category: r[6],
@@ -640,7 +726,8 @@ function doGet(e) {
           description: r[8] || "",
           imageUrl: imgLink,
           status: r[10] || "Chờ xử lý",
-          itNote: r[11] || "",
+          username: ticketUsername,
+          itNote: "",
           clientSpecs: r[12] || ""
         });
       }
@@ -653,7 +740,12 @@ function doGet(e) {
       }
       tickets.sort((a, b) => getStatusRank(a.status) - getStatusRank(b.status));
 
-      return jsonResponse({ success: true, total: tickets.length, tickets: tickets });
+      return jsonResponse({
+        success: true,
+        isAdmin: isAdmin,
+        total: tickets.length,
+        tickets: tickets
+      });
     }
 
     // 3. LẤY DANH SÁCH TÀI KHOẢN
@@ -693,7 +785,6 @@ function doGet(e) {
             position: (r[colPos] || "Cán bộ").trim(),
             phone: (r[colPhone] || "").replace(/^'+/, "").trim(),
             department: (r[colDept] || "Chi nhánh số 23").trim(),
-            cccd: (r[colCccd] || "").replace(/^'+/, "").trim(),
             status: (r[colStatus] || "Đang làm việc").trim(),
             role: (r[colRole] && r[colRole].toLowerCase().includes("admin")) ? "admin" : "user",
             createdDate: (colDate !== -1 && r[colDate]) ? r[colDate].trim() : ""
@@ -726,6 +817,10 @@ function doGet(e) {
         }
       }
       return jsonResponse(handleCreateTicket(ticketData, ss));
+    }
+
+    if (action === "updateTicket" || action === "updateTicketStatus") {
+      return jsonResponse(handleUpdateTicket(params, ss));
     }
 
     if (action === "addSchedule" || action === "register") {
@@ -845,7 +940,6 @@ function doPost(e) {
           position: position,
           phone: phone,
           department: department,
-          cccd: cccd,
           status: "Đang làm việc",
           role: "user"
         }
@@ -853,13 +947,20 @@ function doPost(e) {
     }
 
     // 3. ĐĂNG KÝ LỊCH TUẦN
+    if (action === "updateTicket" || action === "updateTicketStatus") {
+      return jsonResponse(handleUpdateTicket(params, ss));
+    }
+
     if (action === "addSchedule" || action === "register") {
       return jsonResponse(handleAddSchedule(body, ss));
     }
 
-    // 4. TIẾP NHẬN SỰ CỐ IT
+    // 4. TIẾP NHẬN & CẬP NHẬT SỰ CỐ IT
     if (action === "createTicket") {
       return jsonResponse(handleCreateTicket(body, ss));
+    }
+    if (action === "updateTicket" || action === "updateTicketStatus") {
+      return jsonResponse(handleUpdateTicket(body, ss));
     }
 
     // 5. GIAO VIỆC & BẢNG TIẾN ĐỘ
@@ -941,6 +1042,9 @@ function handleLogin(identifier, password, ss) {
     let colRole = headers.findIndex(function(h) { return h.includes("vai trò") || h.includes("quyền") || h.includes("role"); });
     if (colRole === -1) colRole = 8;
 
+    let colDate = headers.findIndex(function(h) { return h.includes("ngày tạo") || h.includes("thời gian") || h.includes("date"); });
+    if (colDate === -1) colDate = 9;
+
     let matchedUser = null;
     let identifierFound = false;
 
@@ -1009,13 +1113,14 @@ function handleLogin(identifier, password, ss) {
         if (rowPass === password) {
           matchedUser = {
             username: rowUsername || generateUsernameFromFullname(rowFullname),
-            cccd: rowCccd || rowPhone,
             phone: rowPhone,
             fullname: rowFullname || ("Cán bộ " + rawIdentifier),
             position: rowPosition || "Cán bộ",
             department: rowDept || "Chi nhánh số 23",
             status: rowStatus,
-            role: rowRole
+            role: rowRole,
+            cccd: rowCccd,
+            createdDate: (colDate !== -1 ? (data[i][colDate] || "") : "")
           };
           break;
         }
@@ -1085,13 +1190,13 @@ function handleAddSchedule(data, ss) {
       id,
       timestamp,
       registrantVal,
-      name,
+      sanitizeForSheet(name),
       "'" + date,
       dayOfWeek,
       "'" + time,
-      content,
-      attendees,
-      location
+      sanitizeForSheet(content),
+      sanitizeForSheet(attendees),
+      sanitizeForSheet(location)
     ]);
   } else {
     sheet.appendRow([
@@ -1101,9 +1206,9 @@ function handleAddSchedule(data, ss) {
       "'" + date,
       dayOfWeek,
       "'" + time,
-      content,
-      attendees,
-      location
+      sanitizeForSheet(content),
+      sanitizeForSheet(attendees),
+      sanitizeForSheet(location)
     ]);
   }
 
@@ -1144,26 +1249,29 @@ function handleCreateTicket(data, ss) {
   let phoneStr = String(data.phone || "").trim().replace(/^'+/, "");
   if (phoneStr && phoneStr.length === 9 && !phoneStr.startsWith("0")) phoneStr = "0" + phoneStr;
 
+  const userAcc = (data.username || "").toString().trim();
+
   sheet.appendRow([
     ticketId,
     timeStr,
-    data.fullname || "Không tên",
+    sanitizeForSheet(data.fullname || "Không tên"),
     "'" + phoneStr,
-    data.department || "Chi nhánh số 23",
-    data.machineName || "Tự động (Chưa rõ)",
-    data.category || "Sự cố chung",
-    data.errorMessage || "",
-    data.description || "Không có mô tả",
+    sanitizeForSheet(data.department || "Chi nhánh số 23"),
+    sanitizeForSheet(data.machineName || "Tự động (Chưa rõ)"),
+    sanitizeForSheet(data.category || "Sự cố chung"),
+    sanitizeForSheet(data.errorMessage || ""),
+    sanitizeForSheet(data.description || "Không có mô tả"),
     imageUrl,
     "Chờ xử lý",
-    "",
-    data.clientSpecs || (data.ip ? ("IP: " + data.ip) : "")
+    sanitizeForSheet(userAcc),
+    (userAcc ? `[User: ${userAcc}] ` : "") + (data.clientSpecs || (data.ip ? ("IP: " + data.ip) : ""))
   ]);
 
   const newRow = sheet.getLastRow();
   sheet.getRange(newRow, 1).setHorizontalAlignment("center").setFontWeight("bold");
   sheet.getRange(newRow, 2).setHorizontalAlignment("center");
   sheet.getRange(newRow, 4).setNumberFormat("@").setHorizontalAlignment("center");
+  sheet.getRange(newRow, 12).setHorizontalAlignment("center");
 
   const statusCell = sheet.getRange(newRow, 11);
   statusCell.setValue("Chờ xử lý").setHorizontalAlignment("center").setFontWeight("bold")
@@ -1179,8 +1287,57 @@ function handleCreateTicket(data, ss) {
     message: "Tạo ticket thành công!",
     ticketId: ticketId,
     timestamp: timeStr,
+    username: userAcc,
     imageUrl: imageUrl
   };
+}
+
+/**
+ * Cập nhật Trạng thái & Ghi chú xử lý Ticket IT Helpdesk (Dành riêng cho Quản trị viên IT quandtm)
+ */
+function handleUpdateTicket(data, ss) {
+  try {
+    ss = ss || SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = getSupportSheet(ss);
+    const ticketId = (data.ticketId || data.id || "").toString().trim();
+    const newStatus = (data.status || "").toString().trim();
+    const newUsername = (data.username || "").toString().trim();
+
+    if (!ticketId) {
+      return { success: false, message: "Thiếu mã ticket cần cập nhật!" };
+    }
+
+    const values = sheet.getDataRange().getDisplayValues();
+    for (let i = 1; i < values.length; i++) {
+      if (values[i][0] === ticketId) {
+        const row = i + 1;
+        if (newStatus) {
+          const statusCell = sheet.getRange(row, 11);
+          statusCell.setValue(newStatus).setHorizontalAlignment("center").setFontWeight("bold");
+          if (newStatus.includes("Hoàn thành") || newStatus.includes("xong")) {
+            statusCell.setBackground("#dcfce7").setFontColor("#15803d");
+          } else if (newStatus.includes("Đang")) {
+            statusCell.setBackground("#dbeafe").setFontColor("#1d4ed8");
+          } else {
+            statusCell.setBackground("#fef3c7").setFontColor("#b45309");
+          }
+        }
+        if (newUsername) {
+          sheet.getRange(row, 12).setValue(sanitizeForSheet(newUsername));
+        }
+        return {
+          success: true,
+          message: `Đã cập nhật ticket ${ticketId} thành công!`,
+          ticketId: ticketId,
+          status: newStatus,
+          username: newUsername
+        };
+      }
+    }
+    return { success: false, message: `Không tìm thấy ticket ${ticketId} trong Google Sheet!` };
+  } catch (err) {
+    return { success: false, error: err.toString() };
+  }
 }
 
 /**
@@ -1196,17 +1353,17 @@ function handleCreateTask(data, ss) {
 
   sheet.appendRow([
     taskId,
-    data.leader || "",
-    data.assigneeName || "",
-    data.assigneeRole || "",
-    data.assigneeDept || "",
-    data.title || "",
-    data.priority || "Bình thường",
-    data.docRef || "",
-    data.guidance || "",
-    data.deadline || "",
-    data.note || "",
-    data.status || "Đang thực hiện",
+    sanitizeForSheet(data.leader || ""),
+    sanitizeForSheet(data.assigneeName || ""),
+    sanitizeForSheet(data.assigneeRole || ""),
+    sanitizeForSheet(data.assigneeDept || ""),
+    sanitizeForSheet(data.title || ""),
+    sanitizeForSheet(data.priority || "Bình thường"),
+    sanitizeForSheet(data.docRef || ""),
+    sanitizeForSheet(data.guidance || ""),
+    sanitizeForSheet(data.deadline || ""),
+    sanitizeForSheet(data.note || ""),
+    sanitizeForSheet(data.status || "Đang thực hiện"),
     createdAt,
     data.completedAt || ""
   ]);
@@ -1330,8 +1487,8 @@ function handleCreatePerformanceReport(data, ss) {
     data.dongBoVBDLis || 0,
     data.loiNghenPhanMem || 0,
     data.traCuuCSDLDanCu || 0,
-    data.ghiChuVuongMac || "",
-    data.deXuatKienNghi || "",
+    sanitizeForSheet(data.ghiChuVuongMac || ""),
+    sanitizeForSheet(data.deXuatKienNghi || ""),
     createdAt
   ]);
 
@@ -1408,4 +1565,16 @@ function getPerformanceReportsList(ss) {
 function jsonResponse(data) {
   return ContentService.createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * Làm sạch chuỗi trước khi ghi vào Google Sheets nhằm chống Formula Injection (=, +, -, @)
+ */
+function sanitizeForSheet(val) {
+  if (val === null || val === undefined) return "";
+  const s = String(val);
+  if (/^[=\+\-@]/.test(s.trim())) {
+    return "'" + s;
+  }
+  return s;
 }

@@ -1,64 +1,60 @@
 /* =========================================================================
-   VARIABLES.CSS: BẢNG DESIGN TOKENS CHUẨN HỆ THỐNG (CSS CUSTOM PROPERTIES)
-   Hệ Thống Web Portal - Văn Phòng Đăng Ký Đất Đai Chi Nhánh Số 23
+   VARIABLES.CSS: BẢNG DESIGN TOKENS CHUẨN CƠ QUAN HÀNH CHÍNH (60 - 30 - 10)
+   Hệ Thống Cổng Dịch Vụ Cán Bộ - Văn Phòng Đăng Ký Đất Đai Chi Nhánh Số 23
+   Quy chuẩn: .agent/rules.md (Royal Navy & Gold)
    ========================================================================= */
 
 :root {
-  /* ==================== 1. DẢI MÀU THƯƠNG HIỆU (BRAND COLORS) ==================== */
-  /* Màu chủ đạo: Xanh Hoàng Gia (Royal Navy) */
-  --color-primary: #1e3a8a;          /* Blue 900 - Nền Header & Sidebar chính */
-  --color-primary-dark: #172554;     /* Blue 950 - Khối nhận diện & viền tối */
-  --color-primary-hover: #1d4ed8;    /* Blue 700 - Hover nút bấm & menu */
-  --color-primary-focus: #2563eb;    /* Blue 600 - Focus viền input */
-  --color-primary-light: #eff6ff;    /* Blue 50 - Nền thẻ được chọn, badge mềm */
-  --color-primary-border: #93c5fd;   /* Blue 300 - Viền điểm nhấn */
+  /* ==================== 1. BRAND IDENTITY (30% & 10%) ==================== */
+  --color-brand-navy: #1e3a8a;       /* Xanh Royal Navy chủ đạo cơ quan (30%) */
+  --color-brand-navy-dark: #0f172a;  /* Navy trầm - Header bar & Chân trang */
+  --color-brand-navy-light: #2563eb; /* Navy sáng - Hover & Active states */
+  --color-accent: #d97706;           /* Vàng kim công vụ - Nút CTA chính (10%) */
+  --color-accent-hover: #b45309;     /* Vàng sẫm khi hover */
+  --color-accent-glow: rgba(217, 119, 6, 0.35);
 
-  /* Màu nhận diện Chi nhánh 23: Vàng Kim (CN23 Gold / Amber) */
-  --color-accent: #f59e0b;           /* Amber 500 - Đường chỉ Header & Active Indicator */
-  --color-accent-hover: #d97706;     /* Amber 600 - Hover nút vàng */
-  --color-accent-light: #fbbf24;     /* Amber 400 - Icon ngôi sao, huy hiệu nổi bật */
-  --color-accent-soft: #fef3c7;      /* Amber 50 - Nền nhãn cảnh báo nhẹ */
-  --color-accent-glow: rgba(245, 158, 11, 0.35);
+  /* Primary compatibility aliases */
+  --color-primary: var(--color-brand-navy);
+  --color-primary-dark: var(--color-brand-navy-dark);
+  --color-primary-hover: var(--color-brand-navy-light);
+  --color-primary-focus: #2563eb;
+  --color-primary-light: #eff6ff;
+  --color-primary-border: #93c5fd;
 
-  /* ==================== 2. MÀU TRẠNG THÁI NGHIỆP VỤ (SEMANTIC COLORS) ==================== */
-  --color-success: #15803d;          /* Green 700 - Đã hoàn thành, đúng hạn */
-  --color-success-bg: #dcfce7;       /* Green 100 */
-  --color-success-border: #86efac;   /* Green 300 */
+  /* ==================== 2. NEUTRALS & SURFACES (60%) ==================== */
+  --color-bg-app: #f8fafc;           /* Nền toàn trang (Slate White dịu mắt - 60%) */
+  --color-bg-canvas: var(--color-bg-app);
+  --color-bg-surface: #ffffff;       /* Nền thẻ, bảng số liệu, form (Pure White) */
+  --color-bg-subtle: #f1f5f9;        /* Nền phụ, input disabled */
+  --color-border: #cbd5e1;           /* Viền mỏng phân cách */
+  --color-border-subtle: #e2e8f0;    /* Viền nhạt thẻ card */
+  --color-border-active: #cbd5e1;
+  --color-border-strong: #94a3b8;
 
-  --color-warning: #b45309;          /* Amber 700 - Đang xử lý, chú ý */
-  --color-warning-bg: #ffedd5;       /* Orange 100 */
-  --color-warning-border: #fdba74;   /* Orange 300 */
+  /* ==================== 3. SEMANTIC STATUS COLORS ==================== */
+  --color-success: #15803d;          /* Xanh lá - Hoàn thành, Đúng hạn, Online */
+  --color-success-bg: #dcfce7;
+  --color-success-border: #86efac;
 
-  --color-danger: #dc2626;           /* Red 600 - Quá hạn, lỗi, hỏa tốc, đăng xuất */
-  --color-danger-bg: #fee2e2;        /* Red 100 */
-  --color-danger-border: #fca5a5;    /* Red 300 */
+  --color-warning: #b45309;          /* Cam đất - Đang xử lý, Chờ duyệt */
+  --color-warning-bg: #ffedd5;
+  --color-warning-border: #fdba74;
 
-  --color-info: #0284c7;             /* Sky 600 - Thông tin, hướng dẫn */
-  --color-info-bg: #e0f2fe;          /* Sky 100 */
-  --color-info-border: #7dd3fc;      /* Sky 300 */
+  --color-danger: #b91c1c;           /* Đỏ cờ - Khẩn, Quá hạn, Đăng xuất */
+  --color-danger-bg: #fee2e2;
+  --color-danger-border: #fca5a5;
 
-  /* ==================== 3. NỀN & MÀU TRUNG TÍNH (NEUTRALS & SURFACES) ==================== */
-  --color-bg-canvas: #f8fafc;        /* Slate 50 - Nền toàn trang web */
-  --color-bg-surface: #ffffff;       /* Trắng tinh - Nền thẻ Card & Bảng */
-  --color-bg-subtle: #f1f5f9;        /* Slate 100 - Nền header bảng, ô tìm kiếm */
-  
-  --color-border-subtle: #e2e8f0;    /* Slate 200 - Viền thẻ, đường phân cách */
-  --color-border-active: #cbd5e1;    /* Slate 300 - Viền ô input bình thường */
-  --color-border-strong: #94a3b8;    /* Slate 400 */
+  --color-info: #0284c7;             /* Xanh biển - Thông tin, Lịch họp */
+  --color-info-bg: #e0f2fe;
+  --color-info-border: #7dd3fc;
 
-  --color-text-main: #0f172a;        /* Slate 900 - Chữ đen đậm chính */
-  --color-text-secondary: #334155;   /* Slate 700 - Chữ nội dung */
-  --color-text-muted: #64748b;       /* Slate 500 - Chữ ghi chú, thời gian phụ */
+  /* ==================== 4. TYPOGRAPHY ==================== */
+  --color-text-main: #0f172a;        /* Chữ nội dung chính (Dark Slate) */
+  --color-text-secondary: #334155;   /* Chữ phụ nội dung */
+  --color-text-muted: #64748b;       /* Chữ phụ, hướng dẫn (Slate Gray) */
   --color-text-light: #ffffff;       /* Chữ trắng trên nền tối */
+  --color-text-inverse: #ffffff;     /* Chữ trắng trên nền Navy hoặc nút CTA */
 
-  /* ==================== 4. THÔNG SỐ KHUNG BỐ CỤC (LAYOUT SPECS) ==================== */
-  --header-height: 62px;             /* Chiều cao Header cố định phía trên */
-  --sidebar-width: 250px;            /* Chiều rộng Sidebar khi mở rộng */
-  --sidebar-width-collapsed: 68px;   /* Chiều rộng Sidebar khi thu gọn Icon-only */
-  --sidebar-border: rgba(255, 255, 255, 0.15); /* Viền mờ ngăn cách Sidebar */
-  --container-max-width: 1280px;     /* Độ rộng chuẩn 1280px cho Workspace */
-
-  /* ==================== 5. PHÔNG CHỮ & KÍCH THƯỚC (TYPOGRAPHY) ==================== */
   --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
@@ -70,6 +66,10 @@
   --font-size-xl: 1.35rem;           /* 21.6px */
   --font-size-2xl: 1.65rem;          /* 26.4px */
 
+  /* ==================== 5. KHUNG BỐ CỤC (LAYOUT SPECS) ==================== */
+  --header-height: 62px;             /* Chiều cao Header cố định phía trên */
+  --container-max-width: 1280px;     /* Độ rộng chuẩn 1280px cho Workspace */
+
   /* ==================== 6. ĐỘ BO GÓC & ĐỔ BÓNG (RADIUS & SHADOWS) ==================== */
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -77,12 +77,12 @@
   --radius-xl: 20px;
   --radius-full: 9999px;
 
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
-  --shadow-card: 0 2px 8px -2px rgba(15, 23, 42, 0.06), 0 1px 3px -1px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --shadow-card: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --shadow-elevated: 0 12px 24px -4px rgba(15, 23, 42, 0.12);
 
-  /* Hiệu ứng chuyển động mượt mà */
-  --transition-fast: 0.15s ease;
+  /* Hiệu ứng chuyển động */
+  --transition-fast: 0.18s ease-in-out;
   --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }

@@ -1,4 +1,4 @@
-﻿@echo off
+@echo off
 :: ===============================================================================
 :: CÔNG CỤ TỰ ĐỘNG CÀI ĐẶT PHÍM TẮT "FAMILY CN23" (PIKACHU KÍNH VUÔNG)
 :: - Văn phòng Đăng ký đất đai - Chi nhánh số 23
@@ -202,7 +202,7 @@ echo ---------------------------------------------------------------------------
 echo  HƯỚNG DẪN DÀNH CHO CÁN BỘ:
 echo  1. Hằng ngày vào làm việc, chỉ cần bấm đúp vào biểu tượng Pikachu
 echo     mang tên "Family CN23" ngay trên màn hình Desktop.
-echo  2. Đăng nhập bằng Số CCCD (12 số) và Mật khẩu được cấp.
+echo  2. Đăng nhập bằng Tên người dùng (Username) và Mật khẩu được cấp.
 echo -------------------------------------------------------------------------------
 echo.
 echo Nhấn phím bất kỳ để đóng cửa sổ này...

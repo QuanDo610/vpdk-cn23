@@ -38,3 +38,9 @@
 .history-row-clickable:hover {
   background-color: #f8fafc;
 }
+
+/* ==================== 3. BẢNG DỮ LIỆU BÁO CÁO ==================== */
+.report-data-table {
+  table-layout: fixed;
+  min-width: 1200px;
+}

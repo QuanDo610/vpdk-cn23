@@ -4,18 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Đăng Ký Lịch Công Tác Tuần - VPĐK</title>
+
+  <!-- Rào chắn kiểm soát truy cập (Zero-Trust Route Guard) -->
+  <script src="js/auth.js"></script>
+  <script>FamilyAuth.requireAuth();</script>
+
   <!-- Thư viện chọn ngày chuẩn Ngày/Tháng/Năm (DD/MM/YYYY) -->
   <link rel="stylesheet" href="css/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <!-- Giao diện đồng bộ hệ sinh thái (Modular CSS) -->
   <link rel="stylesheet" href="css/lich_tuan.css">
-  <!-- Layout Controller (Full-Width Topbar + Collapsible Sidebar) -->
+  <!-- Layout Controller & Logic Phân Hệ Lịch Tuần -->
   <script src="js/layout.js" defer></script>
-  <script src="js/flatpickr.min.js"></script>
+  <script src="js/flatpickr.min.js" defer></script>
   <!-- Thư viện tạo file Word (.docx) chuyên nghiệp trực tiếp trên trình duyệt -->
-  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" defer></script>
+  <script src="js/app.js" defer></script>
 </head>
 <body>
 
@@ -25,13 +31,13 @@
   <main class="main-content app-container">
 
     <!-- Header Tiêu Đề Trang Tối Giản -->
-    <div id="pageTitleStrip" class="page-title-strip" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #cbd5e1;">
+    <div id="pageTitleStrip" class="page-title-strip">
       <div>
-        <h1 style="font-size: 1.45rem; font-weight: 800; color: #1e3a8a; display: flex; align-items: center; gap: 8px;">
-          <i class="fa-solid fa-calendar-week" style="color: #f59e0b;"></i>
+        <h1 class="page-title-heading">
+          <i class="fa-solid fa-calendar-week text-amber-500"></i>
           <span>HỆ THỐNG ĐĂNG KÝ LỊCH CÔNG TÁC TUẦN</span>
         </h1>
-        <p style="font-size: 0.82rem; color: #64748b; margin-top: 2px;">Văn phòng Đăng ký đất đai TP. Hồ Chí Minh &bull; Chi nhánh số 23</p>
+        <p class="page-subtitle">Văn phòng Đăng ký đất đai TP. Hồ Chí Minh &bull; Chi nhánh số 23</p>
       </div>
       <div>
         <button id="btnAdminServerConfig" class="btn btn-secondary btn-sm" style="display: none;" title="Cài đặt Server API (Chỉ Quản trị viên)">⚙️ Cài đặt Server</button>
@@ -84,26 +90,26 @@
     <div id="appWorkspace" class="schedule-workspace" style="display: none;">
       
       <!-- Thanh Chuyển Đổi Tab: 1. Bảng Lịch Tuần (Mặc định 100% width) | 2. Đăng Ký Lịch Mới -->
-      <div class="schedule-tab-nav" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px;">
-        <div style="display: inline-flex; background: #e2e8f0; padding: 4px; border-radius: 12px; gap: 4px;">
-          <button type="button" id="tabBtnScheduleList" class="schedule-tab-btn active" onclick="switchScheduleTab('list')">
-            <i class="fa-solid fa-table-list mr-1" style="color: #2563eb;"></i>
+      <div class="schedule-tab-nav">
+        <div class="schedule-tab-group">
+          <button type="button" id="tabBtnScheduleList" class="schedule-tab-btn active" data-tab-action="list">
+            <i class="fa-solid fa-table-list mr-1 text-blue-600"></i>
             <span>1. Bảng Lịch Công Tác Tuần</span>
           </button>
-          <button type="button" id="tabBtnScheduleRegister" class="schedule-tab-btn" onclick="switchScheduleTab('form')">
-            <i class="fa-solid fa-calendar-plus mr-1" style="color: #f59e0b;"></i>
+          <button type="button" id="tabBtnScheduleRegister" class="schedule-tab-btn" data-tab-action="form">
+            <i class="fa-solid fa-calendar-plus mr-1 text-amber-500"></i>
             <span>2. Đăng Ký Lịch Mới</span>
           </button>
         </div>
 
-        <button type="button" id="btnQuickOpenRegister" class="btn btn-primary" onclick="switchScheduleTab('form')" style="display: inline-flex; align-items: center; gap: 8px;">
-          <i class="fa-solid fa-plus" style="color: #fbbf24;"></i>
+        <button type="button" id="btnQuickOpenRegister" class="btn btn-primary inline-flex items-center gap-2" data-tab-action="form">
+          <i class="fa-solid fa-plus text-amber-300"></i>
           <span><strong>Đăng Ký Lịch Tuần</strong></span>
         </button>
       </div>
 
       <!-- ==================== TAB 1: BẢNG LỊCH TUẦN TOÀN MÀN HÌNH (RỘNG 100% - CHỐNG BỂ CHỮ) ==================== -->
-      <section id="listSection" class="card table-card" style="width: 100%;">
+      <section id="listSection" class="card table-card w-full">
         <div class="card-header table-header-flex">
           <div>
             <h2>📋 Lịch Đã Đăng Ký Trong Tuần</h2>
@@ -131,15 +137,15 @@
             <span class="total-count-badge" id="totalScheduleCount">0 mục</span>
           </div>
 
-          <table class="schedule-table" id="scheduleTable" style="width: 100%; table-layout: fixed; min-width: 1080px;">
+          <table class="schedule-table" id="scheduleTable">
             <thead>
               <tr>
-                <th style="width: 110px; text-align: center;">Thứ / Ngày</th>
-                <th style="width: 165px;">Thời gian</th>
-                <th style="width: 320px;">Nội dung làm việc</th>
-                <th style="width: 210px;">Thành phần</th>
-                <th style="width: 180px;">Địa điểm</th>
-                <th style="width: 140px; text-align: center;">Người gửi</th>
+                <th class="th-day">Thứ / Ngày</th>
+                <th class="th-time">Thời gian</th>
+                <th class="th-content">Nội dung làm việc</th>
+                <th class="th-attendees">Thành phần</th>
+                <th class="th-location">Địa điểm</th>
+                <th class="th-sender">Người gửi</th>
               </tr>
             </thead>
             <tbody id="scheduleTableBody">
@@ -164,13 +170,13 @@
       </section>
 
       <!-- ==================== TAB 2: FORM ĐĂNG KÝ LỊCH TUẦN (RỘNG RÃI & THOÁNG ĐÃNG) ==================== -->
-      <section id="formSection" class="card form-card" style="display: none; max-width: 880px; margin: 0 auto; width: 100%;">
-        <div class="card-header" style="display: flex; align-items: center; justify-content: space-between;">
+      <section id="formSection" class="card form-card form-card-container" style="display: none;">
+        <div class="card-header">
           <div>
             <h2>📝 Đăng Ký Lịch Công Tác Mới</h2>
-            <p class="text-muted" style="margin-top: 2px;">Điền thông tin cuộc họp để tự động cập nhật vào lịch tuần cơ quan</p>
+            <p class="text-muted mt-1">Điền thông tin cuộc họp để tự động cập nhật vào lịch tuần cơ quan</p>
           </div>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="switchScheduleTab('list')">
+          <button type="button" class="btn btn-secondary btn-sm" data-tab-action="list">
             <i class="fa-solid fa-arrow-left mr-1"></i> Quay lại bảng lịch
           </button>
         </div>
@@ -232,12 +238,12 @@
             </div>
 
             <!-- Nút Đăng Ký và Làm Mới Biểu Mẫu (Độ tương phản cao) -->
-            <div class="form-actions" style="display: flex; gap: 12px; margin-top: 20px;">
-              <button type="submit" id="btnSubmitRegister" class="btn btn-register btn-lg" style="flex: 2;">
+            <div class="form-actions">
+              <button type="submit" id="btnSubmitRegister" class="btn btn-register btn-lg btn-flex-2">
                 <svg class="btn-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
                 <span class="btn-text">Đăng Ký Lịch Này</span>
               </button>
-              <button type="reset" id="btnResetForm" class="btn btn-reset" style="flex: 1;">
+              <button type="reset" id="btnResetForm" class="btn btn-reset btn-flex-1">
                 <svg class="btn-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
                 <span class="btn-text">Làm mới</span>
               </button>
@@ -254,7 +260,7 @@
     <div class="modal-card modal-export-card">
       <div class="modal-header">
         <div class="detail-header-title">
-          <span class="detail-badge-day" style="background-color: #dcfce7; color: #15803d;">📄 Văn bản Word</span>
+          <span class="detail-badge-day badge-word-export">📄 Văn bản Word</span>
           <h3>Tùy Chọn Xuất Lịch Công Tác</h3>
         </div>
         <button id="btnCloseExportModal" class="modal-close">&times;</button>
@@ -305,7 +311,7 @@
           Đang chọn: <strong>Tất cả lịch</strong> (<span id="exportCountPreview">0</span> mục)
         </div>
       </div>
-      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+      <div class="modal-footer">
         <button type="button" class="btn btn-secondary" id="btnCancelExportModal">Hủy bỏ</button>
         <button type="button" class="btn btn-success" id="btnConfirmExportWord">
           <svg class="btn-svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -376,8 +382,8 @@
             <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
           </svg>
         </div>
-        <h4 style="margin: 10px 0 6px; color: #0f172a; font-size: 1.1rem;">Quên Mật Khẩu Đăng Nhập?</h4>
-        <p style="color: #475569; font-size: 0.9rem; line-height: 1.5; margin-bottom: 16px;">
+        <h4 class="forgot-modal-title">Quên Mật Khẩu Đăng Nhập?</h4>
+        <p class="forgot-modal-desc">
           Để bảo mật dữ liệu công tác của cơ quan, vui lòng liên hệ Quản trị viên để được cấp lại mật khẩu:
         </p>
         <div class="admin-contact-card">
@@ -386,8 +392,8 @@
             💬 Hỗ trợ kỹ thuật: <strong>Tổ CNTT - Chi nhánh 23</strong>
           </div>
         </div>
-        <div style="margin-top: 18px;">
-          <a href="#" onclick="alert('Vui lòng liên hệ trực tiếp Tổ CNTT Chi nhánh 23 hoặc gửi yêu cầu qua IT Helpdesk!'); return false;" class="btn btn-zalo btn-block">
+        <div class="mt-4">
+          <a href="#" id="btnContactAdminIT" class="btn btn-zalo btn-block">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
             <span>Liên hệ Quản trị viên CNTT</span>
           </a>
@@ -431,49 +437,6 @@
     </div>
   </div>
 
-  <!-- Footer -->
-  <footer class="app-footer">
-    <p class="footer-copy">© 2026 Văn phòng Đăng ký đất đai TP.HCM - Chi nhánh số 23. Chuẩn thể thức Nghị định 30/2020/NĐ-CP.</p>
-    <p class="footer-credit">Hệ thống Đăng ký Lịch tuần VPĐK &bull; Phát triển bởi <strong>Đỗ Trọng Minh Quân</strong></p>
-  </footer>
-
-  <script src="js/app.js"></script>
-  <script>
-    // Hàm chuyển đổi Tab: Bảng Lịch Tuần (Mặc định) vs Form Đăng Ký
-    function switchScheduleTab(tab) {
-      const listSec = document.getElementById("listSection");
-      const formSec = document.getElementById("formSection");
-      const btnList = document.getElementById("tabBtnScheduleList");
-      const btnForm = document.getElementById("tabBtnScheduleRegister");
-      if (!listSec || !formSec) return;
-
-      if (tab === 'form') {
-        listSec.style.display = 'none';
-        formSec.style.display = 'block';
-        if (btnList) btnList.classList.remove('active');
-        if (btnForm) btnForm.classList.add('active');
-        // Cuộn nhẹ lên đầu form
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        listSec.style.display = 'block';
-        formSec.style.display = 'none';
-        if (btnList) btnList.classList.add('active');
-        if (btnForm) btnForm.classList.remove('active');
-      }
-    }
-
-    // Tự động chuyển về Tab Bảng Lịch sau khi nộp form đăng ký thành công
-    document.addEventListener("DOMContentLoaded", function () {
-      const form = document.getElementById("registerForm");
-      if (form) {
-        form.addEventListener("submit", function () {
-          // Sau khi form xử lý xong (khoảng 600ms), tự chuyển sang tab xem bảng
-          setTimeout(function () {
-            switchScheduleTab('list');
-          }, 800);
-        });
-      }
-    });
-  </script>
+  <!-- Module js/app.js đã được nạp trong thẻ <head> với thuộc tính defer -->
 </body>
 </html>
