@@ -1,31 +1,185 @@
 /* =========================================================================
    GIAO_VIEC.CSS: GIAO DIỆN PHÂN HỆ LÃNH ĐẠO GIAO VIỆC & BẢNG TIẾN ĐỘ
    Hệ Thống Web Portal - Văn Phòng Đăng Ký Đất Đai Chi Nhánh Số 23
+   Quy chuẩn: Royal Navy & Gold (60-30-10) - Đồng bộ với Lịch Tuần & IT Helpdesk
+   Kiến trúc: 2 Tab (1. Bảng theo dõi tiến độ 100% width & 2. Giao việc mới)
    ========================================================================= */
 
 @import url("base.css");
 
-/* ==================== 1. KPI CARDS ==================== */
-.kpi-metric-card {
-  background-color: var(--color-bg-surface);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-lg);
-  padding: 16px;
-  box-shadow: var(--shadow-card);
-  display: flex;
-  align-items: center;
-  gap: 14px;
+/* ==================== 1. KHUNG LÀM VIỆC CHÍNH ==================== */
+.giao-viec-workspace {
+  width: 100%;
 }
 
-/* ==================== 2. THẺ TAB ĐIỀU HƯỚNG GIAO VIỆC ==================== */
-.tab-button.active {
-  background-color: #ffffff;
+/* ==================== 2. THANH CHUYỂN ĐỔI TAB (ĐỒNG BỘ LỊCH TUẦN & HELPDESK) ==================== */
+.schedule-tab-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.schedule-tab-group {
+  display: inline-flex;
+  background: #e2e8f0;
+  padding: 4px;
+  border-radius: var(--radius-md);
+  gap: 4px;
+}
+
+.schedule-tab-btn {
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--transition-fast);
+}
+
+.schedule-tab-btn:hover:not(.active) {
+  color: var(--color-text-main);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.schedule-tab-btn.active {
+  background: #ffffff;
   color: var(--color-primary);
   font-weight: 700;
   box-shadow: var(--shadow-sm);
 }
 
-/* ==================== 3. BẢNG TIẾN ĐỘ NHIỆM VỤ ==================== */
+.tab-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  background: #dbeafe;
+  color: #1e40af;
+  margin-left: 4px;
+}
+
+/* ==================== 3. KHUNG TIÊU ĐỀ TRANG (PAGE TITLE STRIP) ==================== */
+.page-title-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.page-title-heading {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-subtitle {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+/* ==================== 4. KPI METRIC CARDS ==================== */
+.kpi-metric-card {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 16px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.kpi-metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ==================== 5. BADGES & STATUS PILLS ==================== */
+.task-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.task-status-inprogress {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.task-status-completed {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.task-status-overdue {
+  background-color: #ffe4e6;
+  color: #9f1239;
+  border: 1px solid #fecdd3;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.task-priority-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.task-priority-normal {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.task-priority-urgent {
+  background-color: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.task-priority-fire {
+  background-color: #ffe4e6;
+  color: #be123c;
+  border: 1px solid #fda4af;
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ==================== 6. BẢNG TIẾN ĐỘ & ACTION BUTTONS ==================== */
+.task-data-table {
+  table-layout: fixed;
+  min-width: 1200px;
+}
+
 .task-row-clickable {
   cursor: pointer;
   transition: background-color var(--transition-fast);
@@ -35,7 +189,107 @@
   background-color: #f8fafc;
 }
 
-.task-data-table {
-  table-layout: fixed;
-  min-width: 1200px;
+.btn-icon {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-icon:active {
+  transform: scale(0.92);
+}
+
+.btn-icon-success {
+  background-color: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+.btn-icon-success:hover {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.btn-icon-warning {
+  background-color: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+}
+.btn-icon-warning:hover {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.btn-icon-secondary {
+  background-color: #f1f5f9;
+  color: #475569;
+  border-color: #cbd5e1;
+}
+.btn-icon-secondary:hover {
+  background-color: #e2e8f0;
+  color: #1e293b;
+}
+
+.btn-icon-danger {
+  background-color: #fff1f2;
+  color: #e11d48;
+  border-color: #fecdd3;
+}
+.btn-icon-danger:hover {
+  background-color: #ffe4e6;
+  color: #be123c;
+}
+
+/* ==================== 7. PHÂN HỆ FORM GIAO VIỆC ==================== */
+.form-card {
+  background-color: var(--color-bg-surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-card);
+}
+
+/* ==================== 8. MODAL BACKDROP ==================== */
+.modal-backdrop {
+  background-color: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* ==================== 9. IN ẤN (PRINT VIEW) ==================== */
+@media print {
+  .app-topbar,
+  .page-title-strip,
+  .schedule-tab-nav,
+  .kpi-metric-card,
+  .no-print,
+  #toastContainer,
+  button {
+    display: none !important;
+  }
+  
+  body {
+    padding-top: 0 !important;
+    background: #ffffff !important;
+  }
+
+  .main-content {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+
+  #panelTracking {
+    display: block !important;
+  }
+
+  .task-data-table {
+    min-width: 100% !important;
+  }
 }

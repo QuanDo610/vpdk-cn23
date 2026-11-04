@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ==============================================================================
  * CỔNG DỊCH VỤ NỘI BỘ VPĐK CHI NHÁNH 23 - "FAMILY CN23"
  * Module Controller: Lãnh Đạo Giao Việc & Theo Dõi Tiến Độ Nhiệm Vụ
@@ -141,12 +141,26 @@ async function syncTasksFromCloud() {
 
 async function syncTaskToCloud(action, payload) {
   try {
-    fetch(SCRIPT_URL, {
+    const res = await fetch(SCRIPT_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({ action: action, ...payload })
-    }).catch(e => console.log("Cloud sync error:", e));
-  } catch (e) {}
+    });
+    const result = await res.json();
+    if (result && result.fileUrl && payload && payload.id) {
+      const tasks = getStoredTasks();
+      const t = tasks.find(item => item.id === payload.id);
+      if (t) {
+        t.fileUrl = result.fileUrl;
+        if (t.attachedFile) t.attachedFile.url = result.fileUrl;
+        saveStoredTasks(tasks);
+        renderTasksTable();
+      }
+    }
+    return result;
+  } catch (e) {
+    console.log("Cloud sync error:", e);
+  }
 }
 
 // Toast Notification
@@ -364,20 +378,20 @@ function renderTasksTable() {
 
     let priorityPill = "";
     if (t.priority === "Hỏa tốc") {
-      priorityPill = '<span class="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-300 animate-pulse"><i class="fa-solid fa-bolt text-rose-600"></i> Hỏa tốc</span>';
+      priorityPill = '<span class="task-priority-pill task-priority-fire"><i class="fa-solid fa-bolt"></i> Hỏa tốc</span>';
     } else if (t.priority === "Khẩn") {
-      priorityPill = '<span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300"><i class="fa-solid fa-triangle-exclamation text-amber-600"></i> Khẩn</span>';
+      priorityPill = '<span class="task-priority-pill task-priority-urgent"><i class="fa-solid fa-triangle-exclamation"></i> Khẩn</span>';
     } else {
-      priorityPill = '<span class="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">Bình thường</span>';
+      priorityPill = '<span class="task-priority-pill task-priority-normal">Bình thường</span>';
     }
 
     let statusPill = "";
     if (t.status === "Đã hoàn thành") {
-      statusPill = '<span class="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300"><i class="fa-solid fa-check text-emerald-600"></i> Hoàn thành</span>';
+      statusPill = '<span class="task-status-pill task-status-completed"><i class="fa-solid fa-check"></i> Hoàn thành</span>';
     } else if (isOverdue) {
-      statusPill = '<span class="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-1 rounded-full bg-rose-100 text-rose-800 border border-rose-300"><i class="fa-solid fa-clock text-rose-600"></i> Quá hạn</span>';
+      statusPill = '<span class="task-status-pill task-status-overdue"><i class="fa-solid fa-clock"></i> Quá hạn</span>';
     } else {
-      statusPill = '<span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-300"><i class="fa-solid fa-spinner fa-spin text-amber-600"></i> Đang làm</span>';
+      statusPill = '<span class="task-status-pill task-status-inprogress"><i class="fa-solid fa-spinner fa-spin"></i> Đang làm</span>';
     }
 
     const tr = document.createElement("tr");
@@ -401,7 +415,14 @@ function renderTasksTable() {
       </td>
       <td class="py-3 px-3 text-[11px] text-slate-600 truncate max-w-[140px]">
         ${t.docRef ? `<span class="font-semibold block truncate" title="${escapeHtml(t.docRef)}">📜 ${escapeHtml(t.docRef)}</span>` : ""}
-        ${t.attachedFile ? `<span class="text-[10px] text-blue-700 block truncate" title="${escapeHtml(t.attachedFile.name)}">📎 ${escapeHtml(t.attachedFile.name)}</span>` : '<span class="text-slate-400">Không có tệp</span>'}
+        ${(t.fileUrl || t.attachedFile?.url) ? `
+          <a href="${escapeHtml(t.fileUrl || t.attachedFile.url)}" target="_blank" rel="noopener noreferrer"
+             class="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-1.5 py-0.5 rounded border border-blue-200 transition truncate max-w-[130px]"
+             title="${escapeHtml(t.attachedFile?.name || 'Mở tệp đính kèm trên Google Drive')}"
+             onclick="event.stopPropagation()">
+            <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i>
+            <span class="truncate">📎 ${escapeHtml(t.attachedFile?.name || 'Tệp Drive')}</span>
+          </a>` : (t.attachedFile ? `<span class="text-[10px] text-slate-600 block truncate" title="${escapeHtml(t.attachedFile.name)}">📎 ${escapeHtml(t.attachedFile.name)}</span>` : '<span class="text-slate-400 text-[10px]">Không có tệp</span>')}
       </td>
       <td class="py-3 px-3 text-center ${isOverdue ? "text-rose-600 font-bold" : "text-slate-700"}">
         ${t.deadline ? escapeHtml(t.deadline.replace("T", " ")) : '<span class="text-slate-400">Chưa đặt</span>'}
@@ -411,18 +432,18 @@ function renderTasksTable() {
       <td class="py-3 px-3 text-center">
         <div class="inline-flex items-center gap-1">
           ${t.status !== "Đã hoàn thành" ? `
-            <button type="button" data-action="done" data-id="${escapeHtml(t.id)}" title="Đánh dấu hoàn thành" class="w-7 h-7 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 flex items-center justify-center transition active:scale-95">
+            <button type="button" data-action="done" data-id="${escapeHtml(t.id)}" title="Đánh dấu hoàn thành" class="btn-icon btn-icon-success">
               <i class="fa-solid fa-check"></i>
             </button>
           ` : `
-            <button type="button" data-action="reopen" data-id="${escapeHtml(t.id)}" title="Mở lại nhiệm vụ" class="w-7 h-7 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-300 flex items-center justify-center transition active:scale-95">
+            <button type="button" data-action="reopen" data-id="${escapeHtml(t.id)}" title="Mở lại nhiệm vụ" class="btn-icon btn-icon-warning">
               <i class="fa-solid fa-rotate-left"></i>
             </button>
           `}
-          <button type="button" data-action="print" data-id="${escapeHtml(t.id)}" title="In phiếu giao việc" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition active:scale-95">
+          <button type="button" data-action="print" data-id="${escapeHtml(t.id)}" title="In phiếu giao việc" class="btn-icon btn-icon-secondary">
             <i class="fa-solid fa-print"></i>
           </button>
-          <button type="button" data-action="delete" data-id="${escapeHtml(t.id)}" title="Xóa nhiệm vụ" class="w-7 h-7 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition active:scale-95">
+          <button type="button" data-action="delete" data-id="${escapeHtml(t.id)}" title="Xóa nhiệm vụ" class="btn-icon btn-icon-danger">
             <i class="fa-solid fa-trash-can"></i>
           </button>
         </div>
@@ -489,7 +510,13 @@ function openTaskModal(id) {
   const mtDl = document.getElementById("modalTaskDeadline");
   if (mtDl) mtDl.textContent = t.deadline ? t.deadline.replace("T", " ") : "Chưa đặt";
   const mtDr = document.getElementById("modalTaskDocRef");
-  if (mtDr) mtDr.textContent = t.docRef ? `${t.docRef} ${t.attachedFile ? `(📎 ${t.attachedFile.name})` : ""}` : "Không";
+  if (mtDr) {
+    const docText = t.docRef ? escapeHtml(t.docRef) : "Không ghi số hiệu";
+    const fileLink = (t.fileUrl || t.attachedFile?.url) 
+      ? `<a href="${escapeHtml(t.fileUrl || t.attachedFile.url)}" target="_blank" rel="noopener noreferrer" class="ml-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 font-bold text-xs"><i class="fa-solid fa-cloud-arrow-down"></i> Mở tệp đính kèm (${escapeHtml(t.attachedFile?.name || "Tải từ Drive")}) <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i></a>`
+      : (t.attachedFile ? `<span class="ml-2 text-slate-600 font-medium">(📎 ${escapeHtml(t.attachedFile.name)})</span>` : "");
+    mtDr.innerHTML = `${docText} ${fileLink}`;
+  }
   const mtGd = document.getElementById("modalTaskGuidance");
   if (mtGd) mtGd.textContent = t.guidance;
 
@@ -515,12 +542,12 @@ function openTaskModal(id) {
   const btnToggle = document.getElementById("modalBtnToggleStatus");
   if (btnToggle) {
     if (t.status === "Đã hoàn thành") {
-      btnToggle.className = "text-xs font-bold px-4 py-2 rounded-xl text-amber-700 bg-amber-100 hover:bg-amber-200 border border-amber-300 transition";
-      btnToggle.innerHTML = '<i class="fa-solid fa-rotate-left mr-1"></i> Chuyển Về Đang Làm';
+      btnToggle.className = "btn btn-secondary btn-sm";
+      btnToggle.innerHTML = '<i class="fa-solid fa-rotate-left"></i> <span>Chuyển Về Đang Làm</span>';
       btnToggle.onclick = () => markTaskReopen(t.id);
     } else {
-      btnToggle.className = "text-xs font-bold px-4 py-2 rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm";
-      btnToggle.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Xác Nhận Hoàn Thành';
+      btnToggle.className = "btn btn-success btn-sm";
+      btnToggle.innerHTML = '<i class="fa-solid fa-check"></i> <span>Xác Nhận Hoàn Thành</span>';
       btnToggle.onclick = () => markTaskDone(t.id);
     }
   }
@@ -663,14 +690,25 @@ window.addEventListener("DOMContentLoaded", () => {
     fileInput.addEventListener("change", (e) => {
       const file = e.target.files?.[0];
       if (file) {
-        attachedFileInfo = {
-          name: file.name,
-          size: (file.size / 1024).toFixed(1) + " KB",
-          type: file.type || "Tệp đính kèm"
+        if (file.size > 15 * 1024 * 1024) {
+          showToast("Dung lượng tệp vượt quá 15MB! Vui lòng chọn tệp nhỏ hơn.", "error");
+          fileInput.value = "";
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          attachedFileInfo = {
+            name: file.name,
+            size: (file.size / 1024).toFixed(1) + " KB",
+            type: file.type || "application/octet-stream",
+            base64: evt.target.result
+          };
         };
+        reader.readAsDataURL(file);
+
         if (filePreview) {
           filePreview.classList.remove("hidden");
-          filePreview.innerHTML = `<span><i class="fa-solid fa-file mr-1"></i> <strong>${escapeHtml(file.name)}</strong> (${attachedFileInfo.size})</span> <button type="button" class="text-rose-600 hover:text-rose-800 font-bold ml-2" onclick="removeAttachedFile()">✕ Hủy</button>`;
+          filePreview.innerHTML = `<span><i class="fa-solid fa-file mr-1"></i> <strong>${escapeHtml(file.name)}</strong> (${(file.size / 1024).toFixed(1)} KB)</span> <button type="button" class="text-rose-600 hover:text-rose-800 font-bold ml-2" onclick="removeAttachedFile()">✕ Hủy</button>`;
         }
         if (fileLabel) fileLabel.textContent = file.name;
       }
@@ -723,6 +761,8 @@ window.addEventListener("DOMContentLoaded", () => {
         priority: document.getElementById("taskPriority")?.value || "Bình thường",
         docRef: document.getElementById("taskDocRef")?.value.trim() || "",
         attachedFile: attachedFileInfo,
+        fileBase64: attachedFileInfo?.base64 || "",
+        fileName: attachedFileInfo?.name || "",
         guidance: document.getElementById("leaderGuidance")?.value.trim() || "",
         deadline: document.getElementById("taskDeadline")?.value || "",
         note: document.getElementById("taskNote")?.value.trim() || "",
@@ -748,33 +788,37 @@ window.addEventListener("DOMContentLoaded", () => {
       removeAttachedFile();
 
       setTimeout(() => {
-        document.getElementById("tabBtnTracking")?.click();
+        switchTaskTab("tracking");
       }, 600);
     });
   }
 
-  // Tab switching
-  const tabBtnAssign = document.getElementById("tabBtnAssign");
-  const tabBtnTracking = document.getElementById("tabBtnTracking");
-  const panelAssign = document.getElementById("panelAssign");
-  const panelTracking = document.getElementById("panelTracking");
+  // Tab switching đồng bộ hệ sinh thái (Tracking vs Assign)
+  function switchTaskTab(tabName) {
+    const tabBtnAssign = document.getElementById("tabBtnAssign");
+    const tabBtnTracking = document.getElementById("tabBtnTracking");
+    const panelAssign = document.getElementById("panelAssign");
+    const panelTracking = document.getElementById("panelTracking");
 
-  if (tabBtnAssign && tabBtnTracking && panelAssign && panelTracking) {
-    tabBtnAssign.addEventListener("click", () => {
-      tabBtnAssign.className = "tab-button active flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition bg-white text-blue-900 shadow-sm";
-      tabBtnTracking.className = "tab-button flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition";
-      panelAssign.classList.remove("hidden");
-      panelTracking.classList.add("hidden");
-    });
-
-    tabBtnTracking.addEventListener("click", () => {
-      tabBtnTracking.className = "tab-button active flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition bg-white text-blue-900 shadow-sm";
-      tabBtnAssign.className = "tab-button flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition";
-      panelTracking.classList.remove("hidden");
-      panelAssign.classList.add("hidden");
+    if (tabName === "assign") {
+      if (tabBtnAssign) tabBtnAssign.classList.add("active");
+      if (tabBtnTracking) tabBtnTracking.classList.remove("active");
+      if (panelAssign) panelAssign.classList.remove("hidden");
+      if (panelTracking) panelTracking.classList.add("hidden");
+    } else {
+      if (tabBtnTracking) tabBtnTracking.classList.add("active");
+      if (tabBtnAssign) tabBtnAssign.classList.remove("active");
+      if (panelTracking) panelTracking.classList.remove("hidden");
+      if (panelAssign) panelAssign.classList.add("hidden");
       renderTasksTable();
-    });
+    }
   }
+  window.switchTaskTab = switchTaskTab;
+
+  document.getElementById("tabBtnTracking")?.addEventListener("click", () => switchTaskTab("tracking"));
+  document.getElementById("tabBtnAssign")?.addEventListener("click", () => switchTaskTab("assign"));
+  document.getElementById("btnQuickOpenAssign")?.addEventListener("click", () => switchTaskTab("assign"));
+  document.getElementById("btnBackToTracking")?.addEventListener("click", () => switchTaskTab("tracking"));
 
   // Xuất CSV
   const btnExport = document.getElementById("btnExportTaskCsv");

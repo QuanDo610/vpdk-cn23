@@ -91,7 +91,7 @@ class TestSecurityAndRouteGuards(unittest.TestCase):
 
         self.assertIn('isUserAdmin()', hd_content, "it_helpdesk thiếu hàm kiểm tra isUserAdmin")
         self.assertIn('updateUIForUserRole()', hd_content, "it_helpdesk thiếu hàm updateUIForUserRole")
-        self.assertIn('handleAdminUpdateTicket()', hd_content, "it_helpdesk thiếu hàm xử lý admin update ticket")
+        self.assertIn('openTicketDetail', hd_content, "it_helpdesk thiếu hàm mở chi tiết ticket")
 
     def test_no_hardcoded_pii(self):
         """Không hardcode số điện thoại cá nhân và ghi chú nhạy cảm"""

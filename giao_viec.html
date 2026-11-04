@@ -15,8 +15,12 @@
   <!-- Font Awesome 6.5.1 CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+  <!-- Thư viện chọn ngày Flatpickr -->
+  <link rel="stylesheet" href="css/flatpickr.min.css">
+
   <!-- Giao diện đồng bộ hệ sinh thái (Modular CSS) -->
   <link rel="stylesheet" href="css/giao_viec.css">
+  
   <!-- Layout Controller & Logic Phân Hệ Giao Việc -->
   <script src="js/layout.js" defer></script>
   <script src="js/flatpickr.min.js" defer></script>
@@ -26,33 +30,40 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-
-  <!-- Thư viện chọn ngày Flatpickr -->
-  <link rel="stylesheet" href="css/flatpickr.min.css">
 </head>
 <body class="bg-[#f8fafc] text-slate-800 font-sans min-h-screen flex flex-col antialiased">
 
   <!-- ==================== TOAST NOTIFICATION CONTAINER ==================== -->
-  <div id="toastContainer" class="fixed top-20 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+  <div id="toastContainer" class="toast-container"></div>
 
   <!-- ==================== KHU VỰC NỘI DUNG CHÍNH (ĐỒNG BỘ 1280PX CONTAINER) ==================== -->
   <main class="main-content app-container flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
 
-    <!-- Header Tiêu Đề Trang Tối Giản (Thay thế Header to phía trên) -->
-    <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
+    <!-- Header Tiêu Đề Trang Chuẩn Hệ Sinh Thái -->
+    <div id="pageTitleStrip" class="page-title-strip">
       <div>
-        <h1 class="text-lg sm:text-2xl font-extrabold text-blue-950 flex items-center gap-2.5">
+        <h1 class="page-title-heading">
           <i class="fa-solid fa-list-check text-amber-500"></i>
           <span>LÃNH ĐẠO GIAO VIỆC & BẢNG TIẾN ĐỘ</span>
         </h1>
-        <p class="text-xs text-slate-500 mt-0.5">Phân công nhiệm vụ, chỉ đạo xử lý văn bản, giám sát tiến độ cán bộ Chi nhánh số 23</p>
+        <p class="page-subtitle">Phân công nhiệm vụ, chỉ đạo xử lý văn bản, giám sát tiến độ cán bộ Chi nhánh số 23</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="btnExportTaskCsv" class="btn btn-success btn-sm" title="Xuất danh sách công việc ra file Excel">
+          <i class="fa-solid fa-file-excel"></i>
+          <span>Xuất Bảng Excel</span>
+        </button>
+        <button id="btnPrintTable" class="btn btn-secondary btn-sm" title="In báo cáo tiến độ công việc">
+          <i class="fa-solid fa-print"></i>
+          <span>In Báo Cáo</span>
+        </button>
       </div>
     </div>
 
-    <!-- KPI Metric Cards Overview -->
+    <!-- 5 Thẻ KPI Thống Kê Tổng Quan -->
     <section class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
       <!-- KPI 1: Tổng số việc -->
-      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center gap-3.5">
+      <div class="kpi-metric-card">
         <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center text-xl shrink-0 font-bold border border-blue-100">
           <i class="fa-solid fa-folder-open"></i>
         </div>
@@ -64,7 +75,7 @@
       </div>
 
       <!-- KPI 2: Đang thực hiện -->
-      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center gap-3.5">
+      <div class="kpi-metric-card">
         <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0 font-bold border border-amber-100">
           <i class="fa-solid fa-clock-rotate-left"></i>
         </div>
@@ -76,7 +87,7 @@
       </div>
 
       <!-- KPI 3: Quá hạn (Deadline Alert) -->
-      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center gap-3.5">
+      <div class="kpi-metric-card">
         <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl shrink-0 font-bold border border-rose-100">
           <i class="fa-solid fa-triangle-exclamation"></i>
         </div>
@@ -88,7 +99,7 @@
       </div>
 
       <!-- KPI 4: Hoàn thành -->
-      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center gap-3.5">
+      <div class="kpi-metric-card">
         <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0 font-bold border border-emerald-100">
           <i class="fa-solid fa-circle-check"></i>
         </div>
@@ -112,36 +123,108 @@
       </div>
     </section>
 
-    <!-- Navigation Tabs: Giao Việc Mới vs Bảng Tiến Độ -->
-    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
-      <div class="inline-flex p-1 bg-slate-200/70 rounded-2xl">
-        <button id="tabBtnAssign" class="tab-button active flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition bg-white text-blue-900 shadow-sm">
-          <i class="fa-solid fa-paper-plane text-amber-500"></i>
-          <span>1. Giao Việc & Chỉ Đạo Mới</span>
+    <!-- ==================== THANH ĐIỀU HƯỚNG TAB: 1. BẢNG TIẾN ĐỘ | 2. GIAO VIỆC MỚI ==================== -->
+    <div class="schedule-tab-nav">
+      <div class="schedule-tab-group">
+        <button type="button" id="tabBtnTracking" class="schedule-tab-btn active" data-tab-action="tracking">
+          <i class="fa-solid fa-table-list mr-1 text-blue-600"></i>
+          <span>1. Bảng Theo Dõi Tiến Độ</span>
+          <span id="tabBadgeCount" class="tab-badge">0</span>
         </button>
-        <button id="tabBtnTracking" class="tab-button flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition">
-          <i class="fa-solid fa-table-list text-blue-600"></i>
-          <span>2. Bảng Theo Dõi Tiến Độ</span>
-          <span id="tabBadgeCount" class="ml-1 px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-blue-100 text-blue-800">0</span>
+        <button type="button" id="tabBtnAssign" class="schedule-tab-btn" data-tab-action="assign">
+          <i class="fa-solid fa-paper-plane mr-1 text-amber-500"></i>
+          <span>2. Giao Việc & Chỉ Đạo Mới</span>
         </button>
       </div>
 
-      <div class="flex items-center gap-2">
-        <button id="btnExportTaskCsv" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 px-3 py-2 rounded-xl transition shadow-sm">
-          <i class="fa-solid fa-file-excel text-emerald-600"></i>
-          <span>Xuất Bảng Excel</span>
-        </button>
-        <button id="btnPrintTable" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-3 py-2 rounded-xl transition shadow-sm">
-          <i class="fa-solid fa-print text-slate-500"></i>
-          <span>In Báo Cáo</span>
-        </button>
-      </div>
+      <!-- Nút hành động nhanh: Mở Form giao việc mới -->
+      <button type="button" id="btnQuickOpenAssign" class="btn btn-primary inline-flex items-center gap-2" data-tab-action="assign">
+        <i class="fa-solid fa-plus text-amber-300"></i>
+        <span><strong>Giao Việc Mới</strong></span>
+      </button>
     </div>
 
-    <!-- ==================== TAB 1: FORM GIAO VIỆC & CHỈ ĐẠO ==================== -->
-    <section id="panelAssign" class="tab-panel">
+    <!-- ==================== TAB 1: BẢNG THEO DÕI TIẾN ĐỘ (MẶC ĐỊNH RỘNG 100% - CHỐNG BỂ CHỮ) ==================== -->
+    <section id="panelTracking" class="tab-panel space-y-4">
+      <!-- Bộ lọc và Tìm kiếm công việc -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+          <!-- Lọc trạng thái -->
+          <div class="w-full sm:w-48">
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Trạng thái việc</label>
+            <select id="filterTaskStatus" class="w-full bg-slate-50 border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-bold focus:ring-2 focus:ring-blue-500 transition">
+              <option value="ALL">-- Tất cả trạng thái --</option>
+              <option value="Đang thực hiện">🟡 Đang thực hiện</option>
+              <option value="Đã hoàn thành">🟢 Đã hoàn thành</option>
+              <option value="Quá hạn">🔴 Quá hạn Deadline</option>
+            </select>
+          </div>
+
+          <!-- Lọc tổ chuyên môn -->
+          <div class="w-full sm:w-60">
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tổ chuyên môn</label>
+            <select id="filterTaskDept" class="w-full bg-slate-50 border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-bold focus:ring-2 focus:ring-blue-500 transition">
+              <option value="ALL">-- Tất cả các tổ --</option>
+              <option value="Tổ Kỹ thuật Địa chính và Lưu trữ">Tổ Kỹ thuật Địa chính & Lưu trữ</option>
+              <option value="Tổ Đăng ký cấp GCN">Tổ Đăng ký cấp GCN</option>
+              <option value="Tổ Hành chính Tổng hợp">Tổ Hành chính Tổng hợp</option>
+              <option value="Ban Giám đốc">Ban Giám đốc</option>
+            </select>
+          </div>
+
+          <!-- Ô tìm kiếm -->
+          <div class="w-full sm:w-72">
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tìm kiếm nhiệm vụ / Cán bộ</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 text-xs">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </span>
+              <input type="text" id="searchTaskInput" placeholder="Nhập tên việc, cán bộ, mã việc..."
+                class="w-full bg-slate-50 border border-slate-300 text-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs focus:ring-2 focus:ring-blue-500 transition">
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="btnClearAllTasks" class="btn btn-danger btn-sm" title="Xóa toàn bộ nhiệm vụ (Chỉ dùng khi cần dọn dẹp)">
+            <i class="fa-solid fa-trash-can"></i>
+            <span>Xóa tất cả</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bảng Desktop Bảng Tiến Độ Toàn Màn Hình -->
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="bg-gradient-to-r from-blue-900 to-blue-800 text-white px-6 py-4 flex items-center justify-between">
+        <div class="overflow-x-auto">
+          <table class="task-data-table w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-gradient-to-r from-blue-900 to-blue-800 text-white font-bold text-[11px] uppercase tracking-wider">
+                <th class="py-3 px-3 w-24 text-center">Mã việc</th>
+                <th class="py-3 px-3 w-40">Người giao việc</th>
+                <th class="py-3 px-3 w-48">Cán bộ tiếp nhận</th>
+                <th class="py-3 px-3 w-44">Tổ chuyên môn</th>
+                <th class="py-3 px-3 w-64">Tiêu đề nhiệm vụ</th>
+                <th class="py-3 px-3 w-36">Căn cứ / Tệp</th>
+                <th class="py-3 px-3 w-40 text-center">Hạn chót (Deadline)</th>
+                <th class="py-3 px-3 w-28 text-center">Độ khẩn</th>
+                <th class="py-3 px-3 w-36 text-center">Trạng thái</th>
+                <th class="py-3 px-3 w-36 text-center">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="taskTableBody" class="divide-y divide-slate-200">
+              <!-- Render động bằng JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: FORM GIAO VIỆC & CHỈ ĐẠO ==================== -->
+    <section id="panelAssign" class="tab-panel hidden space-y-4">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        
+        <!-- Header Phiếu Giao Việc có Nút Quay Lại -->
+        <div class="bg-gradient-to-r from-blue-900 to-blue-800 text-white px-6 py-4 flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-center gap-3">
             <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
               <i class="fa-solid fa-feather-pointed"></i>
@@ -151,9 +234,16 @@
               <p class="text-xs text-slate-300">Phân công nhiệm vụ cụ thể cho 82 cán bộ viên chức thuộc 5 tổ chuyên môn</p>
             </div>
           </div>
-          <span class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-lg font-mono font-semibold">
-            Chi nhánh 23
-          </span>
+          
+          <div class="flex items-center gap-2">
+            <button type="button" id="btnBackToTracking" class="btn btn-secondary btn-sm bg-white/10 hover:bg-white/20 text-white border-white/20">
+              <i class="fa-solid fa-arrow-left"></i>
+              <span>Quay lại bảng tiến độ</span>
+            </button>
+            <span class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-lg font-mono font-semibold">
+              Chi nhánh 23
+            </span>
+          </div>
         </div>
 
         <form id="taskAssignmentForm" class="p-6 space-y-6">
@@ -173,8 +263,8 @@
                   <option value="Đặng Thị Tuyết Trinh (Tổ phó KTĐC)">Đặng Thị Tuyết Trinh — Tổ phó Kỹ thuật Địa chính</option>
                   <option value="Nguyễn Thị Thùy Trang (Tổ trưởng ĐKGCN)">Nguyễn Thị Thùy Trang — Tổ trưởng Đăng ký cấp GCN</option>
                   <option value="Huỳnh Tấn Nguyên (Tổ phó ĐKGCN)">Huỳnh Tấn Nguyên — Tổ phó Đăng ký cấp GCN</option>
-                  <option value="Nguyễn Thành Như Bảo (Tổ phó ĐKGCN)">Nguyễn Thành Như Bảo — Tổ phó Đăng ký cấp GCN</option>
-                  <option value="Nguyễn Thị Thu Minh (Tổ phó ĐKGCN)">Nguyễn Thị Thu Minh — Tổ phó Đăng ký cấp GCN</option>
+                  <option value="Nguyễn Thành Như Bảo (Tổ phó ĐKGCN)">Nguyễn Thành Như Bảo — Tổ phó ĐKGCN</option>
+                  <option value="Nguyễn Thị Thu Minh (Tổ phó ĐKGCN)">Nguyễn Thị Thu Minh — Tổ phó ĐKGCN</option>
                   <option value="Nguyễn Thị Bích Tuyền (Tổ trưởng HCTH)">Nguyễn Thị Bích Tuyền — Tổ trưởng Hành chính Tổng hợp</option>
                   <option value="Bùi Thị Minh Nguyệt (Tổ phó HCTH)">Bùi Thị Minh Nguyệt — Tổ phó Hành chính Tổng hợp</option>
                   <option value="Hồ Thị Hồng Linh (Tổ phó HCTH)">Hồ Thị Hồng Linh — Tổ phó Hành chính Tổng hợp</option>
@@ -299,91 +389,18 @@
               class="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
           </div>
 
-          <!-- Nút hành động -->
+          <!-- Nút hành động biểu mẫu -->
           <div class="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-slate-200">
-            <button type="button" id="btnResetTaskForm" class="px-4 py-2.5 text-xs font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
-              <i class="fa-solid fa-rotate-left mr-1"></i> Làm mới biểu mẫu
+            <button type="button" id="btnResetTaskForm" class="btn btn-secondary">
+              <i class="fa-solid fa-rotate-left"></i>
+              <span>Làm mới biểu mẫu</span>
             </button>
-            <button type="submit" id="btnSubmitTask" class="px-6 py-2.5 text-sm font-bold text-white bg-blue-800 hover:bg-blue-700 active:scale-95 rounded-xl shadow-md transition flex items-center gap-2">
-              <i class="fa-solid fa-paper-plane text-amber-400"></i>
-              <span>PHÁT LỆNH GIAO VIỆC</span>
+            <button type="submit" id="btnSubmitTask" class="btn btn-primary">
+              <i class="fa-solid fa-paper-plane text-amber-300"></i>
+              <span><strong>PHÁT LỆNH GIAO VIỆC</strong></span>
             </button>
           </div>
         </form>
-      </div>
-    </section>
-
-    <!-- ==================== TAB 2: BẢNG THEO DÕI TIẾN ĐỘ ==================== -->
-    <section id="panelTracking" class="tab-panel hidden space-y-4">
-      <!-- Bộ lọc và Tìm kiếm công việc -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
-        <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-          <!-- Lọc trạng thái -->
-          <div class="w-full sm:w-48">
-            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Trạng thái việc</label>
-            <select id="filterTaskStatus" class="w-full bg-slate-50 border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-bold focus:ring-2 focus:ring-blue-500 transition">
-              <option value="ALL">-- Tất cả trạng thái --</option>
-              <option value="Đang thực hiện">🟡 Đang thực hiện</option>
-              <option value="Đã hoàn thành">🟢 Đã hoàn thành</option>
-              <option value="Quá hạn">🔴 Quá hạn Deadline</option>
-            </select>
-          </div>
-
-          <!-- Lọc tổ chuyên môn -->
-          <div class="w-full sm:w-60">
-            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tổ chuyên môn</label>
-            <select id="filterTaskDept" class="w-full bg-slate-50 border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-bold focus:ring-2 focus:ring-blue-500 transition">
-              <option value="ALL">-- Tất cả các tổ --</option>
-              <option value="Tổ Kỹ thuật Địa chính và Lưu trữ">Tổ Kỹ thuật Địa chính & Lưu trữ</option>
-              <option value="Tổ Đăng ký cấp GCN">Tổ Đăng ký cấp GCN</option>
-              <option value="Tổ Hành chính Tổng hợp">Tổ Hành chính Tổng hợp</option>
-              <option value="Ban Giám đốc">Ban Giám đốc</option>
-            </select>
-          </div>
-
-          <!-- Ô tìm kiếm -->
-          <div class="w-full sm:w-72">
-            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tìm kiếm nhiệm vụ / Cán bộ</label>
-            <div class="relative">
-              <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 text-xs">
-                <i class="fa-solid fa-magnifying-glass"></i>
-              </span>
-              <input type="text" id="searchTaskInput" placeholder="Nhập tên việc, cán bộ, mã việc..."
-                class="w-full bg-slate-50 border border-slate-300 text-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs focus:ring-2 focus:ring-blue-500 transition">
-            </div>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <button id="btnClearAllTasks" class="text-xs text-rose-600 hover:text-rose-800 font-semibold px-3 py-2 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-200 transition">
-            <i class="fa-solid fa-trash-can mr-1"></i> Xóa tất cả
-          </button>
-        </div>
-      </div>
-
-      <!-- Bảng Desktop-First Bảng Tiến Độ -->
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="task-data-table w-full text-left text-xs border-collapse">
-            <thead>
-              <tr class="bg-gradient-to-r from-blue-900 to-blue-800 text-white font-bold text-[11px] uppercase tracking-wider">
-                <th class="py-3 px-3 w-24 text-center">Mã việc</th>
-                <th class="py-3 px-3 w-40">Người giao việc</th>
-                <th class="py-3 px-3 w-48">Cán bộ tiếp nhận</th>
-                <th class="py-3 px-3 w-44">Tổ chuyên môn</th>
-                <th class="py-3 px-3 w-64">Tiêu đề nhiệm vụ</th>
-                <th class="py-3 px-3 w-36">Căn cứ / Tệp</th>
-                <th class="py-3 px-3 w-40 text-center">Hạn chót (Deadline)</th>
-                <th class="py-3 px-3 w-28 text-center">Độ khẩn</th>
-                <th class="py-3 px-3 w-36 text-center">Trạng thái</th>
-                <th class="py-3 px-3 w-36 text-center">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody id="taskTableBody" class="divide-y divide-slate-200">
-              <!-- Render động bằng JavaScript -->
-            </tbody>
-          </table>
-        </div>
       </div>
     </section>
 
@@ -407,7 +424,7 @@
       <div class="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
         <div class="flex items-center justify-between pb-3 border-b border-slate-100">
           <div>
-            <span id="modalTaskId" class="text-xs font-mono font-bold bg-blue-100 text-blue-900 px-2 py-0.5 rounded-lg">TASK_0000</span>
+            <span id="modalTaskId" class="text-xs font-mono font-bold bg-blue-100 text-blue-900 px-2.5 py-1 rounded-lg">TASK_0000</span>
             <span id="modalTaskCreatedAt" class="text-xs text-slate-400 ml-2">Ngày giao: --</span>
           </div>
           <div id="modalTaskBadges" class="flex items-center gap-1.5"></div>
@@ -457,13 +474,14 @@
 
       <!-- Modal Footer -->
       <div class="bg-slate-50 px-6 py-3.5 border-t border-slate-200 flex items-center justify-between">
-        <button id="modalBtnPrint" class="text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 px-3.5 py-2 rounded-xl transition shadow-sm">
-          <i class="fa-solid fa-print mr-1"></i> In Phiếu Giao Việc
+        <button id="modalBtnPrint" class="btn btn-secondary btn-sm">
+          <i class="fa-solid fa-print"></i>
+          <span>In Phiếu Giao Việc</span>
         </button>
         <div class="flex items-center gap-2">
-          <button id="modalBtnToggleStatus" class="text-xs font-bold px-4 py-2 rounded-xl text-white shadow-sm transition"></button>
-          <button onclick="closeTaskModal()" class="text-xs font-semibold text-slate-600 hover:text-slate-800 px-3.5 py-2 rounded-xl transition">
-            Đóng
+          <button id="modalBtnToggleStatus" class="btn btn-primary btn-sm"></button>
+          <button onclick="closeTaskModal()" class="btn btn-secondary btn-sm">
+            <span>Đóng</span>
           </button>
         </div>
       </div>
@@ -473,6 +491,5 @@
   <!-- ==================== KHUNG IN ẨN PHỤC VỤ IN PHIẾU GIAO VIỆC ==================== -->
   <div id="printableArea" class="hidden"></div>
 
-  <!-- Module Controller js/giao_viec.js đã được nạp trong thẻ <head> với thuộc tính defer -->
 </body>
 </html>

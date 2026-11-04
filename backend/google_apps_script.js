@@ -17,7 +17,10 @@ const SHEET_USERS_NAME = "TaiKhoan";
 const SHEET_SUPPORT_NAME = "Tickets";
 const SHEET_TASKS_NAME = "GiaoViec";
 const SHEET_PERFORMANCE_NAME = "BaoCaoSoLieu";
-const DRIVE_FOLDER_NAME = "IT_Helpdesk_Uploads";
+const ROOT_FOLDER_NAME = "VPDK_CN23_SYSTEM";
+const FOLDER_HELPDESK  = "it-helpdesk";
+const FOLDER_GIAOVIEC  = "giao-viec";
+const DRIVE_FOLDER_NAME = "VPDK_CN23_SYSTEM";
 
 /**
  * Tự động tạo menu tiện ích "⭐ BINHDUONG23" trên thanh công cụ của Google Sheet
@@ -387,7 +390,8 @@ function seedTasksOnly() {
       "Ghi chú",
       "Trạng thái",
       "Ngày tạo",
-      "Ngày hoàn thành"
+      "Ngày hoàn thành",
+      "Tệp đính kèm (Link Drive)"
     ];
     sheet.appendRow(headers);
     sheet.getRange(1, 1, 1, headers.length)
@@ -456,21 +460,53 @@ function seedPerformanceOnly() {
 }
 
 /**
- * Xử lý lưu ảnh Base64 lên Google Drive thư mục IT_Helpdesk_Uploads
+ * Lấy hoặc tự động tạo cấu trúc thư mục 2 tầng trên Google Drive:
+ * 📁 VPDK_CN23_SYSTEM/ (Thư mục mẹ gốc)
+ *   ├── 📁 it-helpdesk/ (Chuyên lưu ảnh ticket báo sự cố)
+ *   └── 📁 giao-viec/   (Chuyên lưu văn bản, công văn, tài liệu đính kèm)
  */
-function saveImageToDrive(base64Data, filename) {
+function getStorageFolder(moduleName) {
+  moduleName = moduleName || FOLDER_HELPDESK;
+
+  // 1. Thư mục mẹ gốc: VPDK_CN23_SYSTEM
+  const rootFolders = DriveApp.getFoldersByName(ROOT_FOLDER_NAME);
+  let rootFolder;
+  if (rootFolders.hasNext()) {
+    rootFolder = rootFolders.next();
+  } else {
+    rootFolder = DriveApp.createFolder(ROOT_FOLDER_NAME);
+    try {
+      rootFolder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    } catch (e) {}
+  }
+
+  // 2. Thư mục con theo từng phân hệ nghiệp vụ
+  const subFolders = rootFolder.getFoldersByName(moduleName);
+  let subFolder;
+  if (subFolders.hasNext()) {
+    subFolder = subFolders.next();
+  } else {
+    subFolder = rootFolder.createFolder(moduleName);
+    try {
+      subFolder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    } catch (e) {}
+  }
+
+  return subFolder;
+}
+
+/**
+ * Xử lý lưu tệp Base64 (Ảnh, Word, PDF, Excel) lên Google Drive theo đúng phân hệ
+ * @param {string} base64Data - Dữ liệu DataURL hoặc Base64 thuần
+ * @param {string} filename - Tên file muốn lưu
+ * @param {string} moduleName - "it-helpdesk" hoặc "giao-viec"
+ */
+function saveFileToDrive(base64Data, filename, moduleName) {
   if (!base64Data || base64Data.trim() === "") return "";
   try {
-    const folders = DriveApp.getFoldersByName(DRIVE_FOLDER_NAME);
-    let folder;
-    if (folders.hasNext()) {
-      folder = folders.next();
-    } else {
-      folder = DriveApp.createFolder(DRIVE_FOLDER_NAME);
-      folder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    }
+    const targetFolder = getStorageFolder(moduleName || FOLDER_HELPDESK);
 
-    let contentType = "image/jpeg";
+    let contentType = "application/octet-stream";
     let base64String = base64Data;
     if (base64Data.indexOf("data:") === 0) {
       const parts = base64Data.split(",");
@@ -482,18 +518,25 @@ function saveImageToDrive(base64Data, filename) {
     const decodedBlob = Utilities.newBlob(
       Utilities.base64Decode(base64String),
       contentType,
-      filename || ("ticket_img_" + new Date().getTime() + ".jpg")
+      filename || ("file_" + new Date().getTime())
     );
 
-    const file = folder.createFile(decodedBlob);
+    const file = targetFolder.createFile(decodedBlob);
     try {
       file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     } catch (e) {}
 
     return "https://drive.google.com/file/d/" + file.getId() + "/view";
   } catch (err) {
-    return "Lỗi upload ảnh: " + err.toString();
+    return "Lỗi upload file: " + err.toString();
   }
+}
+
+/**
+ * Hàm tương thích ngược: Upload ảnh IT Helpdesk vào thư mục it-helpdesk/
+ */
+function saveImageToDrive(base64Data, filename) {
+  return saveFileToDrive(base64Data, filename, FOLDER_HELPDESK);
 }
 
 /**
@@ -623,14 +666,13 @@ function doGet(e) {
       const reqPhone = (params.phone || "").toString().trim().replace(/^'+/, "").replace(/[\s\.\-]+/g, "").replace(/^0+/, "");
       const reqFullname = (params.fullname || "").toString().trim().toLowerCase();
 
-      // Quyền Quản trị IT: quandtm / quan.vpdk@gmail.com / admin / 0973807027 / Đỗ Trọng Minh Quân được xem toàn bộ
+      // Quyền Quản trị IT: CHỈ DUY NHẤT quandtm / 0973807027 / Đỗ Trọng Minh Quân được xem toàn bộ
+      // Tài khoản khác (kể cả có quyền admin ở các phân hệ khác như tuyenntb) chỉ xem ticket của chính mình
       const noToneReqName = removeVietnameseTones(reqFullname);
       const isAdmin = (
         reqUser === "quandtm" ||
         reqUser === "quan.vpdk@gmail.com" ||
         reqUser.includes("quandtm") ||
-        reqRole === "admin" ||
-        reqRole === "it" ||
         reqPhone === "973807027" ||
         reqPhone === "0973807027" ||
         noToneReqName.includes("do trong minh quan") ||
@@ -1249,8 +1291,43 @@ function handleCreateTicket(data, ss) {
   let phoneStr = String(data.phone || "").trim().replace(/^'+/, "");
   if (phoneStr && phoneStr.length === 9 && !phoneStr.startsWith("0")) phoneStr = "0" + phoneStr;
 
-  const userAcc = (data.username || "").toString().trim();
+  let userAcc = (data.username || "").toString().trim();
+  // Nếu chưa có username, tự động tra cứu từ sheet TaiKhoan qua SĐT hoặc Họ tên
+  if (!userAcc) {
+    try {
+      const uSheet = getUsersSheet(ss);
+      const uData = uSheet.getDataRange().getDisplayValues();
+      if (uData.length > 1) {
+        const uHeaders = uData[0].map(function(h) { return (h || "").toString().trim().toLowerCase(); });
+        let cName = uHeaders.findIndex(function(h) { return h.includes("họ và tên") || h.includes("họ tên") || h.includes("fullname"); });
+        if (cName === -1) cName = 0;
+        let cUser = uHeaders.findIndex(function(h) { return h === "username" || h.includes("username") || h.includes("tên đăng nhập"); });
+        if (cUser === -1) cUser = 1;
+        let cPhone = uHeaders.findIndex(function(h) { return h.includes("điện thoại") || h.includes("sđt") || h.includes("phone"); });
+        if (cPhone === -1) cPhone = 4;
 
+        const targetPhone = (data.phone || "").toString().trim().replace(/^'+/, "").replace(/[\s\.\-]+/g, "").replace(/^0+/, "");
+        const targetName = removeVietnameseTones((data.fullname || "").toString().trim().toLowerCase());
+
+        for (let ui = 1; ui < uData.length; ui++) {
+          const ur = uData[ui];
+          const uNormPh = (ur[cPhone] || "").toString().trim().replace(/^'+/, "").replace(/[\s\.\-]+/g, "").replace(/^0+/, "");
+          const uNormNm = removeVietnameseTones((ur[cName] || "").toString().trim().toLowerCase());
+          const uAcc = (ur[cUser] || "").toString().trim();
+          if (uAcc && ((targetPhone && uNormPh === targetPhone) || (targetName && uNormNm === targetName))) {
+            userAcc = uAcc;
+            break;
+          }
+        }
+      }
+    } catch (eAcc) {}
+  }
+  // Dự phòng cuối: Tự động tạo Username theo chuẩn họ tên (VD: "Nguyễn Thị Bích Tuyền" -> "tuyenntb")
+  if (!userAcc && data.fullname) {
+    userAcc = generateUsernameFromFullname(data.fullname);
+  }
+
+  // Cột L (Cột thứ 12 trên Sheet) luôn ghi Username của cán bộ
   sheet.appendRow([
     ticketId,
     timeStr,
@@ -1351,6 +1428,16 @@ function handleCreateTask(data, ss) {
   const createdAt = data.createdAt || `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
   const taskId = data.id || ('TASK_' + Math.floor(1000 + Math.random() * 9000));
 
+  // Tự động upload tệp đính kèm vào thư mục VPDK_CN23_SYSTEM/giao-viec/
+  let fileUrl = data.fileUrl || "";
+  const fileBase64 = data.fileBase64 || (data.attachedFile && data.attachedFile.base64);
+  const rawFileName = data.fileName || (data.attachedFile && data.attachedFile.name) || "van_ban_dinh_kem.pdf";
+  if (fileBase64) {
+    const safeName = rawFileName.replace(/[^a-zA-Z0-9._\-]/g, "_");
+    const taskFileName = `${taskId}_${safeName}`;
+    fileUrl = saveFileToDrive(fileBase64, taskFileName, FOLDER_GIAOVIEC);
+  }
+
   sheet.appendRow([
     taskId,
     sanitizeForSheet(data.leader || ""),
@@ -1365,16 +1452,22 @@ function handleCreateTask(data, ss) {
     sanitizeForSheet(data.note || ""),
     sanitizeForSheet(data.status || "Đang thực hiện"),
     createdAt,
-    data.completedAt || ""
+    data.completedAt || "",
+    fileUrl
   ]);
 
   const newRow = sheet.getLastRow();
   sheet.getRange(newRow, 1).setHorizontalAlignment("center").setFontWeight("bold");
+  if (fileUrl && fileUrl.indexOf("http") === 0) {
+    const linkCell = sheet.getRange(newRow, 15);
+    linkCell.setValue(fileUrl).setFontColor("#1d4ed8").setFontUnderline(true);
+  }
 
   return {
     success: true,
     message: "Tạo phiếu giao việc thành công!",
-    taskId: taskId
+    taskId: taskId,
+    fileUrl: fileUrl
   };
 }
 
@@ -1417,6 +1510,7 @@ function getTasksList(ss) {
   for (let i = 1; i < values.length; i++) {
     const r = values[i];
     if (!r[0]) continue;
+    const taskFileUrl = r[14] || "";
     tasks.push({
       id: r[0],
       leader: r[1],
@@ -1431,7 +1525,9 @@ function getTasksList(ss) {
       note: r[10],
       status: r[11],
       createdAt: r[12],
-      completedAt: r[13] || ""
+      completedAt: r[13] || "",
+      fileUrl: taskFileUrl,
+      attachedFile: taskFileUrl ? { name: (r[7] || "Tệp đính kèm"), url: taskFileUrl } : null
     });
   }
   return { success: true, total: tasks.length, data: tasks };

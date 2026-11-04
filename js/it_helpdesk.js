@@ -31,7 +31,7 @@ function escapeHtml(str) {
     .replace(/'/g, "&#039;");
 }
 
-// 0. HÀM CHUYỂN ĐỔI TAB: 1. BẢNG THEO DÕI SỰ CỐ (MẶC ĐỊNH) VS 2. FORM BÁO SỰ CỐ MỚI
+// 0. HÀM CHUYỂN ĐỔI TAB: 1. BÁO SỰ CỐ MỚI (MẶC ĐỊNH) VS 2. BẢNG THEO DÕI SỰ CỐ (MONITORING)
 function switchHelpdeskTab(tab) {
   const listSec = document.getElementById("listSection");
   const formSec = document.getElementById("formSection");
@@ -39,17 +39,18 @@ function switchHelpdeskTab(tab) {
   const btnForm = document.getElementById("tabBtnHelpdeskRegister");
   if (!listSec || !formSec) return;
 
-  if (tab === "form") {
+  if (tab === "list") {
+    listSec.style.display = "flex";
+    formSec.style.display = "none";
+    if (btnList) btnList.classList.add("active");
+    if (btnForm) btnForm.classList.remove("active");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  } else {
     listSec.style.display = "none";
     formSec.style.display = "block";
     if (btnList) btnList.classList.remove("active");
     if (btnForm) btnForm.classList.add("active");
     window.scrollTo({ top: 0, behavior: "smooth" });
-  } else {
-    listSec.style.display = "flex";
-    formSec.style.display = "none";
-    if (btnList) btnList.classList.add("active");
-    if (btnForm) btnForm.classList.remove("active");
   }
 }
 
@@ -119,20 +120,38 @@ function normalizePhone(p) {
   return String(p).replace(/^'+/, "").replace(/[\s\.\-]+/g, "").replace(/^0+/, "");
 }
 
-// Nhận diện Quản trị viên IT (Đỗ Trọng Minh Quân - 0973807027 - quandtm)
-// Mỏ neo cứng theo SĐT 0973807027 kết hợp dung sai cao (username, role)
+// Sinh Username từ Họ và tên (Quy chuẩn: Tên + Chữ cái đầu của Họ và Tên lót)
+// Ví dụ: "Nguyễn Thị Bích Tuyền" -> "tuyenntb", "Đỗ Trọng Minh Quân" -> "quandtm"
+function generateUsernameFromFullname(fullname) {
+  if (!fullname) return "";
+  const parts = String(fullname).trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "";
+  if (parts.length === 1) {
+    return removeVietnameseTones(parts[0]).toLowerCase();
+  }
+  const lastName = parts[parts.length - 1];
+  const normLastName = removeVietnameseTones(lastName).toLowerCase();
+  const initials = parts.slice(0, -1).map(function(p) {
+    const norm = removeVietnameseTones(p);
+    return norm ? norm.charAt(0).toLowerCase() : "";
+  }).join("");
+  return normLastName + initials;
+}
+
+// Nhận diện Quản trị viên IT DUY NHẤT: Đỗ Trọng Minh Quân (0973807027 - quandtm)
+// Yêu cầu bảo mật: CHỈ DUY NHẤT Đỗ Trọng Minh Quân mới có quyền xem toàn bộ ticket.
+// Mọi tài khoản khác (kể cả có quyền admin ở các phân hệ khác như tuyenntb) đều chỉ xem được ticket của chính mình.
 function isUserAdmin() {
   const user = (typeof FamilyAuth !== "undefined" && FamilyAuth.getUser()) ||
                JSON.parse(sessionStorage.getItem("family_user") || sessionStorage.getItem("binhduong_user") || sessionStorage.getItem("vpdk_current_user") || "null");
-  // Nếu chưa có session (ví dụ chạy offline hoặc mở file trực tiếp): Mặc định mở quyền IT để debug
-  if (!user) return true;
+  // Zero-trust: Chưa đăng nhập thì không mở quyền quản trị
+  if (!user) return false;
 
   const phone = normalizePhone(user.phone);
   const username = (user.username || "").toLowerCase().trim();
-  const role = (user.role || "").toLowerCase().trim();
   const email = (user.email || "").toLowerCase().trim();
 
-  // 1. Quản trị viên IT Đỗ Trọng Minh Quân: Nhận diện mỏ neo cứng theo SĐT 0973807027
+  // 1. Quản trị viên IT Đỗ Trọng Minh Quân: Nhận diện mỏ neo cứng theo SĐT 0973807027 / quandtm / email
   if (
     phone === "973807027" ||
     phone === "0973807027" ||
@@ -151,11 +170,7 @@ function isUserAdmin() {
     return true;
   }
 
-  // 3. Nhận diện theo vai trò Quản trị hệ thống:
-  if (role === "admin" || role === "it" || role.includes("quản trị")) {
-    return true;
-  }
-
+  // Cán bộ cá nhân khác (kể cả role 'admin' tại các phân hệ khác như tuyenntb) đều chỉ xem ticket của chính mình
   return false;
 }
 
@@ -411,13 +426,17 @@ async function handleSubmitTicket(e) {
 
   const user = (typeof FamilyAuth !== "undefined" && FamilyAuth.getUser()) ||
                JSON.parse(sessionStorage.getItem("family_user") || sessionStorage.getItem("binhduong_user") || sessionStorage.getItem("vpdk_current_user") || "{}");
-  const currentUsername = (user.username || "").trim();
+  let currentUsername = (user.username || "").trim();
+  const currentFullname = document.getElementById("fullname")?.value.trim() || user.fullname || user.name || "";
+  if (!currentUsername && currentFullname) {
+    currentUsername = generateUsernameFromFullname(currentFullname);
+  }
 
   const payload = {
     action: "createTicket",
     username: currentUsername,
-    fullname: document.getElementById("fullname")?.value.trim() || "",
-    phone: document.getElementById("phone")?.value.trim() || "",
+    fullname: currentFullname,
+    phone: document.getElementById("phone")?.value.trim() || user.phone || "",
     department: document.getElementById("department")?.value || "",
     machineName: machineVal,
     category: selectedCategory,
@@ -526,7 +545,7 @@ async function fetchTickets(isManual = false) {
 
   const user = (typeof FamilyAuth !== "undefined" && FamilyAuth.getUser()) ||
                JSON.parse(sessionStorage.getItem("family_user") || sessionStorage.getItem("binhduong_user") || sessionStorage.getItem("vpdk_current_user") || "null");
-  const authQuery = user ? `&username=${encodeURIComponent(user.username || "")}&role=${encodeURIComponent(user.role || "")}&phone=${encodeURIComponent(user.phone || "")}&fullname=${encodeURIComponent(user.fullname || user.name || "")}` : "";
+  const authQuery = user ? `&username=${encodeURIComponent(user.username || "")}&phone=${encodeURIComponent(user.phone || "")}&fullname=${encodeURIComponent(user.fullname || user.name || "")}` : "";
 
   if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
     try {
@@ -947,88 +966,8 @@ function openTicketDetail(ticketId) {
     if (imgPrev) imgPrev.src = "";
   }
 
-  const noteEl = document.getElementById("detailItNote");
-  if (noteEl) noteEl.textContent = ticket.itNote && ticket.itNote.trim() ? ticket.itNote : "Chưa có ghi chú xử lý từ IT.";
-
-  const adminBox = document.getElementById("detailAdminActionBox");
-  if (adminBox) {
-    if (isUserAdmin()) {
-      adminBox.classList.remove("hidden");
-      const sel = document.getElementById("adminTicketStatusSelect");
-      if (sel) sel.value = ticket.status || "Chờ xử lý";
-      const inp = document.getElementById("adminTicketNoteInput");
-      if (inp) inp.value = ticket.itNote || "";
-    } else {
-      adminBox.classList.add("hidden");
-    }
-  }
-
   const modal = document.getElementById("modalTicketDetail");
   if (modal) modal.classList.remove("hidden");
-}
-
-async function handleAdminUpdateTicket() {
-  if (!currentDetailTicket || !isUserAdmin()) return;
-  const btn = document.getElementById("btnAdminSaveTicket");
-  const originalHtml = btn ? btn.innerHTML : "";
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang lưu...';
-  }
-
-  const newStatus = document.getElementById("adminTicketStatusSelect")?.value || "Chờ xử lý";
-  const newNote = document.getElementById("adminTicketNoteInput")?.value.trim() || "";
-
-  const payload = {
-    action: "updateTicket",
-    ticketId: currentDetailTicket.id,
-    status: newStatus,
-    itNote: newNote
-  };
-
-  try {
-    if (SCRIPT_URL && SCRIPT_URL.trim() !== "") {
-      const res = await fetch(SCRIPT_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(payload)
-      });
-      const result = await res.json();
-      if (!result || !result.success) {
-        console.warn("Server trả lời lỗi khi cập nhật ticket:", result);
-      }
-    }
-  } catch (err) {
-    console.warn("Lỗi mạng khi cập nhật ticket:", err);
-  }
-
-  currentDetailTicket.status = newStatus;
-  currentDetailTicket.itNote = newNote;
-
-  const idx = currentTickets.findIndex(t => t.id === currentDetailTicket.id);
-  if (idx !== -1) {
-    currentTickets[idx].status = newStatus;
-    currentTickets[idx].itNote = newNote;
-  }
-
-  try {
-    localStorage.setItem("IT_HELPDESK_LOCAL_TICKETS", JSON.stringify(currentTickets));
-  } catch(e){}
-
-  const dtSt = document.getElementById("detailTicketStatus");
-  if (dtSt) dtSt.innerHTML = getStatusBadgeHtml(newStatus);
-  const dtNt = document.getElementById("detailItNote");
-  if (dtNt) dtNt.textContent = newNote || "Chưa có ghi chú xử lý từ IT.";
-
-  if (btn) {
-    btn.disabled = false;
-    btn.innerHTML = originalHtml;
-  }
-
-  updateStats();
-  renderTickets();
-
-  alert(`✅ Đã cập nhật thành công trạng thái "${newStatus}" cho Ticket #${currentDetailTicket.id}!`);
 }
 
 function closeTicketDetail() {
@@ -1224,7 +1163,6 @@ window.removeSelectedImage = removeSelectedImage;
 window.handleSubmitTicket = handleSubmitTicket;
 window.fetchTickets = fetchTickets;
 window.openTicketDetail = openTicketDetail;
-window.handleAdminUpdateTicket = handleAdminUpdateTicket;
 window.closeTicketDetail = closeTicketDetail;
 window.openImageViewerFromDetail = openImageViewerFromDetail;
 window.openImageViewer = openImageViewer;

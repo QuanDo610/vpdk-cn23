@@ -48,157 +48,19 @@
     <!-- ================= THANH CHUYỂN ĐỔI TAB: 1. BẢNG THEO DÕI (100% WIDTH) | 2. BÁO SỰ CỐ MỚI ================= -->
     <div class="schedule-tab-nav flex flex-wrap items-center justify-between gap-3 mb-5">
       <div class="schedule-tab-group inline-flex bg-slate-200/90 p-1 rounded-2xl gap-1">
-        <button type="button" id="tabBtnHelpdeskList" class="schedule-tab-btn active" onclick="switchHelpdeskTab('list')">
-          <i class="fa-solid fa-table-list mr-1.5 text-blue-600"></i>
-          <span>1. Bảng Theo Dõi Sự Cố (Monitoring)</span>
-        </button>
-        <button type="button" id="tabBtnHelpdeskRegister" class="schedule-tab-btn" onclick="switchHelpdeskTab('form')">
+        <button type="button" id="tabBtnHelpdeskRegister" class="schedule-tab-btn active" onclick="switchHelpdeskTab('form')">
           <i class="fa-solid fa-triangle-exclamation mr-1.5 text-amber-500"></i>
-          <span>2. Báo Sự Cố Mới (Tạo Ticket)</span>
+          <span>1. Báo Sự Cố Mới (Tạo Ticket)</span>
+        </button>
+        <button type="button" id="tabBtnHelpdeskList" class="schedule-tab-btn" onclick="switchHelpdeskTab('list')">
+          <i class="fa-solid fa-table-list mr-1.5 text-blue-600"></i>
+          <span>2. Bảng Theo Dõi Sự Cố (Monitoring)</span>
         </button>
       </div>
     </div>
 
-    <!-- ==================== TAB 1: BẢNG THEO DÕI SỰ CỐ TOÀN MÀN HÌNH (RỘNG 100% - CHỐNG BỂ CHỮ) ==================== -->
-    <section id="listSection" class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 sm:p-6 flex flex-col min-h-[640px] w-full">
-      
-      <!-- Header Bảng Monitoring -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-3">
-        <div>
-          <div class="flex flex-wrap items-center gap-2">
-            <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
-              <span class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center text-xs font-bold">
-                <i class="fa-solid fa-list-check"></i>
-              </span>
-              <span id="monitoringTitle">Bảng Theo Dõi & Hàng Đợi Xử Lý</span>
-            </h2>
-            <span id="roleScopeBadge" class="hidden"></span>
-          </div>
-          <p class="text-xs text-slate-500 mt-1" id="monitoringSubtitle">Tiến độ tiếp nhận & khắc phục sự cố theo thời gian thực</p>
-        </div>
-
-        <div class="flex items-center gap-2 self-start sm:self-auto">
-          <button onclick="fetchTickets(true)" id="btnRefresh"
-            class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center space-x-1.5 transition">
-            <i class="fa-solid fa-arrows-rotate" id="refreshIcon"></i>
-            <span>Làm mới dữ liệu</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- 4 Thẻ Thống Kê Mini -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 my-4">
-        <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex items-center justify-between">
-          <div>
-            <div class="text-[11px] font-semibold text-slate-500">Tổng Ticket</div>
-            <div id="statTotal" class="text-xl font-extrabold text-slate-900 mt-0.5">0</div>
-          </div>
-          <div class="w-8 h-8 rounded-xl bg-white text-slate-700 flex items-center justify-center text-sm shadow-xs border border-slate-200">
-            <i class="fa-solid fa-ticket"></i>
-          </div>
-        </div>
-
-        <div class="bg-amber-50/60 p-3 rounded-2xl border border-amber-200 flex items-center justify-between">
-          <div>
-            <div class="text-[11px] font-bold text-amber-800">Chờ Xử Lý</div>
-            <div id="statPending" class="text-xl font-extrabold text-amber-700 mt-0.5">0</div>
-          </div>
-          <div class="w-8 h-8 rounded-xl bg-white text-amber-600 flex items-center justify-center text-sm shadow-xs border border-amber-200">
-            <i class="fa-regular fa-clock"></i>
-          </div>
-        </div>
-
-        <div class="bg-sky-50/60 p-3 rounded-2xl border border-sky-200 flex items-center justify-between">
-          <div>
-            <div class="text-[11px] font-bold text-sky-800">Đang Xử Lý</div>
-            <div id="statProcessing" class="text-xl font-extrabold text-sky-700 mt-0.5">0</div>
-          </div>
-          <div class="w-8 h-8 rounded-xl bg-white text-sky-600 flex items-center justify-center text-sm shadow-xs border border-sky-200">
-            <i class="fa-solid fa-wrench"></i>
-          </div>
-        </div>
-
-        <div class="bg-emerald-50/60 p-3 rounded-2xl border border-emerald-200 flex items-center justify-between">
-          <div>
-            <div class="text-[11px] font-bold text-emerald-800">Đã Hoàn Thành</div>
-            <div id="statCompleted" class="text-xl font-extrabold text-emerald-700 mt-0.5">0</div>
-          </div>
-          <div class="w-8 h-8 rounded-xl bg-white text-emerald-600 flex items-center justify-center text-sm shadow-xs border border-emerald-200">
-            <i class="fa-regular fa-circle-check"></i>
-          </div>
-        </div>
-      </div>
-
-      <!-- Bộ Lọc Tìm Kiếm & Trạng Thái -->
-      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 mb-4">
-        <div class="relative flex-1">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-            <i class="fa-solid fa-magnifying-glass text-xs"></i>
-          </div>
-          <input type="text" id="filterSearch" oninput="renderTickets()" placeholder="Tìm theo tên người gửi, số ĐT, phòng ban, thông báo lỗi..."
-            class="w-full pl-8 pr-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600">
-        </div>
-
-        <select id="filterStatus" onchange="renderTickets()"
-          class="px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white text-slate-700 font-medium">
-          <option value="ALL">Tất cả trạng thái</option>
-          <option value="Chờ xử lý">Chỉ xem: Chờ xử lý</option>
-          <option value="Đang xử lý">Chỉ xem: Đang xử lý</option>
-          <option value="Đã hoàn thành">Chỉ xem: Đã hoàn thành</option>
-        </select>
-      </div>
-
-      <!-- BẢNG DANH SÁCH TICKET (CHẾ ĐỘ MÁY TÍNH / TABLET >= 768px) -->
-      <div class="helpdesk-desktop-table flex-1 overflow-x-auto rounded-2xl border border-slate-200">
-        <table class="w-full text-left border-collapse text-xs">
-          <thead class="bg-slate-50 text-slate-700 uppercase font-bold text-[10px] tracking-wider border-b border-slate-200">
-            <tr>
-              <th class="py-3 px-3 w-28 whitespace-nowrap">Mã Ticket</th>
-              <th class="py-3 px-3 w-52 min-w-[190px]">Người gửi / Tài khoản</th>
-              <th class="py-3 px-3 w-36 min-w-[140px]">Tên máy & Thiết bị</th>
-              <th class="py-3 px-3 min-w-[180px]">Nội dung sự cố</th>
-              <th class="py-3 px-3 w-20 text-center whitespace-nowrap">Ảnh lỗi</th>
-              <th class="py-3 px-3 w-28 text-center whitespace-nowrap">Trạng thái</th>
-              <th class="py-3 px-3 w-16 text-center whitespace-nowrap">Chi tiết</th>
-            </tr>
-          </thead>
-          <tbody id="ticketTableBody" class="divide-y divide-slate-100">
-            <tr>
-              <td colspan="7" class="text-center py-10 text-slate-400">
-                <i class="fa-solid fa-spinner fa-spin text-lg mb-2 text-blue-600"></i>
-                <div>Đang tải dữ liệu từ máy chủ...</div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- DANH SÁCH THẺ DỌC TỐI ƯU CHO ĐIỆN THOẠI (< 768px) -->
-      <div id="ticketCardsMobile" class="helpdesk-mobile-cards space-y-3">
-        <div class="text-center py-8 text-slate-400 bg-slate-50 rounded-2xl border border-slate-200">
-          <i class="fa-solid fa-spinner fa-spin text-lg mb-2 text-blue-600"></i>
-          <div class="text-xs font-medium">Đang tải dữ liệu từ máy chủ...</div>
-        </div>
-      </div>
-
-      <!-- Empty State khi không có kết quả -->
-      <div id="emptyTableState" class="hidden text-center py-12">
-        <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center text-xl mx-auto mb-2">
-          <i class="fa-solid fa-inbox"></i>
-        </div>
-        <div class="text-xs font-bold text-slate-700" id="emptyStateTitle">Chưa có ticket nào phù hợp</div>
-        <p class="text-[11px] text-slate-400 mt-0.5" id="emptyStateDesc">Không tìm thấy yêu cầu sự cố nào trong bộ lọc này.</p>
-        <div id="emptyStateAction" class="mt-3.5 hidden">
-          <button type="button" onclick="switchHelpdeskTab('form')" class="px-4 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-sm transition active:scale-95">
-            <i class="fa-solid fa-plus text-amber-400"></i> Báo sự cố mới ngay
-          </button>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- ==================== TAB 2: FORM BÁO SỰ CỐ MỚI (RỘNG RÃI & THOÁNG ĐÃNG - CHUẨN LỊCH TUẦN) ==================== -->
-    <section id="formSection" class="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-8 max-w-4xl mx-auto w-full" style="display: none;">
+    <!-- ==================== TAB 1: FORM BÁO SỰ CỐ MỚI (MẶC ĐỊNH) ==================== -->
+    <section id="formSection" class="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-8 max-w-4xl mx-auto w-full">
       
       <!-- Header Form có nút quay lại bảng sự cố -->
       <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
@@ -432,6 +294,144 @@
 
       </form>
     </section>
+
+    <!-- ==================== TAB 2: BẢNG THEO DÕI SỰ CỐ TOÀN MÀN HÌNH (MONITORING) ==================== -->
+    <section id="listSection" class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 sm:p-6 flex flex-col min-h-[640px] w-full" style="display: none;">
+      
+      <!-- Header Bảng Monitoring -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-3">
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+              <span class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center text-xs font-bold">
+                <i class="fa-solid fa-list-check"></i>
+              </span>
+              <span id="monitoringTitle">Bảng Theo Dõi & Hàng Đợi Xử Lý</span>
+            </h2>
+            <span id="roleScopeBadge" class="hidden"></span>
+          </div>
+          <p class="text-xs text-slate-500 mt-1" id="monitoringSubtitle">Tiến độ tiếp nhận & khắc phục sự cố theo thời gian thực</p>
+        </div>
+
+        <div class="flex items-center gap-2 self-start sm:self-auto">
+          <button onclick="fetchTickets(true)" id="btnRefresh"
+            class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center space-x-1.5 transition">
+            <i class="fa-solid fa-arrows-rotate" id="refreshIcon"></i>
+            <span>Làm mới dữ liệu</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 4 Thẻ Thống Kê Mini -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 my-4">
+        <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] font-semibold text-slate-500">Tổng Ticket</div>
+            <div id="statTotal" class="text-xl font-extrabold text-slate-900 mt-0.5">0</div>
+          </div>
+          <div class="w-8 h-8 rounded-xl bg-white text-slate-700 flex items-center justify-center text-sm shadow-xs border border-slate-200">
+            <i class="fa-solid fa-ticket"></i>
+          </div>
+        </div>
+
+        <div class="bg-amber-50/60 p-3 rounded-2xl border border-amber-200 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] font-bold text-amber-800">Chờ Xử Lý</div>
+            <div id="statPending" class="text-xl font-extrabold text-amber-700 mt-0.5">0</div>
+          </div>
+          <div class="w-8 h-8 rounded-xl bg-white text-amber-600 flex items-center justify-center text-sm shadow-xs border border-amber-200">
+            <i class="fa-regular fa-clock"></i>
+          </div>
+        </div>
+
+        <div class="bg-sky-50/60 p-3 rounded-2xl border border-sky-200 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] font-bold text-sky-800">Đang Xử Lý</div>
+            <div id="statProcessing" class="text-xl font-extrabold text-sky-700 mt-0.5">0</div>
+          </div>
+          <div class="w-8 h-8 rounded-xl bg-white text-sky-600 flex items-center justify-center text-sm shadow-xs border border-sky-200">
+            <i class="fa-solid fa-wrench"></i>
+          </div>
+        </div>
+
+        <div class="bg-emerald-50/60 p-3 rounded-2xl border border-emerald-200 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] font-bold text-emerald-800">Đã Hoàn Thành</div>
+            <div id="statCompleted" class="text-xl font-extrabold text-emerald-700 mt-0.5">0</div>
+          </div>
+          <div class="w-8 h-8 rounded-xl bg-white text-emerald-600 flex items-center justify-center text-sm shadow-xs border border-emerald-200">
+            <i class="fa-regular fa-circle-check"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bộ Lọc Tìm Kiếm & Trạng Thái -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 mb-4">
+        <div class="relative flex-1">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+          </div>
+          <input type="text" id="filterSearch" oninput="renderTickets()" placeholder="Tìm theo tên người gửi, số ĐT, phòng ban, thông báo lỗi..."
+            class="w-full pl-8 pr-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600">
+        </div>
+
+        <select id="filterStatus" onchange="renderTickets()"
+          class="px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white text-slate-700 font-medium">
+          <option value="ALL">Tất cả trạng thái</option>
+          <option value="Chờ xử lý">Chỉ xem: Chờ xử lý</option>
+          <option value="Đang xử lý">Chỉ xem: Đang xử lý</option>
+          <option value="Đã hoàn thành">Chỉ xem: Đã hoàn thành</option>
+        </select>
+      </div>
+
+      <!-- BẢNG DANH SÁCH TICKET (CHẾ ĐỘ MÁY TÍNH / TABLET >= 768px) -->
+      <div class="helpdesk-desktop-table flex-1 overflow-x-auto rounded-2xl border border-slate-200">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead class="bg-slate-50 text-slate-700 uppercase font-bold text-[10px] tracking-wider border-b border-slate-200">
+            <tr>
+              <th class="py-3 px-3 w-28 whitespace-nowrap">Mã Ticket</th>
+              <th class="py-3 px-3 w-52 min-w-[190px]">Người gửi / Tài khoản</th>
+              <th class="py-3 px-3 w-36 min-w-[140px]">Tên máy & Thiết bị</th>
+              <th class="py-3 px-3 min-w-[180px]">Nội dung sự cố</th>
+              <th class="py-3 px-3 w-20 text-center whitespace-nowrap">Ảnh lỗi</th>
+              <th class="py-3 px-3 w-28 text-center whitespace-nowrap">Trạng thái</th>
+              <th class="py-3 px-3 w-16 text-center whitespace-nowrap">Chi tiết</th>
+            </tr>
+          </thead>
+          <tbody id="ticketTableBody" class="divide-y divide-slate-100">
+            <tr>
+              <td colspan="7" class="text-center py-10 text-slate-400">
+                <i class="fa-solid fa-spinner fa-spin text-lg mb-2 text-blue-600"></i>
+                <div>Đang tải dữ liệu từ máy chủ...</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- DANH SÁCH THẺ DỌC TỐI ƯU CHO ĐIỆN THOẠI (< 768px) -->
+      <div id="ticketCardsMobile" class="helpdesk-mobile-cards space-y-3">
+        <div class="text-center py-8 text-slate-400 bg-slate-50 rounded-2xl border border-slate-200">
+          <i class="fa-solid fa-spinner fa-spin text-lg mb-2 text-blue-600"></i>
+          <div class="text-xs font-medium">Đang tải dữ liệu từ máy chủ...</div>
+        </div>
+      </div>
+
+      <!-- Empty State khi không có kết quả -->
+      <div id="emptyTableState" class="hidden text-center py-12">
+        <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center text-xl mx-auto mb-2">
+          <i class="fa-solid fa-inbox"></i>
+        </div>
+        <div class="text-xs font-bold text-slate-700" id="emptyStateTitle">Chưa có ticket nào phù hợp</div>
+        <p class="text-[11px] text-slate-400 mt-0.5" id="emptyStateDesc">Không tìm thấy yêu cầu sự cố nào trong bộ lọc này.</p>
+        <div id="emptyStateAction" class="mt-3.5 hidden">
+          <button type="button" onclick="switchHelpdeskTab('form')" class="px-4 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-sm transition active:scale-95">
+            <i class="fa-solid fa-plus text-amber-400"></i> Báo sự cố mới ngay
+          </button>
+        </div>
+      </div>
+
+    </section>
   </main>
 
   <!-- ================= POPUP XEM CHI TIẾT TICKET (DETAIL MODAL) ================= -->
@@ -509,40 +509,7 @@
           </div>
         </div>
 
-        <!-- Ghi chú IT -->
-        <div id="detailItNoteBox" class="p-3 rounded-2xl bg-sky-50 border border-sky-200 text-sky-900">
-          <div class="text-[10px] font-bold text-sky-700 uppercase tracking-wider mb-1 flex items-center gap-1">
-            <i class="fa-solid fa-wrench"></i> Tiến độ xử lý & Ghi chú IT
-          </div>
-          <div class="text-xs" id="detailItNote">Chưa có ghi chú xử lý từ IT.</div>
-        </div>
 
-        <!-- Bảng Phản Hồi Xử Lý Dành Riêng Cho Quản Trị Viên IT (quandtm) -->
-        <div id="detailAdminActionBox" class="hidden p-3.5 rounded-2xl bg-amber-50/80 border border-amber-300 text-amber-900 space-y-3">
-          <div class="text-[11px] font-bold text-amber-800 uppercase tracking-wider flex items-center justify-between">
-            <span class="flex items-center gap-1.5"><i class="fa-solid fa-user-shield text-amber-600"></i> Điều Phối & Phản Hồi IT (Đỗ Trọng Minh Quân)</span>
-            <span class="text-[10px] text-amber-800 font-bold bg-amber-200/80 px-2 py-0.5 rounded-full border border-amber-300">Admin Control</span>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <div>
-              <label class="block text-[11px] font-bold text-slate-700 mb-1">Cập nhật trạng thái:</label>
-              <select id="adminTicketStatusSelect" class="w-full text-xs font-bold rounded-xl border border-amber-300 p-2 bg-white text-slate-800 focus:ring-2 focus:ring-amber-500">
-                <option value="Chờ xử lý">⏳ Chờ xử lý</option>
-                <option value="Đang xử lý">🔧 Đang xử lý</option>
-                <option value="Đã hoàn thành">✅ Đã hoàn thành</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-slate-700 mb-1">Ghi chú xử lý / Hướng khắc phục:</label>
-              <input type="text" id="adminTicketNoteInput" placeholder="Ví dụ: Đã thay linh kiện / Đã cài lại driver..." class="w-full text-xs rounded-xl border border-amber-300 p-2 bg-white text-slate-800 focus:ring-2 focus:ring-amber-500">
-            </div>
-          </div>
-          <div class="flex justify-end">
-            <button type="button" id="btnAdminSaveTicket" onclick="handleAdminUpdateTicket()" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition inline-flex items-center gap-1.5 active:scale-95">
-              <i class="fa-solid fa-floppy-disk"></i> Lưu Trạng Thái & Ghi Chú IT
-            </button>
-          </div>
-        </div>
       </div>
 
       <!-- Modal Footer -->

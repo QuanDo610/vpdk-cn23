@@ -155,12 +155,16 @@ class TestRunner:
         print("==================================================================\n")
 
         # 1. Start Server & Headless Chrome
-        srv = subprocess.Popen(["python3", "-m", "http.server", str(PORT)],
+        chrome_bin = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+        if not os.path.exists(chrome_bin):
+            chrome_bin = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+
+        srv = subprocess.Popen([sys.executable, "-m", "http.server", str(PORT)],
                                cwd=WORKSPACE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         time.sleep(1)
 
         chrome_cmd = [
-            "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+            chrome_bin,
             "--headless=new",
             f"--remote-debugging-port={CDP_PORT}",
             "--disable-gpu",
@@ -318,31 +322,31 @@ class TestRunner:
         self.client.navigate(f"{BASE_URL}/it_helpdesk.html")
         time.sleep(1.2)
 
-        # TEST CASE IT-02: Default tab is Monitoring list
+        # TEST CASE IT-02: Default tab is Form Section (Báo sự cố mới)
         list_display = self.client.evaluate("document.getElementById('listSection').style.display")
         form_display = self.client.evaluate("document.getElementById('formSection').style.display")
         tab_list_active = self.client.evaluate("document.getElementById('tabBtnHelpdeskList').classList.contains('active')")
         tab_form_active = self.client.evaluate("document.getElementById('tabBtnHelpdeskRegister').classList.contains('active')")
         tab_form_exists = self.client.evaluate("document.getElementById('tabBtnHelpdeskRegister') != null")
 
-        self.assert_true(list_display != "none", "IT-02: #listSection hiển thị mặc định")
-        self.assert_equal(form_display, "none", "IT-02: #formSection ẩn mặc định")
-        self.assert_true(tab_list_active and not tab_form_active, "IT-02: Tab nút #tabBtnHelpdeskList có class active")
+        self.assert_true(form_display != "none", "IT-02: #formSection hiển thị mặc định (Báo sự cố trước)")
+        self.assert_equal(list_display, "none", "IT-02: #listSection ẩn mặc định (Monitoring sau)")
+        self.assert_true(tab_form_active and not tab_list_active, "IT-02: Tab nút #tabBtnHelpdeskRegister có class active")
         self.assert_true(tab_form_exists, "IT-02: Tab nút #tabBtnHelpdeskRegister điều hướng tạo ticket hiển thị")
 
-        # TEST CASE IT-03: Tab switching
-        self.client.evaluate("switchHelpdeskTab('form')")
+        # TEST CASE IT-03: Tab switching sang Monitoring
+        self.client.evaluate("switchHelpdeskTab('list')")
         form_display_switched = self.client.evaluate("document.getElementById('formSection').style.display")
         list_display_switched = self.client.evaluate("document.getElementById('listSection').style.display")
-        tab_form_active_switched = self.client.evaluate("document.getElementById('tabBtnHelpdeskRegister').classList.contains('active')")
-        self.assert_equal(form_display_switched, "block", "IT-03: Chuyển sang Tab 2 Form hiển thị")
-        self.assert_equal(list_display_switched, "none", "IT-03: Tab 1 Bảng bị ẩn")
-        self.assert_true(tab_form_active_switched, "IT-03: Nút Tab 2 có class active")
+        tab_list_active_switched = self.client.evaluate("document.getElementById('tabBtnHelpdeskList').classList.contains('active')")
+        self.assert_equal(list_display_switched, "flex", "IT-03: Chuyển sang Tab Monitoring hiển thị")
+        self.assert_equal(form_display_switched, "none", "IT-03: Tab Form bị ẩn")
+        self.assert_true(tab_list_active_switched, "IT-03: Nút Tab Monitoring có class active")
 
-        # Switch back
-        self.client.evaluate("switchHelpdeskTab('list')")
-        list_display_back = self.client.evaluate("document.getElementById('listSection').style.display")
-        self.assert_true(list_display_back != "none", "IT-03: Quay lại Tab 1 Bảng hoạt động mượt mà")
+        # Switch back to Form
+        self.client.evaluate("switchHelpdeskTab('form')")
+        form_display_back = self.client.evaluate("document.getElementById('formSection').style.display")
+        self.assert_equal(form_display_back, "block", "IT-03: Quay lại Tab Form hoạt động mượt mà")
 
         # TEST CASE IT-04: Canvas Image Compression & Ctrl + V simulation
         self.client.evaluate("switchHelpdeskTab('form')")
