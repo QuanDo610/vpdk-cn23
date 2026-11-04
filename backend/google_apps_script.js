@@ -838,7 +838,7 @@ function doGet(e) {
 
     // 4. LẤY DANH SÁCH NHIỆM VỤ GIAO VIỆC
     if (action === "getTasks") {
-      return jsonResponse(getTasksList(ss));
+      return jsonResponse(getTasksList(ss, params));
     }
 
     // 5. LẤY DANH SÁCH BÁO CÁO SỐ LIỆU CẤP TỔ
@@ -1502,14 +1502,85 @@ function handleDeleteTask(data, ss) {
   return { success: false, message: `Không tìm thấy nhiệm vụ ${taskId}` };
 }
 
-function getTasksList(ss) {
+/**
+ * Lấy danh sách nhiệm vụ giao việc có Phân Quyền Truy Cập 3 Tầng (RBAC):
+ * 1. Ban Giám đốc & Quản trị IT (Đỗ Trọng Minh Quân): Xem toàn bộ nhiệm vụ toàn đơn vị.
+ * 2. Lãnh đạo giao việc (leader): Xem các nhiệm vụ do chính mình phát lệnh.
+ * 3. Cán bộ nhận việc (assignee): Xem các nhiệm vụ được giao cho chính mình.
+ * 4. Tổ trưởng, Tổ phó của phòng ban người nhận việc: Xem các nhiệm vụ thuộc Tổ mình phụ trách.
+ * 5. Chuyên viên / nhân viên khác: Tuyệt đối không xem nhiệm vụ của người khác.
+ */
+function getTasksList(ss, params) {
+  params = params || {};
   const sheet = getTasksSheet(ss);
   const values = sheet.getDataRange().getDisplayValues();
   const tasks = [];
 
+  const reqUser = (params.username || "").toString().trim().toLowerCase();
+  const reqFullname = removeVietnameseTones((params.fullname || "").toString().trim().toLowerCase());
+  const reqPhone = (params.phone || "").toString().trim().replace(/^'+/, "").replace(/[\s\.\-]+/g, "").replace(/^0+/, "");
+  const reqPos = removeVietnameseTones((params.position || "").toString().trim().toLowerCase());
+  const reqDept = removeVietnameseTones((params.department || "").toString().trim().toLowerCase());
+
+  // 1. Quản trị IT Đỗ Trọng Minh Quân: 0973807027 / quandtm
+  const isITAdmin = (
+    reqPhone === "973807027" ||
+    reqPhone === "0973807027" ||
+    reqUser === "quandtm" ||
+    reqFullname.includes("do trong minh quan")
+  );
+
+  // 2. Ban Giám đốc: Toàn quyền xem mọi nhiệm vụ
+  const isBGD = (
+    reqDept.includes("ban giam doc") ||
+    reqPos.includes("giam doc") ||
+    reqPos.includes("pho giam doc") ||
+    reqFullname.includes("nguyen chien thang") ||
+    reqFullname.includes("dang huy cuong") ||
+    reqFullname.includes("nguyen thi le hang")
+  );
+
+  // 3. Tổ trưởng / Tổ phó
+  const isDeptLeader = (
+    reqPos.includes("to truong") ||
+    reqPos.includes("to pho") ||
+    reqPos.includes("truong phong") ||
+    reqPos.includes("pho phong")
+  );
+
+  const hasFilter = reqUser || reqFullname || reqPhone;
+
   for (let i = 1; i < values.length; i++) {
     const r = values[i];
     if (!r[0]) continue;
+
+    const taskLeader = removeVietnameseTones((r[1] || "").toString().trim().toLowerCase());
+    const taskAssignee = removeVietnameseTones((r[2] || "").toString().trim().toLowerCase());
+    const taskDept = removeVietnameseTones((r[4] || "").toString().trim().toLowerCase());
+
+    if (hasFilter && !isITAdmin && !isBGD) {
+      // a. Người phát lệnh giao việc
+      const isLeaderOfTask = reqFullname && (taskLeader.includes(reqFullname) || reqFullname.includes(taskLeader));
+
+      // b. Người được giao việc
+      const isAssignee = reqFullname && (taskAssignee === reqFullname || taskAssignee.includes(reqFullname) || reqFullname.includes(taskAssignee));
+
+      // c. Tổ trưởng, Tổ phó của phòng ban người được giao việc
+      let isLeaderOfAssigneeDept = false;
+      if (isDeptLeader && reqDept) {
+        isLeaderOfAssigneeDept = (
+          (reqDept.includes("dia chinh") && taskDept.includes("dia chinh")) ||
+          (reqDept.includes("dang ky") && taskDept.includes("dang ky")) ||
+          (reqDept.includes("hanh chinh") && taskDept.includes("hanh chinh")) ||
+          (reqDept === taskDept)
+        );
+      }
+
+      if (!isLeaderOfTask && !isAssignee && !isLeaderOfAssigneeDept) {
+        continue; // Bỏ qua nhiệm vụ không thuộc quyền xem
+      }
+    }
+
     const taskFileUrl = r[14] || "";
     tasks.push({
       id: r[0],

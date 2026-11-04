@@ -112,6 +112,48 @@ const STAFF_CN23 = [
   { id: "HCTH_22", name: "Đỗ Trọng Minh Quân", role: "Nhân viên", dept: "Tổ Hành chính Tổng hợp", note: "" }
 ];
 
+// Biến lưu danh sách nhân sự hiện hành (Khởi tạo từ danh sách mặc định, tự động đồng bộ từ Sheet TaiKhoan)
+let activeStaffList = [...STAFF_CN23];
+
+/**
+ * Tự động đồng bộ danh sách cán bộ thời gian thực từ Google Sheet (tab TaiKhoan)
+ * - Tự động nhận diện cán bộ mới bổ sung ngoài danh sách
+ * - Tự động lọc bỏ các cán bộ có trạng thái "Đã nghỉ"
+ * - Tự động gom nhóm theo Tổ và phân cấp chức danh
+ */
+async function syncStaffFromCloud() {
+  try {
+    const res = await fetch(`${SCRIPT_URL}?action=getUsers&t=${Date.now()}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.success && Array.isArray(data.data) && data.data.length > 0) {
+        const cloudStaff = data.data
+          .filter(u => {
+            const st = (u.status || "").trim().toLowerCase();
+            return st !== "đã nghỉ" && st !== "nghỉ việc" && st !== "thôi việc";
+          })
+          .map((u, idx) => ({
+            id: u.username || (`STAFF_${idx + 1}`),
+            name: u.fullname || "Cán bộ",
+            role: u.position || "Cán bộ",
+            dept: u.department || "Chi nhánh số 23",
+            note: ""
+          }));
+
+        if (cloudStaff.length > 0) {
+          activeStaffList = cloudStaff;
+          updateDeptFilterCounts();
+          const currentFilter = document.getElementById("filterStaffDept")?.value || "ALL";
+          populateStaffDropdown(currentFilter);
+          console.log(`Đã nạp động thành công ${cloudStaff.length} cán bộ từ Sheet TaiKhoan.`);
+        }
+      }
+    }
+  } catch (err) {
+    console.log("Nạp danh sách cán bộ từ bộ nhớ dự phòng (offline mode):", err);
+  }
+}
+
 const STORAGE_KEY_TASKS = "CN23_TASK_ASSIGNMENTS_V1";
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLjARkYWp2TegCCdMcfVc3W6qQm6PmhFz71-y8zB_xFXxXbRXpsUhk6aPbJtqVqUHE/exec";
 let currentViewingTaskId = null;
@@ -120,7 +162,10 @@ let attachedFileInfo = null;
 // Đồng bộ Cloud Google Apps Script
 async function syncTasksFromCloud() {
   try {
-    const res = await fetch(`${SCRIPT_URL}?action=getTasks`);
+    const user = (typeof FamilyAuth !== "undefined" && FamilyAuth.getUser()) || 
+                 JSON.parse(sessionStorage.getItem("currentUser") || sessionStorage.getItem("family_user") || "null");
+    const authQuery = user ? `&username=${encodeURIComponent(user.username || "")}&fullname=${encodeURIComponent(user.fullname || user.name || "")}&phone=${encodeURIComponent(user.phone || "")}&position=${encodeURIComponent(user.position || "")}&department=${encodeURIComponent(user.department || "")}` : "";
+    const res = await fetch(`${SCRIPT_URL}?action=getTasks&t=${Date.now()}${authQuery}`);
     if (res.ok) {
       const result = await res.json();
       if (result.success && Array.isArray(result.data) && result.data.length > 0) {
@@ -186,6 +231,48 @@ function showToast(message, type = "info") {
 // ========================================================
 // 2. KHỞI TẠO PHIÊN ĐĂNG NHẬP (USER SESSION)
 // ========================================================
+/**
+ * Hiển thị Huy hiệu phạm vi vai trò (Role Scope Badge) và kiểm soát nút nguy hiểm
+ */
+function updateTaskRoleScopeBadge(user) {
+  const badgeEl = document.getElementById("taskRoleScopeBadge");
+  const btnClearAll = document.getElementById("btnClearAllTasks");
+  if (!user) return;
+
+  const myName = removeVietnameseTones(user.fullname || user.name || "");
+  const myUsername = (user.username || "").toLowerCase().trim();
+  const myPhone = normalizePhone(user.phone || "");
+  const myPos = removeVietnameseTones(user.position || user.chuc_vu || "");
+  const myDept = removeVietnameseTones(user.department || user.don_vi || user.dept || "");
+
+  const isITAdmin = (myPhone === "973807027" || myPhone === "0973807027" || myUsername === "quandtm" || myName.includes("do trong minh quan"));
+  const isBGD = (myDept.includes("ban giam doc") || myPos.includes("giam doc") || myPos.includes("pho giam doc") || myName.includes("nguyen chien thang") || myName.includes("dang huy cuong") || myName.includes("nguyen thi le hang"));
+  const isDeptLeader = (myPos.includes("to truong") || myPos.includes("to pho") || myPos.includes("truong phong") || myPos.includes("pho phong"));
+
+  // Chỉ Admin và Ban Giám đốc mới có nút Xóa tất cả
+  if (btnClearAll) {
+    if (isITAdmin || isBGD) {
+      btnClearAll.classList.remove("hidden");
+    } else {
+      btnClearAll.classList.add("hidden");
+    }
+  }
+
+  if (badgeEl) {
+    badgeEl.classList.remove("hidden");
+    if (isITAdmin || isBGD) {
+      badgeEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs";
+      badgeEl.innerHTML = '<i class="fa-solid fa-shield-halved text-amber-600"></i> Quản trị / Ban Giám đốc (Theo dõi & điều phối toàn đơn vị)';
+    } else if (isDeptLeader) {
+      badgeEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-300 shadow-2xs";
+      badgeEl.innerHTML = `<i class="fa-solid fa-user-group text-purple-600"></i> Lãnh đạo Tổ: <strong>${user.department || "Tổ chuyên môn"}</strong> (Theo dõi cán bộ trong tổ)`;
+    } else {
+      badgeEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-300 shadow-2xs";
+      badgeEl.innerHTML = '<i class="fa-solid fa-user-check text-blue-600"></i> Cán bộ nhận việc (Chỉ xem nhiệm vụ của đồng chí)';
+    }
+  }
+}
+
 function initUserSession() {
   try {
     const user = (typeof FamilyAuth !== "undefined" && FamilyAuth.getUser()) || 
@@ -197,6 +284,8 @@ function initUserSession() {
       const roleEl = document.getElementById("headerUserRole");
       if (nameEl) nameEl.textContent = userName;
       if (roleEl) roleEl.textContent = userRole;
+
+      updateTaskRoleScopeBadge(user);
 
       const leaderSelect = document.getElementById("assignLeader");
       if (leaderSelect) {
@@ -230,18 +319,70 @@ function initUserSession() {
 // ========================================================
 // 3. DROPDOWN DANH SÁCH 82 CÁN BỘ
 // ========================================================
+/**
+ * Tự động cập nhật số lượng nhân sự hiển thị trên dropdown Lọc Tổ
+ */
+function updateDeptFilterCounts() {
+  const deptFilter = document.getElementById("filterStaffDept");
+  if (!deptFilter) return;
+
+  const total = activeStaffList.length;
+  for (let opt of deptFilter.options) {
+    if (opt.value === "ALL") {
+      opt.textContent = `-- Tất cả cán bộ trong cơ quan (${total} nhân sự) --`;
+    } else {
+      const count = activeStaffList.filter(s => {
+        const d = (s.dept || "").trim().toLowerCase();
+        const target = opt.value.trim().toLowerCase();
+        return d === target || d.includes(target) || target.includes(d);
+      }).length;
+      opt.textContent = `${opt.value} (${count})`;
+    }
+  }
+}
+
 function populateStaffDropdown(filterDept = "ALL") {
   const staffSelect = document.getElementById("assignStaff");
   if (!staffSelect) return;
   staffSelect.innerHTML = '<option value="" disabled selected>-- Chọn cán bộ nhận việc --</option>';
 
-  const depts = filterDept === "ALL"
-    ? ["Tổ Kỹ thuật Địa chính và Lưu trữ", "Tổ Đăng ký cấp GCN", "Tổ Hành chính Tổng hợp", "Ban Giám đốc"]
+  // Lấy tất cả các Tổ/Bộ phận thực tế đang có từ danh sách nhân sự hiện hành
+  const rawDepts = Array.from(new Set(activeStaffList.map(s => (s.dept || "Chi nhánh số 23").trim()))).filter(Boolean);
+
+  // Sắp xếp thứ tự ưu tiên các tổ quen thuộc lên trước:
+  const priorityOrder = ["Ban Giám đốc", "Tổ Kỹ thuật Địa chính và Lưu trữ", "Tổ Đăng ký cấp GCN", "Tổ Hành chính Tổng hợp"];
+  rawDepts.sort((a, b) => {
+    const idxA = priorityOrder.findIndex(p => a.toLowerCase().includes(p.toLowerCase()));
+    const idxB = priorityOrder.findIndex(p => b.toLowerCase().includes(p.toLowerCase()));
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    return a.localeCompare(b, "vi");
+  });
+
+  const depts = (filterDept === "ALL" || !filterDept)
+    ? rawDepts
     : [filterDept];
 
   depts.forEach(deptName => {
-    const staffInDept = STAFF_CN23.filter(s => s.dept === deptName);
+    const staffInDept = activeStaffList.filter(s => {
+      const d = (s.dept || "").trim().toLowerCase();
+      const target = deptName.trim().toLowerCase();
+      return d === target || d.includes(target) || target.includes(d);
+    });
+
     if (staffInDept.length > 0) {
+      // Sắp xếp trong tổ theo thứ bậc chức vụ: Giám đốc -> Phó Giám đốc -> Tổ trưởng -> Tổ phó -> Chuyên viên -> Nhân viên
+      const rankOrder = ["giám đốc", "phó giám đốc", "tổ trưởng", "tổ phó", "chuyên viên", "nhân viên", "cán bộ"];
+      staffInDept.sort((a, b) => {
+        const rA = rankOrder.findIndex(r => (a.role || "").toLowerCase().includes(r));
+        const rB = rankOrder.findIndex(r => (b.role || "").toLowerCase().includes(r));
+        const rankA = rA !== -1 ? rA : 99;
+        const rankB = rB !== -1 ? rB : 99;
+        if (rankA !== rankB) return rankA - rankB;
+        return (a.name || "").localeCompare(b.name || "", "vi");
+      });
+
       const optGroup = document.createElement("optgroup");
       optGroup.label = `${deptName} (${staffInDept.length} nhân sự)`;
       staffInDept.forEach(staff => {
@@ -267,6 +408,106 @@ function removeAttachedFile() {
 }
 
 // ========================================================
+// Chuẩn hóa bỏ dấu tiếng Việt để tìm kiếm & so khớp an toàn
+function removeVietnameseTones(str) {
+  if (!str) return "";
+  str = String(str).normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  str = str.replace(/[đĐ]/g, "d");
+  return str.toLowerCase().trim();
+}
+
+// Chuẩn hóa số điện thoại để so sánh an toàn
+function normalizePhone(p) {
+  if (!p) return "";
+  return String(p).replace(/^'+/, "").replace(/[\s\.\-]+/g, "").replace(/^0+/, "");
+}
+
+/**
+ * Rào chắn Phân Quyền Truy Cập Nhiệm Vụ Giao Việc (RBAC 3 Tầng):
+ * 1. Ban Giám đốc & Quản trị IT (Đỗ Trọng Minh Quân): Xem toàn bộ nhiệm vụ toàn đơn vị.
+ * 2. Lãnh đạo phát lệnh giao việc (task.leader): Xem nhiệm vụ do chính mình phát lệnh.
+ * 3. Cán bộ trực tiếp nhận việc (task.assigneeName / task.assigneeId): Xem nhiệm vụ của mình.
+ * 4. Tổ trưởng, Tổ phó của phòng ban người nhận việc: Xem tất cả nhiệm vụ thuộc Tổ mình.
+ * 5. Chuyên viên / nhân viên khác: Tuyệt đối không xem nhiệm vụ của người khác.
+ */
+function canUserViewTask(user, task) {
+  if (!user || !task) return false;
+
+  const myName = removeVietnameseTones(user.fullname || user.name || "");
+  const myUsername = (user.username || "").toLowerCase().trim();
+  const myPhone = normalizePhone(user.phone || "");
+  const myPos = removeVietnameseTones(user.position || user.chuc_vu || "");
+  const myDept = removeVietnameseTones(user.department || user.don_vi || user.dept || "");
+
+  // 1. Quản trị viên IT Đỗ Trọng Minh Quân: Nhận diện mỏ neo cứng 0973807027 / quandtm
+  if (
+    myPhone === "973807027" ||
+    myPhone === "0973807027" ||
+    myUsername === "quandtm" ||
+    myName.includes("do trong minh quan")
+  ) {
+    return true;
+  }
+
+  // 2. Ban Giám đốc: Toàn quyền chỉ đạo & giám sát toàn cơ quan
+  if (
+    myDept.includes("ban giam doc") ||
+    myPos.includes("giam doc") ||
+    myPos.includes("pho giam doc") ||
+    myName.includes("nguyen chien thang") ||
+    myName.includes("dang huy cuong") ||
+    myName.includes("nguyen thi le hang")
+  ) {
+    return true;
+  }
+
+  // 3. Người phát lệnh giao việc (Lãnh đạo giao việc)
+  const taskLeader = removeVietnameseTones(task.leader || "");
+  if (taskLeader && myName && (taskLeader.includes(myName) || myName.includes(taskLeader))) {
+    return true;
+  }
+
+  // 4. Người được giao việc (Assignee)
+  const taskAssignee = removeVietnameseTones(task.assigneeName || "");
+  const taskAssigneeId = (task.assigneeId || "").toLowerCase().trim();
+  if (
+    (taskAssignee && myName && (taskAssignee === myName || taskAssignee.includes(myName) || myName.includes(taskAssignee))) ||
+    (taskAssigneeId && myUsername && (taskAssigneeId === myUsername || taskAssigneeId.includes(myUsername)))
+  ) {
+    return true;
+  }
+
+  // 5. Tổ trưởng & Tổ phó của phòng ban của người được giao việc
+  const isDeptLeader = myPos.includes("to truong") || myPos.includes("to pho") || 
+                       myPos.includes("truong phong") || myPos.includes("pho phong");
+
+  if (isDeptLeader && myDept) {
+    const taskDept = removeVietnameseTones(task.assigneeDept || "");
+    const isSameDept = (
+      (myDept.includes("dia chinh") && taskDept.includes("dia chinh")) ||
+      (myDept.includes("dang ky") && taskDept.includes("dang ky")) ||
+      (myDept.includes("hanh chinh") && taskDept.includes("hanh chinh")) ||
+      (myDept === taskDept)
+    );
+    if (isSameDept) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Trả về danh sách nhiệm vụ đã qua bộ lọc phân quyền RBAC
+ */
+function getVisibleTasks() {
+  const allTasks = getStoredTasks();
+  const user = (typeof FamilyAuth !== "undefined" && FamilyAuth.getUser()) || 
+               JSON.parse(sessionStorage.getItem("currentUser") || sessionStorage.getItem("family_user") || "null");
+  if (!user) return [];
+  return allTasks.filter(t => canUserViewTask(user, t));
+}
+
 // 4. QUẢN LÝ DỮ LIỆU & BẢNG TIẾN ĐỘ
 // ========================================================
 function getStoredTasks() {
@@ -281,7 +522,7 @@ function saveStoredTasks(tasks) {
 }
 
 function updateTaskKPIs() {
-  const tasks = getStoredTasks();
+  const tasks = getVisibleTasks();
   const total = tasks.length;
   const completed = tasks.filter(t => t.status === "Đã hoàn thành").length;
 
@@ -327,7 +568,7 @@ function updateTaskKPIs() {
 }
 
 function renderTasksTable() {
-  const tasks = getStoredTasks();
+  const tasks = getVisibleTasks();
   const filterStatus = document.getElementById("filterTaskStatus")?.value || "ALL";
   const filterDept = document.getElementById("filterTaskDept")?.value || "ALL";
   const searchTerm = (document.getElementById("searchTaskInput")?.value || "").toLowerCase().trim();
@@ -490,9 +731,15 @@ function deleteTask(id) {
 }
 
 function openTaskModal(id) {
+  const user = (typeof FamilyAuth !== "undefined" && FamilyAuth.getUser()) || 
+               JSON.parse(sessionStorage.getItem("currentUser") || sessionStorage.getItem("family_user") || "null");
   const tasks = getStoredTasks();
   const t = tasks.find(item => item.id === id);
   if (!t) return;
+  if (user && !canUserViewTask(user, t)) {
+    showToast("Đồng chí không có quyền xem chi tiết nhiệm vụ này!", "error");
+    return;
+  }
 
   currentViewingTaskId = id;
   const mtId = document.getElementById("modalTaskId");
@@ -655,6 +902,7 @@ function printSingleTask(id) {
 window.addEventListener("DOMContentLoaded", () => {
   initUserSession();
   populateStaffDropdown();
+  syncStaffFromCloud();
   updateTaskKPIs();
   renderTasksTable();
   syncTasksFromCloud();
@@ -674,7 +922,7 @@ window.addEventListener("DOMContentLoaded", () => {
   if (staffSelect) {
     staffSelect.addEventListener("change", () => {
       const selectedId = staffSelect.value;
-      const staff = STAFF_CN23.find(s => s.id === selectedId);
+      const staff = activeStaffList.find(s => s.id === selectedId);
       if (staff && staffDetailHint) {
         staffDetailHint.innerHTML = `<span class="inline-flex items-center gap-1.5"><i class="fa-solid fa-id-badge text-amber-500"></i> <strong>Tổ:</strong> ${staff.dept} | <strong>Chức vụ:</strong> ${staff.role} ${staff.note ? `<span class="text-rose-600 font-bold">(${staff.note})</span>` : ""}</span>`;
       }
@@ -744,7 +992,7 @@ window.addEventListener("DOMContentLoaded", () => {
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       const staffId = staffSelect?.value;
-      const staff = STAFF_CN23.find(s => s.id === staffId);
+      const staff = activeStaffList.find(s => s.id === staffId);
       if (!staff) {
         showToast("Vui lòng chọn cán bộ tiếp nhận việc!", "error");
         return;
