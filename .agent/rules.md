@@ -13,8 +13,9 @@
    - Dự án **KHÔNG áp dụng quy trình 5 giai đoạn cứng nhắc (Analyst &rarr; Design &rarr; Coding &rarr; Testing &rarr; Maintenance)** và **không yêu cầu phải viết tài liệu đặc tả (Spec) phức tạp** trước khi thực hiện.
    - Quy trình làm việc là **Agile Pair-Programming trực tiếp với Người dùng**: Nhận yêu cầu &rarr; Áp dụng ngay bộ quy chuẩn Frontend có sẵn &rarr; Chỉnh sửa mã nguồn sạch &rarr; Kiểm thử kiểm tra tại chỗ (Local Test) &rarr; Bàn giao nhanh gọn.
 
-2. **Kế thừa tối đa bộ khung Frontend chuẩn hóa:**
+2. **Kế thừa tối đa bộ khung Frontend chuẩn hóa & Đọc kỹ `.agent/skill.md`:**
    - Đã có sẵn hệ thống nền tảng: Bố cục App Shell ([`js/layout.js`](file:///Users/admin/Desktop/FAMILY_CN23/js/layout.js)), Khung cơ sở ([`css/base.css`](file:///Users/admin/Desktop/FAMILY_CN23/css/base.css)), Tokens ([`css/variables.css`](file:///Users/admin/Desktop/FAMILY_CN23/css/variables.css)), Route Guard ([`js/auth.js`](file:///Users/admin/Desktop/FAMILY_CN23/js/auth.js)). Mọi tính năng mới chỉ cần kế thừa, không phát minh lại bộ khung.
+   - **QUY TẮC BẮT BUỘC:** Trước khi tạo mới, sửa đổi hoặc tối ưu bất kỳ file HTML, CSS, JS nào, Agent **bắt buộc phải đọc và tuân thủ cẩm nang kiến trúc & Best Practice tại [`.agent/skill.md`](file:///Users/admin/Desktop/FAMILY_CN23/.agent/skill.md)**.
 
 3. **Kỷ luật Git nghiêm ngặt (Quy tắc 9):**
    - **TUYỆT ĐỐI KHÔNG tự ý thực hiện `git push`** lên remote repository khi chưa có lệnh rõ ràng từ người dùng. Mọi thao tác lập trình, chạy kiểm thử, chỉnh sửa file đều phải thực hiện an toàn tại Local Workspace.
@@ -92,7 +93,8 @@ Mọi phân hệ đều phải bọc nội dung chính trong thẻ:
 FAMILY_CN23/
 │
 ├── .agent/
-│   └── rules.md                # QUY CHUẨN DUY NHẤT & TỐI THƯỢNG (Single Source of Truth)
+│   ├── rules.md                # QUY CHUẨN DUY NHẤT & TỐI THƯỢNG (Single Source of Truth)
+│   └── skill.md                # CẨM NANG KIẾN TRÚC & BEST PRACTICE FRONT-END (Đọc trước khi code)
 │
 ├── index.html                  # Phân hệ 0: Cổng Dịch Vụ & Đăng nhập Hệ Thống (Hub)
 ├── lich_tuan.html              # Phân hệ 1: Đăng ký lịch công tác tuần & Xuất Word NĐ 30
@@ -200,6 +202,7 @@ FAMILY_CN23/
 
 | STT | Tiêu chí kiểm tra | Tiêu chuẩn bắt buộc |
 |:---:|:---|:---|
+| 0 | **Đọc skill.md** | Đã tham chiếu cẩm nang [`.agent/skill.md`](file:///Users/admin/Desktop/FAMILY_CN23/.agent/skill.md) trước khi code. |
 | 1 | **Route Guard** | File HTML con có `<script src="js/auth.js"></script><script>FamilyAuth.requireAuth();</script>` trong `<head>`. |
 | 2 | **Session chuẩn** | Đọc ghi session thông qua `family_user`, không dùng key rác. |
 | 3 | **Bảo mật PII** | 0 visible CCCD trên UI, không gửi CCCD trong payload hay URL. |

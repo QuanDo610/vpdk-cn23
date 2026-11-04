@@ -157,9 +157,15 @@ const STORAGE_KEY_TASKS = "CN23_TASK_ASSIGNMENTS_V1";
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLjARkYWp2TegCCdMcfVc3W6qQm6PmhFz71-y8zB_xFXxXbRXpsUhk6aPbJtqVqUHE/exec";
 let currentViewingTaskId = null;
 let attachedFileInfo = null;
+let taskCurrentPage = 1;
+let taskPageSize = 10;
 
-// Đồng bộ Cloud Google Apps Script
-async function syncTasksFromCloud() {
+// Đồng bộ Cloud Google Apps Script & Xóa cache dữ liệu cũ
+async function syncTasksFromCloud(forceRefresh = false) {
+  const refreshBtn = document.getElementById("btnRefreshTasks");
+  const refreshIcon = refreshBtn?.querySelector("i");
+  if (refreshIcon) refreshIcon.classList.add("fa-spin");
+
   try {
     const user = (typeof FamilyAuth !== "undefined" && FamilyAuth.getUser()) || 
                  JSON.parse(sessionStorage.getItem("currentUser") || sessionStorage.getItem("family_user") || "null");
@@ -167,19 +173,24 @@ async function syncTasksFromCloud() {
     const res = await fetch(`${SCRIPT_URL}?action=getTasks&t=${Date.now()}${authQuery}`);
     if (res.ok) {
       const result = await res.json();
-      if (result.success && Array.isArray(result.data) && result.data.length > 0) {
-        const local = getStoredTasks();
-        const mergedMap = new Map();
-        local.forEach(t => mergedMap.set(t.id, t));
-        result.data.forEach(t => mergedMap.set(t.id, t));
-        const merged = Array.from(mergedMap.values());
-        localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(merged));
+      if (result.success && Array.isArray(result.data)) {
+        // Ghi đè trực tiếp danh sách chuẩn từ Google Sheet để xóa hoàn toàn các task đã xóa (chống dính cache)
+        localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(result.data));
+        taskCurrentPage = 1;
         updateTaskKPIs();
         renderTasksTable();
+        if (forceRefresh) {
+          showToast("Đã làm mới dữ liệu và xóa bộ nhớ đệm thành công!", "success");
+        }
       }
+    } else {
+      if (forceRefresh) showToast("Không thể kết nối đến máy chủ Cloud!", "error");
     }
   } catch (err) {
-    console.log("Cloud tasks sync offline mode");
+    console.log("Cloud tasks sync offline mode:", err);
+    if (forceRefresh) showToast("Lỗi kết nối máy chủ Cloud!", "error");
+  } finally {
+    if (refreshIcon) refreshIcon.classList.remove("fa-spin");
   }
 }
 
@@ -192,13 +203,17 @@ async function syncTaskToCloud(action, payload) {
     });
     const result = await res.json();
     if (result && result.fileUrl && payload && payload.id) {
-      const tasks = getStoredTasks();
-      const t = tasks.find(item => item.id === payload.id);
-      if (t) {
-        t.fileUrl = result.fileUrl;
-        if (t.attachedFile) t.attachedFile.url = result.fileUrl;
-        saveStoredTasks(tasks);
-        renderTasksTable();
+      if (result.fileUrl.startsWith("http")) {
+        const tasks = getStoredTasks();
+        const t = tasks.find(item => item.id === payload.id);
+        if (t) {
+          t.fileUrl = result.fileUrl;
+          if (t.attachedFile) t.attachedFile.url = result.fileUrl;
+          saveStoredTasks(tasks);
+          renderTasksTable();
+        }
+      } else {
+        console.warn("Lưu ý từ Google Apps Script khi upload file:", result.fileUrl);
       }
     }
     return result;
@@ -366,22 +381,12 @@ function canAssignTaskTo(assigner, targetStaff) {
  */
 function updateTaskRoleScopeBadge(user) {
   const badgeEl = document.getElementById("taskRoleScopeBadge");
-  const btnClearAll = document.getElementById("btnClearAllTasks");
   if (!user) return;
 
   const userRank = getUserRank(user);
   const isITAdmin = (userRank === 0);
   const isBGD = (userRank === 1 || userRank === 2);
   const isDeptLeader = (userRank === 3 || userRank === 4);
-
-  // Chỉ Admin và Ban Giám đốc mới có nút Xóa tất cả
-  if (btnClearAll) {
-    if (isITAdmin || isBGD) {
-      btnClearAll.classList.remove("hidden");
-    } else {
-      btnClearAll.classList.add("hidden");
-    }
-  }
 
   if (badgeEl) {
     badgeEl.classList.remove("hidden");
@@ -422,6 +427,37 @@ function initUserSession() {
       const btnQuickOpenAssign = document.getElementById("btnQuickOpenAssign");
       const panelAssign = document.getElementById("panelAssign");
       const panelTracking = document.getElementById("panelTracking");
+
+      // Rào chắn bảo mật: Bộ lọc Tổ chuyên môn trên Bảng theo dõi tiến độ
+      // - Chuyên viên/Nhân viên thường (userRank >= 5): Tuyệt đối ẨN bộ lọc Tổ chuyên môn
+      // - Tổ trưởng / Tổ phó (userRank 3, 4): Hiển thị và CỐ ĐỊNH theo đúng tổ của mình
+      // - Ban Giám đốc & IT Admin (userRank <= 2): Mở toàn quyền xem và chọn các tổ
+      const filterTaskDeptWrapper = document.getElementById("filterTaskDeptWrapper");
+      const filterTaskDeptSelect = document.getElementById("filterTaskDept");
+
+      if (userRank >= 5) {
+        if (filterTaskDeptWrapper) filterTaskDeptWrapper.classList.add("hidden");
+        if (filterTaskDeptSelect) filterTaskDeptSelect.value = "ALL";
+      } else if (userRank === 3 || userRank === 4) {
+        if (filterTaskDeptWrapper) filterTaskDeptWrapper.classList.remove("hidden");
+        if (filterTaskDeptSelect) {
+          for (let i = 0; i < filterTaskDeptSelect.options.length; i++) {
+            const optVal = filterTaskDeptSelect.options[i].value;
+            if (optVal !== "ALL" && isSameDepartment(optVal, userDept)) {
+              filterTaskDeptSelect.selectedIndex = i;
+              break;
+            }
+          }
+          filterTaskDeptSelect.disabled = true;
+          filterTaskDeptSelect.classList.add("bg-slate-100", "cursor-not-allowed", "opacity-90");
+        }
+      } else {
+        if (filterTaskDeptWrapper) filterTaskDeptWrapper.classList.remove("hidden");
+        if (filterTaskDeptSelect) {
+          filterTaskDeptSelect.disabled = false;
+          filterTaskDeptSelect.classList.remove("bg-slate-100", "cursor-not-allowed", "opacity-90");
+        }
+      }
 
       if (!isLeader) {
         if (tabBtnAssign) tabBtnAssign.style.display = "none";
@@ -629,6 +665,23 @@ function removeAttachedFile() {
   if (fileLabel) fileLabel.textContent = "Nhấp để chọn tệp từ máy tính...";
 }
 
+/**
+ * Chuyển đổi mọi đường link Google Drive thành đường link TỰ ĐỘNG TẢI TRỰC TIẾP (Direct Download)
+ * Bấm vào là trình duyệt lập tức tải file về máy tính, không mở trang xem trước.
+ */
+function getDirectDownloadUrl(url) {
+  if (!url) return "";
+  const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (match && match[1]) {
+    return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+  }
+  const matchId = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (matchId && matchId[1] && url.includes("drive.google.com")) {
+    return `https://drive.google.com/uc?export=download&id=${matchId[1]}`;
+  }
+  return url;
+}
+
 
 
 /**
@@ -776,6 +829,74 @@ function updateTaskKPIs() {
   }
 }
 
+function changeTaskPage(page) {
+  taskCurrentPage = page;
+  renderTasksTable();
+  const tableTop = document.getElementById("panelTracking");
+  if (tableTop) {
+    tableTop.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+window.changeTaskPage = changeTaskPage;
+
+function renderPagination(totalCount, startIndex, currentCount, currentPage, totalPages) {
+  const infoEl = document.getElementById("paginationInfo");
+  const controlsEl = document.getElementById("paginationControls");
+  if (!infoEl || !controlsEl) return;
+
+  if (totalCount === 0) {
+    infoEl.textContent = "Hiển thị 0 - 0 trong tổng số 0 nhiệm vụ";
+    controlsEl.innerHTML = "";
+    return;
+  }
+
+  const end = startIndex + currentCount;
+  infoEl.textContent = `Hiển thị ${startIndex + 1} - ${end} trong tổng số ${totalCount} nhiệm vụ`;
+
+  if (totalPages <= 1) {
+    controlsEl.innerHTML = "";
+    return;
+  }
+
+  let html = "";
+  // Nút Trước (Prev)
+  html += `
+    <button type="button" class="px-2.5 py-1 rounded-lg border text-xs font-semibold transition ${currentPage <= 1 ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" : "bg-white text-slate-700 hover:bg-slate-100 border-slate-300"}"
+            ${currentPage <= 1 ? "disabled" : `onclick="changeTaskPage(${currentPage - 1})"`}>
+      <i class="fa-solid fa-chevron-left mr-1"></i> Trước
+    </button>
+  `;
+
+  // Các nút số trang
+  for (let p = 1; p <= totalPages; p++) {
+    if (totalPages > 7) {
+      if (p !== 1 && p !== totalPages && Math.abs(p - currentPage) > 2) {
+        if (p === 2 || p === totalPages - 1) {
+          html += `<span class="px-1 text-slate-400">...</span>`;
+        }
+        continue;
+      }
+    }
+    const isActive = p === currentPage;
+    html += `
+      <button type="button" class="w-7 h-7 rounded-lg text-xs font-bold transition flex items-center justify-center ${isActive ? "bg-blue-600 text-white shadow-2xs" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-300"}"
+              onclick="changeTaskPage(${p})">
+        ${p}
+      </button>
+    `;
+  }
+
+  // Nút Sau (Next)
+  html += `
+    <button type="button" class="px-2.5 py-1 rounded-lg border text-xs font-semibold transition ${currentPage >= totalPages ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" : "bg-white text-slate-700 hover:bg-slate-100 border-slate-300"}"
+            ${currentPage >= totalPages ? "disabled" : `onclick="changeTaskPage(${currentPage + 1})"`}>
+      Sau <i class="fa-solid fa-chevron-right ml-1"></i>
+    </button>
+  `;
+
+  controlsEl.innerHTML = html;
+}
+
 function renderTasksTable() {
   const tasks = getVisibleTasks();
   const filterStatus = document.getElementById("filterTaskStatus")?.value || "ALL";
@@ -797,7 +918,7 @@ function renderTasksTable() {
   }
 
   if (filterDept !== "ALL") {
-    filtered = filtered.filter(t => t.assigneeDept === filterDept);
+    filtered = filtered.filter(t => isSameDepartment(t.assigneeDept || "", filterDept));
   }
 
   if (searchTerm) {
@@ -810,20 +931,34 @@ function renderTasksTable() {
     );
   }
 
-  if (filtered.length === 0) {
+  const totalTasks = filtered.length;
+  const totalPages = Math.ceil(totalTasks / taskPageSize) || 1;
+  if (taskCurrentPage > totalPages) taskCurrentPage = totalPages;
+  if (taskCurrentPage < 1) taskCurrentPage = 1;
+
+  if (totalTasks === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="10" class="text-center py-12 text-slate-400">
+        <td colspan="7" class="text-center py-12 text-slate-400">
           <i class="fa-solid fa-inbox text-3xl mb-2 text-slate-300 block"></i>
           <span>Chưa có nhiệm vụ giao việc nào phù hợp với bộ lọc hiện tại.</span>
         </td>
       </tr>`;
+    renderPagination(0, 0, 0, 1, 1);
     return;
   }
 
+  const startIndex = (taskCurrentPage - 1) * taskPageSize;
+  const pageTasks = filtered.slice(startIndex, startIndex + taskPageSize);
   const now = new Date();
 
-  filtered.forEach((t) => {
+  const currentUser = (typeof FamilyAuth !== "undefined" && FamilyAuth.getUser()) || 
+                      JSON.parse(sessionStorage.getItem("currentUser") || sessionStorage.getItem("family_user") || "null");
+  const userRank = getUserRank(currentUser);
+  const isITAdmin = userRank === 0;
+
+  pageTasks.forEach((t, idx) => {
+    const stt = startIndex + idx + 1;
     const isOverdue = t.status !== "Đã hoàn thành" && t.deadline && new Date(t.deadline) < now;
 
     let priorityPill = "";
@@ -848,39 +983,54 @@ function renderTasksTable() {
     tr.className = "hover:bg-slate-50 transition cursor-pointer";
     tr.dataset.taskId = t.id;
 
+    // Tệp đính kèm & Tải trực tiếp (Direct Download)
+    const rawUrl = (t.fileUrl && t.fileUrl.startsWith('http')) ? t.fileUrl : (t.attachedFile?.url && t.attachedFile.url.startsWith('http')) ? t.attachedFile.url : "";
+    const downloadUrl = rawUrl ? getDirectDownloadUrl(rawUrl) : (t.fileBase64 || t.attachedFile?.base64 || "");
+    const fileName = t.fileName || t.attachedFile?.name || "Tệp đính kèm";
+
+    let fileLinkHtml = "";
+    if (downloadUrl) {
+      fileLinkHtml = `
+        <a href="${escapeHtml(downloadUrl)}" download="${escapeHtml(fileName)}"
+           class="inline-flex items-center gap-1.5 text-[10px] font-bold text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 transition truncate max-w-[150px] shadow-2xs"
+           title="Bấm để tải tệp về máy tính: ${escapeHtml(fileName)}"
+           onclick="event.stopPropagation()">
+          <i class="fa-solid fa-download text-[9px] text-blue-600 shrink-0"></i>
+          <span class="truncate">Tải ${escapeHtml(fileName)}</span>
+        </a>`;
+    } else if (t.attachedFile?.name) {
+      fileLinkHtml = `<span class="text-[10px] text-slate-500 truncate max-w-[130px]" title="${escapeHtml(t.attachedFile.name)}">📎 ${escapeHtml(t.attachedFile.name)}</span>`;
+    }
+
+    const canDelete = isITAdmin || userRank <= 2 || (currentUser && isSamePerson(currentUser, { fullname: t.leader, name: t.leader }));
+
     tr.innerHTML = `
-      <td class="py-3 px-3 text-center font-mono font-bold text-blue-900">${escapeHtml(t.id)}</td>
+      <td class="py-3 px-3 text-center font-bold text-slate-700">${stt}</td>
       <td class="py-3 px-3 text-slate-700 font-medium truncate max-w-[160px]" title="${escapeHtml(t.leader)}">${escapeHtml(t.leader)}</td>
-      <td class="py-3 px-3 font-bold text-slate-900 truncate max-w-[190px]">
+      <td class="py-3 px-3 font-bold text-slate-900 truncate max-w-[160px]">
         <div class="flex items-center gap-1.5">
-          <i class="fa-solid fa-user-check text-blue-600 text-xs"></i>
-          <span title="${escapeHtml(t.assigneeName)}">${escapeHtml(t.assigneeName)}</span>
+          <i class="fa-solid fa-user-check text-blue-600 text-xs shrink-0"></i>
+          <span class="truncate" title="${escapeHtml(t.assigneeName)}">${escapeHtml(t.assigneeName)}</span>
         </div>
         <span class="text-[10px] text-slate-400 font-normal block truncate">${escapeHtml(t.assigneeRole)}</span>
       </td>
-      <td class="py-3 px-3 text-slate-600 text-[11px] truncate max-w-[170px]" title="${escapeHtml(t.assigneeDept)}">${escapeHtml(t.assigneeDept)}</td>
-      <td class="py-3 px-3 font-bold text-slate-800 truncate max-w-[250px]" title="${escapeHtml(t.title)}">
-        <span>${escapeHtml(t.title)}</span>
-        <p class="text-[10px] text-slate-400 font-normal truncate mt-0.5">${escapeHtml(t.guidance)}</p>
-      </td>
-      <td class="py-3 px-3 text-[11px] text-slate-600 truncate max-w-[140px]">
-        ${t.docRef ? `<span class="font-semibold block truncate" title="${escapeHtml(t.docRef)}">📜 ${escapeHtml(t.docRef)}</span>` : ""}
-        ${(t.fileUrl || t.attachedFile?.url) ? `
-          <a href="${escapeHtml(t.fileUrl || t.attachedFile.url)}" target="_blank" rel="noopener noreferrer"
-             class="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-1.5 py-0.5 rounded border border-blue-200 transition truncate max-w-[130px]"
-             title="${escapeHtml(t.attachedFile?.name || 'Mở tệp đính kèm trên Google Drive')}"
-             onclick="event.stopPropagation()">
-            <i class="fa-solid fa-arrow-up-right-from-square text-[8px]"></i>
-            <span class="truncate">📎 ${escapeHtml(t.attachedFile?.name || 'Tệp Drive')}</span>
-          </a>` : (t.attachedFile ? `<span class="text-[10px] text-slate-600 block truncate" title="${escapeHtml(t.attachedFile.name)}">📎 ${escapeHtml(t.attachedFile.name)}</span>` : '<span class="text-slate-400 text-[10px]">Không có tệp</span>')}
+      <td class="py-3 px-3">
+        <div class="font-bold text-slate-800 line-clamp-1" title="${escapeHtml(t.title)}">${escapeHtml(t.title)}</div>
+        ${t.guidance ? `<p class="text-[10px] text-slate-400 truncate mt-0.5" title="${escapeHtml(t.guidance)}">${escapeHtml(t.guidance)}</p>` : ""}
+        <div class="mt-1 flex flex-wrap items-center gap-2">
+          ${t.docRef ? `<span class="text-[10px] text-slate-500 font-semibold truncate max-w-[160px]" title="${escapeHtml(t.docRef)}">📜 ${escapeHtml(t.docRef)}</span>` : ""}
+          ${fileLinkHtml}
+        </div>
       </td>
       <td class="py-3 px-3 text-center ${isOverdue ? "text-rose-600 font-bold" : "text-slate-700"}">
         ${t.deadline ? escapeHtml(t.deadline.replace("T", " ")) : '<span class="text-slate-400">Chưa đặt</span>'}
       </td>
-      <td class="py-3 px-3 text-center">${priorityPill}</td>
       <td class="py-3 px-3 text-center">${statusPill}</td>
       <td class="py-3 px-3 text-center">
         <div class="inline-flex items-center gap-1">
+          <button type="button" data-action="view" data-id="${escapeHtml(t.id)}" title="Xem chi tiết nhiệm vụ" class="btn-icon btn-icon-secondary">
+            <i class="fa-solid fa-eye"></i>
+          </button>
           ${t.status !== "Đã hoàn thành" ? `
             <button type="button" data-action="done" data-id="${escapeHtml(t.id)}" title="Đánh dấu hoàn thành" class="btn-icon btn-icon-success">
               <i class="fa-solid fa-check"></i>
@@ -890,17 +1040,18 @@ function renderTasksTable() {
               <i class="fa-solid fa-rotate-left"></i>
             </button>
           `}
-          <button type="button" data-action="print" data-id="${escapeHtml(t.id)}" title="In phiếu giao việc" class="btn-icon btn-icon-secondary">
-            <i class="fa-solid fa-print"></i>
-          </button>
-          <button type="button" data-action="delete" data-id="${escapeHtml(t.id)}" title="Xóa nhiệm vụ" class="btn-icon btn-icon-danger">
-            <i class="fa-solid fa-trash-can"></i>
-          </button>
+          ${canDelete ? `
+            <button type="button" data-action="delete" data-id="${escapeHtml(t.id)}" title="Xóa nhiệm vụ" class="btn-icon btn-icon-danger">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          ` : ""}
         </div>
       </td>
     `;
     tbody.appendChild(tr);
   });
+
+  renderPagination(totalTasks, startIndex, pageTasks.length, taskCurrentPage, totalPages);
 }
 
 function markTaskDone(id) {
@@ -968,9 +1119,17 @@ function openTaskModal(id) {
   const mtDr = document.getElementById("modalTaskDocRef");
   if (mtDr) {
     const docText = t.docRef ? escapeHtml(t.docRef) : "Không ghi số hiệu";
-    const fileLink = (t.fileUrl || t.attachedFile?.url) 
-      ? `<a href="${escapeHtml(t.fileUrl || t.attachedFile.url)}" target="_blank" rel="noopener noreferrer" class="ml-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 font-bold text-xs"><i class="fa-solid fa-cloud-arrow-down"></i> Mở tệp đính kèm (${escapeHtml(t.attachedFile?.name || "Tải từ Drive")}) <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i></a>`
-      : (t.attachedFile ? `<span class="ml-2 text-slate-600 font-medium">(📎 ${escapeHtml(t.attachedFile.name)})</span>` : "");
+    const rawUrl = (t.fileUrl && t.fileUrl.startsWith('http')) ? t.fileUrl : (t.attachedFile?.url && t.attachedFile.url.startsWith('http')) ? t.attachedFile.url : "";
+    const downloadUrl = rawUrl ? getDirectDownloadUrl(rawUrl) : (t.fileBase64 || t.attachedFile?.base64 || "");
+    const fileName = t.fileName || t.attachedFile?.name || "Tệp đính kèm";
+
+    let fileLink = "";
+    if (downloadUrl) {
+      fileLink = `<a href="${escapeHtml(downloadUrl)}" download="${escapeHtml(fileName)}" class="ml-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition"><i class="fa-solid fa-download"></i> Tải tệp xuống máy (${escapeHtml(fileName)})</a>`;
+    } else if (t.attachedFile?.name) {
+      fileLink = `<span class="ml-2 text-slate-600 font-medium">(📎 ${escapeHtml(fileName)})</span>`;
+    }
+
     mtDr.innerHTML = `${docText} ${fileLink}`;
   }
   const mtGd = document.getElementById("modalTaskGuidance");
@@ -1008,8 +1167,6 @@ function openTaskModal(id) {
     }
   }
 
-  const btnPrn = document.getElementById("modalBtnPrint");
-  if (btnPrn) btnPrn.onclick = () => printSingleTask(t.id);
   const modal = document.getElementById("taskDetailModal");
   if (modal) modal.classList.remove("hidden");
 }
@@ -1018,91 +1175,6 @@ function closeTaskModal() {
   const modal = document.getElementById("taskDetailModal");
   if (modal) modal.classList.add("hidden");
   currentViewingTaskId = null;
-}
-
-function printSingleTask(id) {
-  const tasks = getStoredTasks();
-  const t = tasks.find(item => item.id === id);
-  if (!t) return;
-
-  const printWindow = window.open("", "_blank", "width=800,height=900");
-  printWindow.document.write(`
-    <!DOCTYPE html>
-    <html lang="vi">
-    <head>
-      <meta charset="UTF-8">
-      <title>Phiếu Giao Việc - ${t.id}</title>
-      <style>
-        @page { size: A4; margin: 20mm; }
-        body { font-family: 'Times New Roman', Times, serif; font-size: 13pt; line-height: 1.5; color: #000; padding: 20px; }
-        .header-table { width: 100%; margin-bottom: 25px; border-collapse: collapse; }
-        .header-table td { vertical-align: top; text-align: center; font-size: 11pt; }
-        .title { font-size: 16pt; font-weight: bold; text-align: center; margin: 20px 0 5px 0; text-transform: uppercase; }
-        .sub-title { text-align: center; font-style: italic; font-size: 11pt; margin-bottom: 25px; }
-        .field-row { margin-bottom: 10px; }
-        .label { font-weight: bold; }
-        .guidance-box { border: 1.5px solid #000; padding: 15px; margin: 15px 0; border-radius: 4px; background: #fff; }
-        .signatures { display: flex; justify-content: space-between; margin-top: 50px; text-align: center; }
-        .sig-block { width: 45%; }
-        .sig-title { font-weight: bold; font-size: 12pt; text-transform: uppercase; }
-        .sig-note { font-style: italic; font-size: 10pt; }
-        .sig-space { height: 75px; }
-      </style>
-    </head>
-    <body>
-      <table class="header-table">
-        <tr>
-          <td style="width: 45%;">
-            <strong>SỞ NÔNG NGHIỆP VÀ MÔI TRƯỜNG TP.HCM</strong><br>
-            <strong>VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI</strong><br>
-            <strong>CHI NHÁNH SỐ 23</strong><br>
-            <span>***</span>
-          </td>
-          <td style="width: 55%;">
-            <strong>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</strong><br>
-            <strong>Độc lập - Tự do - Hạnh phúc</strong><br>
-            <span>---------------</span>
-          </td>
-        </tr>
-      </table>
-
-      <div class="title">PHIẾU CHỈ ĐẠO GIAO VIỆC & ĐÔN ĐỐC TIẾN ĐỘ</div>
-      <div class="sub-title">(Mã phiếu: <strong>${t.id}</strong> - Ngày ban hành: ${t.createdAt})</div>
-
-      <div class="field-row"><span class="label">Người giao việc:</span> ${t.leader}</div>
-      <div class="field-row"><span class="label">Cán bộ tiếp nhận:</span> <strong>${t.assigneeName}</strong> (${t.assigneeRole} - ${t.assigneeDept})</div>
-      <div class="field-row"><span class="label">Tiêu đề nhiệm vụ:</span> <strong>${t.title}</strong></div>
-      <div class="field-row"><span class="label">Mức độ ưu tiên:</span> <strong>${t.priority}</strong></div>
-      <div class="field-row"><span class="label">Văn bản căn cứ / Hồ sơ:</span> ${t.docRef || "Không"} ${t.attachedFile ? `(Tệp đính kèm: ${t.attachedFile.name})` : ""}</div>
-      <div class="field-row"><span class="label">Thời hạn hoàn thành (Deadline):</span> <strong style="color: red;">${t.deadline ? t.deadline.replace("T", " ") : "Chưa đặt"}</strong></div>
-
-      <div class="guidance-box">
-        <div class="label" style="text-decoration: underline; margin-bottom: 8px;">Ý KIẾN CHỈ ĐẠO CỦA LÃNH ĐẠO:</div>
-        <div style="white-space: pre-wrap;">${t.guidance}</div>
-      </div>
-
-      ${t.note ? `<div class="field-row"><span class="label">Ghi chú:</span> ${t.note}</div>` : ""}
-
-      <div class="signatures">
-        <div class="sig-block">
-          <div class="sig-title">CÁN BỘ TIẾP NHẬN</div>
-          <div class="sig-note">(Ký và ghi rõ họ tên)</div>
-          <div class="sig-space"></div>
-          <strong>${t.assigneeName}</strong>
-        </div>
-        <div class="sig-block">
-          <div class="sig-title">LÃNH ĐẠO GIAO VIỆC</div>
-          <div class="sig-note">(Ký và ghi rõ họ tên)</div>
-          <div class="sig-space"></div>
-          <strong>${t.leader.split("(")[0].trim()}</strong>
-        </div>
-      </div>
-    </body>
-    </html>
-  `);
-  printWindow.document.close();
-  printWindow.focus();
-  setTimeout(() => { printWindow.print(); }, 400);
 }
 
 // ========================================================
@@ -1116,7 +1188,25 @@ window.addEventListener("DOMContentLoaded", () => {
   renderTasksTable();
   syncTasksFromCloud();
 
-  // Dropdown lọc tổ
+  // Nút Làm mới dữ liệu từ Google Sheet (xóa sạch bộ nhớ đệm, cập nhật mới nhất)
+  const btnRefresh = document.getElementById("btnRefreshTasks");
+  if (btnRefresh) {
+    btnRefresh.addEventListener("click", () => {
+      syncTasksFromCloud(true);
+    });
+  }
+
+  // Chọn số lượng hiển thị trên mỗi trang (Pagination Page Size)
+  const pageSizeSelect = document.getElementById("pageSizeSelect");
+  if (pageSizeSelect) {
+    pageSizeSelect.addEventListener("change", (e) => {
+      taskPageSize = parseInt(e.target.value, 10) || 10;
+      taskCurrentPage = 1;
+      renderTasksTable();
+    });
+  }
+
+  // Dropdown lọc tổ giao việc
   const deptFilterSelect = document.getElementById("filterStaffDept");
   const staffDetailHint = document.getElementById("assignStaffDetail");
   const staffSelect = document.getElementById("assignStaff");
@@ -1181,9 +1271,9 @@ window.addEventListener("DOMContentLoaded", () => {
         e.stopPropagation();
         const action = actionBtn.dataset.action;
         const id = actionBtn.dataset.id;
-        if (action === "done") markTaskDone(id);
+        if (action === "view") openTaskModal(id);
+        else if (action === "done") markTaskDone(id);
         else if (action === "reopen") markTaskReopen(id);
-        else if (action === "print") printSingleTask(id);
         else if (action === "delete") deleteTask(id);
         return;
       }
@@ -1347,18 +1437,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Nút xóa tất cả & làm mới
-  const btnClearAll = document.getElementById("btnClearAllTasks");
-  if (btnClearAll) {
-    btnClearAll.addEventListener("click", () => {
-      if (confirm("CẢNH BÁO NGUY HIỂM: Đồng chí có chắc chắn muốn xóa TOÀN BỘ danh sách nhiệm vụ đã giao không?")) {
-        localStorage.removeItem(STORAGE_KEY_TASKS);
-        updateTaskKPIs();
-        renderTasksTable();
-        showToast("Đã xóa toàn bộ nhiệm vụ!");
-      }
-    });
-  }
+  // Nút xóa tất cả đã được lược bỏ (chỉ xóa theo từng dòng nhiệm vụ)
 
   const btnReset = document.getElementById("btnResetTaskForm");
   if (btnReset) {
@@ -1370,15 +1449,14 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  const btnPrint = document.getElementById("btnPrintTable");
-  if (btnPrint) {
-    btnPrint.addEventListener("click", () => window.print());
-  }
-
-  // Bộ lọc
-  document.getElementById("filterTaskStatus")?.addEventListener("change", renderTasksTable);
-  document.getElementById("filterTaskDept")?.addEventListener("change", renderTasksTable);
-  document.getElementById("searchTaskInput")?.addEventListener("input", renderTasksTable);
+  // Bộ lọc kết hợp phân trang
+  const resetPageAndRender = () => {
+    taskCurrentPage = 1;
+    renderTasksTable();
+  };
+  document.getElementById("filterTaskStatus")?.addEventListener("change", resetPageAndRender);
+  document.getElementById("filterTaskDept")?.addEventListener("change", resetPageAndRender);
+  document.getElementById("searchTaskInput")?.addEventListener("input", resetPageAndRender);
 });
 
 // Xuất các hàm ra phạm vi toàn cục
@@ -1387,5 +1465,4 @@ window.markTaskReopen = markTaskReopen;
 window.deleteTask = deleteTask;
 window.openTaskModal = openTaskModal;
 window.closeTaskModal = closeTaskModal;
-window.printSingleTask = printSingleTask;
 window.removeAttachedFile = removeAttachedFile;

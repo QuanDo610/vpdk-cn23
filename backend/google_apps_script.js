@@ -30,6 +30,7 @@ function onOpen() {
     SpreadsheetApp.getUi()
       .createMenu("⭐ BINHDUONG23")
       .addItem("▶️ 1-Click: Cấu hình chuẩn toàn bộ 5 Phân hệ BINHDUONG23", "setupBinhDuong23")
+      .addItem("📂 Cấp quyền Google Drive (Lưu tệp đính kèm Giao việc & IT)", "authorizeDrivePermissions")
       .addSeparator()
       .addItem("🔤 Tự động tạo & điền Username (quandtm)", "autoFillUsernames")
       .addItem("👥 Định dạng tab TaiKhoan (Tài khoản cán bộ)", "seedAccountsOnly")
@@ -38,6 +39,22 @@ function onOpen() {
       .addItem("📊 Định dạng tab BaoCaoSoLieu (Báo cáo số liệu thực hiện cấp tổ)", "seedPerformanceOnly")
       .addToUi();
   } catch (e) {}
+}
+
+/**
+ * 🔑 HÀM CẤP QUYỀN GOOGLE DRIVE (CHẠY 1 LẦN DUY NHẤT):
+ * Cho phép Google Apps Script tạo thư mục và lưu trữ file Word, Excel, PDF vào Google Drive.
+ * Cách 1: Trên Google Sheet, bấm menu '⭐ BINHDUONG23' -> '📂 Cấp quyền Google Drive'
+ * Cách 2: Trong Apps Script Editor, chọn hàm 'authorizeDrivePermissions' -> Bấm 'Chạy' (Run ▶)
+ */
+function authorizeDrivePermissions() {
+  const root = DriveApp.getRootFolder();
+  const folder = getStorageFolder(FOLDER_GIAOVIEC);
+  Logger.log("✅ Đã cấp quyền Google Drive thành công! Thư mục giao việc: " + folder.getName() + " (ID: " + folder.getId() + ")");
+  try {
+    SpreadsheetApp.getUi().alert("✅ ĐÃ CẤP QUYỀN DRIVE THÀNH CÔNG!\n\nThư mục lưu trữ: " + ROOT_FOLDER_NAME + "/" + FOLDER_GIAOVIEC + "\nCác tệp đính kèm (Word, Excel, PDF, ảnh) từ nay sẽ tự động lưu lên Google Drive của đồng chí.");
+  } catch (e) {}
+  return "✅ Đã cấp quyền Google Drive thành công cho thư mục: " + folder.getName();
 }
 
 /**
@@ -496,6 +513,26 @@ function getStorageFolder(moduleName) {
 }
 
 /**
+ * Xác định chuẩn MIME Type của tệp tin đính kèm (hỗ trợ đầy đủ Excel, Word, PDF, Ảnh)
+ */
+function getMimeTypeFromFilename(filename) {
+  if (!filename) return "application/octet-stream";
+  const ext = filename.split(".").pop().toLowerCase();
+  switch (ext) {
+    case "xlsx": return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    case "xls":  return "application/vnd.ms-excel";
+    case "docx": return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    case "doc":  return "application/msword";
+    case "pdf":  return "application/pdf";
+    case "csv":  return "text/csv";
+    case "png":  return "image/png";
+    case "jpg":
+    case "jpeg": return "image/jpeg";
+    default:     return "application/octet-stream";
+  }
+}
+
+/**
  * Xử lý lưu tệp Base64 (Ảnh, Word, PDF, Excel) lên Google Drive theo đúng phân hệ
  * @param {string} base64Data - Dữ liệu DataURL hoặc Base64 thuần
  * @param {string} filename - Tên file muốn lưu
@@ -506,12 +543,14 @@ function saveFileToDrive(base64Data, filename, moduleName) {
   try {
     const targetFolder = getStorageFolder(moduleName || FOLDER_HELPDESK);
 
-    let contentType = "application/octet-stream";
+    let contentType = getMimeTypeFromFilename(filename);
     let base64String = base64Data;
     if (base64Data.indexOf("data:") === 0) {
       const parts = base64Data.split(",");
       const mimeMatch = parts[0].match(/:(.*?);/);
-      if (mimeMatch) contentType = mimeMatch[1];
+      if (mimeMatch && mimeMatch[1] && mimeMatch[1] !== "application/octet-stream") {
+        contentType = mimeMatch[1];
+      }
       base64String = parts[1];
     }
 
@@ -526,7 +565,8 @@ function saveFileToDrive(base64Data, filename, moduleName) {
       file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     } catch (e) {}
 
-    return "https://drive.google.com/file/d/" + file.getId() + "/view";
+    // Trả về đường link tải trực tiếp (Direct Download) tự động tải xuống máy tính
+    return "https://drive.google.com/uc?export=download&id=" + file.getId();
   } catch (err) {
     return "Lỗi upload file: " + err.toString();
   }
@@ -1356,7 +1396,7 @@ function handleCreateTicket(data, ss) {
 
   if (imageUrl && imageUrl.indexOf("http") === 0) {
     const imgCell = sheet.getRange(newRow, 10);
-    imgCell.setValue(imageUrl).setFontColor("#1d4ed8").setFontUnderline(true);
+    imgCell.setValue(imageUrl).setFontColor("#1d4ed8").setFontLine("underline");
   }
 
   return {
@@ -1467,7 +1507,7 @@ function handleCreateTask(data, ss) {
   sheet.getRange(newRow, 1).setHorizontalAlignment("center").setFontWeight("bold");
   if (fileUrl && fileUrl.indexOf("http") === 0) {
     const linkCell = sheet.getRange(newRow, 15);
-    linkCell.setValue(fileUrl).setFontColor("#1d4ed8").setFontUnderline(true);
+    linkCell.setValue(fileUrl).setFontColor("#1d4ed8").setFontLine("underline");
   }
 
   return {
@@ -1589,6 +1629,7 @@ function getTasksList(ss, params) {
     }
 
     const taskFileUrl = r[14] || "";
+    const validFileUrl = (taskFileUrl && taskFileUrl.toString().trim().indexOf("http") === 0) ? taskFileUrl.toString().trim() : "";
     tasks.push({
       id: r[0],
       leader: r[1],
@@ -1604,8 +1645,8 @@ function getTasksList(ss, params) {
       status: r[11],
       createdAt: r[12],
       completedAt: r[13] || "",
-      fileUrl: taskFileUrl,
-      attachedFile: taskFileUrl ? { name: (r[7] || "Tệp đính kèm"), url: taskFileUrl } : null
+      fileUrl: validFileUrl,
+      attachedFile: validFileUrl ? { name: (r[7] || "Tệp đính kèm"), url: validFileUrl } : null
     });
   }
   return { success: true, total: tasks.length, data: tasks };
