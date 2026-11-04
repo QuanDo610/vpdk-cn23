@@ -155,8 +155,15 @@
 
 ---
 
+> [!IMPORTANT]
+> **Kế hoạch chi tiết và tiến độ xử lý 17 đầu việc tối ưu:**  
+> Tra cứu và theo dõi trực tiếp tại tài liệu chuẩn: **[`docs/KE_HOACH_TOI_UU_VA_FIX_LOI.md`](file:///c:/Users/X/Desktop/vpdk-cn23/docs/KE_HOACH_TOI_UU_VA_FIX_LOI.md)**
+
 ## 3. Các việc TIẾP THEO (Next Steps) 📋
-- [ ] **Kiểm thử đa trình duyệt luồng Route Guard**: Xác nhận cửa sổ ẩn danh bị chặn khi vào thẳng 4 phân hệ con, đăng nhập ở `index.html` vào được bình thường.
+- [ ] **Nhóm 1 (Tối ưu Hiệu suất & Tốc độ tải - PERF-01 -> PERF-06)**: Gỡ bỏ `@import` CSS cascade, tối ưu tệp `quotes_data.js` (362KB), localize docx/FileSaver, dùng System Fonts và thêm Debounce.
+- [ ] **Nhóm 2 (Chuẩn hóa Front-end & Clean Code - FE-01 -> FE-06)**: Gỡ 22 inline events `it_helpdesk.html`, thay inline styles bằng `.d-none`, thêm `type="button"` cho 27 nút bấm, bổ sung label/id input.
+- [ ] **Nhóm 3 (An ninh & Bảo vệ PII - SEC-01 -> SEC-05)**: Gỡ bỏ danh bạ cứng `STAFF_CN23`, kiểm soát RBAC trên Apps Script, băm mật khẩu SHA-256 và rà soát XSS.
+- [ ] **Kiểm thử đa trình duyệt & Bộ test tự động**: Chạy lại `python tests/run_all_tests.py` sau khi fix từng nhóm hạng mục.
 - [ ] **Đẩy code lên GitHub**: Sau khi kiểm tra hoàn tất tại local, thực hiện `git push` để cập nhật trang chính thức.
 
 

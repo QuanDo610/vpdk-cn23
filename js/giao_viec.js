@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ==============================================================================
  * CỔNG DỊCH VỤ NỘI BỘ VPĐK CHI NHÁNH 23 - "FAMILY CN23"
  * Module Controller: Lãnh Đạo Giao Việc & Theo Dõi Tiến Độ Nhiệm Vụ
@@ -143,8 +143,7 @@ async function syncStaffFromCloud() {
         if (cloudStaff.length > 0) {
           activeStaffList = cloudStaff;
           updateDeptFilterCounts();
-          const currentFilter = document.getElementById("filterStaffDept")?.value || "ALL";
-          populateStaffDropdown(currentFilter);
+          initUserSession();
           console.log(`Đã nạp động thành công ${cloudStaff.length} cán bộ từ Sheet TaiKhoan.`);
         }
       }
@@ -229,8 +228,139 @@ function showToast(message, type = "info") {
 }
 
 // ========================================================
-// 2. KHỞI TẠO PHIÊN ĐĂNG NHẬP (USER SESSION)
+// 2. CHUẨN HÓA DỮ LIỆU & PHÂN HẠNG VAI TRÒ (RBAC HIERARCHY)
 // ========================================================
+/**
+ * Chuẩn hóa bỏ dấu tiếng Việt để tìm kiếm & so khớp an toàn
+ */
+function removeVietnameseTones(str) {
+  if (!str) return "";
+  str = String(str).normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  str = str.replace(/[đĐ]/g, "d");
+  return str.toLowerCase().trim();
+}
+
+/**
+ * Chuẩn hóa số điện thoại để so sánh an toàn
+ */
+function normalizePhone(p) {
+  if (!p) return "";
+  let s = String(p).replace(/^'+/, "").replace(/[\s\.\-]+/g, "");
+  return s.replace(/^0+/, "");
+}
+
+/**
+ * Lấy thứ bậc (Rank) phân cấp hành chính:
+ * - Rank 0: IT Admin (Quản trị hệ thống - Đỗ Trọng Minh Quân 0973807027 / quandtm)
+ * - Rank 1: Giám đốc Chi nhánh (Nguyễn Chiến Thắng)
+ * - Rank 2: Phó Giám đốc Chi nhánh (Đặng Huy Cường, Nguyễn Thị Lệ Hằng)
+ * - Rank 3: Tổ trưởng (Trần Quốc Hưng, Nguyễn Thị Thùy Trang, Nguyễn Thị Bích Tuyền,...)
+ * - Rank 4: Tổ phó (Đặng Thị Tuyết Trinh, Huỳnh Tấn Nguyên, Nguyễn Thành Như Bảo,...)
+ * - Rank 5: Chuyên viên / Nhân viên (không có quyền giao việc)
+ */
+function getUserRank(user) {
+  if (!user) return 99;
+  const name = removeVietnameseTones(user.fullname || user.name || "");
+  const phone = normalizePhone(user.phone || "");
+  const username = (user.username || user.id || "").toLowerCase();
+  const pos = removeVietnameseTones(user.position || user.chuc_vu || user.role || "");
+
+  if (phone === "973807027" || phone === "0973807027" || username === "quandtm" || name.includes("do trong minh quan")) {
+    return 0; // IT Admin
+  }
+  if (pos.includes("giam doc") && !pos.includes("pho")) return 1;
+  if (pos.includes("pho giam doc")) return 2;
+  if (pos.includes("to truong") || pos.includes("truong phong")) return 3;
+  if (pos.includes("to pho") || pos.includes("pho phong")) return 4;
+  return 5;
+}
+
+/**
+ * Kiểm tra xem 2 đối tượng có phải cùng 1 người không (chống tự giao việc cho mình)
+ */
+function isSamePerson(personA, personB) {
+  if (!personA || !personB) return false;
+  const nameA = removeVietnameseTones(personA.fullname || personA.name || "");
+  const nameB = removeVietnameseTones(personB.fullname || personB.name || "");
+  const userA = (personA.username || personA.id || "").toLowerCase().trim();
+  const userB = (personB.username || personB.id || "").toLowerCase().trim();
+  const phoneA = normalizePhone(personA.phone || "");
+  const phoneB = normalizePhone(personB.phone || "");
+
+  if (userA && userB && userA === userB) return true;
+  if (nameA && nameB && nameA === nameB) return true;
+  if (phoneA && phoneB && phoneA === phoneB) return true;
+  return false;
+}
+
+/**
+ * Kiểm tra xem 2 đơn vị / bộ phận có cùng 1 Tổ chuyên môn hay không
+ */
+function isSameDepartment(deptA, deptB) {
+  if (!deptA || !deptB) return false;
+  const a = removeVietnameseTones(deptA);
+  const b = removeVietnameseTones(deptB);
+  if (a === b) return true;
+  if (a.includes("dia chinh") && b.includes("dia chinh")) return true;
+  if (a.includes("dang ky") && b.includes("dang ky")) return true;
+  if (a.includes("hanh chinh") && b.includes("hanh chinh")) return true;
+  if (a.includes("ban giam doc") && b.includes("ban giam doc")) return true;
+  return false;
+}
+
+/**
+ * QUY TẮC PHÂN CẤP GIAO VIỆC (QUY TẮC BẮT BUỘC):
+ * 1. Không tự giao việc cho chính mình (Giám đốc không giao cho Giám đốc).
+ * 2. Cây phân cấp: Giám đốc > Phó Giám đốc > Tổ trưởng > Tổ phó > Chuyên viên / Nhân viên.
+ * 3. Ban Giám đốc:
+ *    - Giám đốc (Rank 1): Giao cho PGĐ, Tổ trưởng, Tổ phó, Chuyên viên toàn đơn vị (tRank >= 2).
+ *    - Phó Giám đốc (Rank 2): Giao cho Tổ trưởng, Tổ phó, Chuyên viên toàn đơn vị (không giao cho Giám đốc, tRank >= 3).
+ * 4. Lãnh đạo cấp Tổ (Tổ trưởng: Rank 3, Tổ phó: Rank 4):
+ *    - Bắt buộc giao trong nội bộ tổ của mình (không giao chéo tổ).
+ *    - Cấp bậc người nhận phải thấp hơn người giao (tRank > aRank).
+ *      (Tổ trưởng giao cho Tổ phó & Chuyên viên cùng tổ; Tổ phó chỉ giao cho Chuyên viên cùng tổ).
+ * 5. Chuyên viên / Nhân viên (Rank 5):
+ *    - Không có thẩm quyền giao việc.
+ * 6. IT Admin (Rank 0):
+ *    - Toàn quyền hỗ trợ kỹ thuật và kiểm thử hệ thống.
+ */
+function canAssignTaskTo(assigner, targetStaff) {
+  if (!assigner || !targetStaff) return false;
+  // 1. Tuyệt đối không tự giao việc cho chính mình
+  if (isSamePerson(assigner, targetStaff)) return false;
+
+  const aRank = getUserRank(assigner);
+  const tRank = getUserRank(targetStaff);
+
+  // 2. Chuyên viên thường không được giao việc
+  if (aRank >= 5) return false;
+
+  // 3. Quản trị IT (Rank 0)
+  if (aRank === 0) return true;
+
+  // 4. Giám đốc (Rank 1): Toàn cơ quan (tRank >= 2)
+  if (aRank === 1) {
+    return tRank >= 2;
+  }
+
+  // 5. Phó Giám đốc (Rank 2): Toàn cơ quan (tRank >= 3: Tổ trưởng, Tổ phó, Chuyên viên)
+  if (aRank === 2) {
+    return tRank >= 3;
+  }
+
+  // 6. Lãnh đạo cấp Tổ (Tổ trưởng: Rank 3, Tổ phó: Rank 4)
+  if (aRank === 3 || aRank === 4) {
+    const aDept = assigner.department || assigner.don_vi || assigner.dept || "";
+    const tDept = targetStaff.dept || targetStaff.department || "";
+    // Bắt buộc trong cùng tổ chuyên môn
+    if (!isSameDepartment(aDept, tDept)) return false;
+    // Bắt buộc giao cho cấp dưới
+    return tRank > aRank;
+  }
+
+  return false;
+}
+
 /**
  * Hiển thị Huy hiệu phạm vi vai trò (Role Scope Badge) và kiểm soát nút nguy hiểm
  */
@@ -239,15 +369,10 @@ function updateTaskRoleScopeBadge(user) {
   const btnClearAll = document.getElementById("btnClearAllTasks");
   if (!user) return;
 
-  const myName = removeVietnameseTones(user.fullname || user.name || "");
-  const myUsername = (user.username || "").toLowerCase().trim();
-  const myPhone = normalizePhone(user.phone || "");
-  const myPos = removeVietnameseTones(user.position || user.chuc_vu || "");
-  const myDept = removeVietnameseTones(user.department || user.don_vi || user.dept || "");
-
-  const isITAdmin = (myPhone === "973807027" || myPhone === "0973807027" || myUsername === "quandtm" || myName.includes("do trong minh quan"));
-  const isBGD = (myDept.includes("ban giam doc") || myPos.includes("giam doc") || myPos.includes("pho giam doc") || myName.includes("nguyen chien thang") || myName.includes("dang huy cuong") || myName.includes("nguyen thi le hang"));
-  const isDeptLeader = (myPos.includes("to truong") || myPos.includes("to pho") || myPos.includes("truong phong") || myPos.includes("pho phong"));
+  const userRank = getUserRank(user);
+  const isITAdmin = (userRank === 0);
+  const isBGD = (userRank === 1 || userRank === 2);
+  const isDeptLeader = (userRank === 3 || userRank === 4);
 
   // Chỉ Admin và Ban Giám đốc mới có nút Xóa tất cả
   if (btnClearAll) {
@@ -265,10 +390,10 @@ function updateTaskRoleScopeBadge(user) {
       badgeEl.innerHTML = '<i class="fa-solid fa-shield-halved text-amber-600"></i> Quản trị / Ban Giám đốc (Theo dõi & điều phối toàn đơn vị)';
     } else if (isDeptLeader) {
       badgeEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-300 shadow-2xs";
-      badgeEl.innerHTML = `<i class="fa-solid fa-user-group text-purple-600"></i> Lãnh đạo Tổ: <strong>${user.department || "Tổ chuyên môn"}</strong> (Theo dõi cán bộ trong tổ)`;
+      badgeEl.innerHTML = `<i class="fa-solid fa-user-group text-purple-600"></i> Lãnh đạo Tổ: <strong>${user.department || "Tổ chuyên môn"}</strong> (Giao việc & theo dõi trong tổ)`;
     } else {
       badgeEl.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-300 shadow-2xs";
-      badgeEl.innerHTML = '<i class="fa-solid fa-user-check text-blue-600"></i> Cán bộ nhận việc (Chỉ xem nhiệm vụ của đồng chí)';
+      badgeEl.innerHTML = '<i class="fa-solid fa-user-check text-blue-600"></i> Cán bộ nhận việc (Theo dõi tiến độ nhiệm vụ được phân công)';
     }
   }
 }
@@ -279,7 +404,8 @@ function initUserSession() {
                  JSON.parse(sessionStorage.getItem("currentUser") || sessionStorage.getItem("family_user") || "null");
     if (user) {
       const userName = user.name || user.fullname || "Cán bộ";
-      const userRole = user.role || user.dept || "Chi nhánh 23";
+      const userRole = user.position || user.role || user.dept || "Chi nhánh 23";
+      const userDept = user.department || user.don_vi || user.dept || "Chi nhánh số 23";
       const nameEl = document.getElementById("headerUserName");
       const roleEl = document.getElementById("headerUserRole");
       if (nameEl) nameEl.textContent = userName;
@@ -287,15 +413,76 @@ function initUserSession() {
 
       updateTaskRoleScopeBadge(user);
 
-      const leaderSelect = document.getElementById("assignLeader");
-      if (leaderSelect) {
-        for (let i = 0; i < leaderSelect.options.length; i++) {
-          if (leaderSelect.options[i].text.includes(userName)) {
-            leaderSelect.selectedIndex = i;
-            break;
+      const userRank = getUserRank(user);
+      const isLeader = (userRank <= 4); // Rank 0, 1, 2, 3, 4 có quyền giao việc
+
+      // Ẩn/Hiện phân hệ giao việc dựa theo cấp bậc:
+      // Nhân viên / Chuyên viên thông thường (Rank 5) không có form giao việc, chỉ xem tiến độ
+      const tabBtnAssign = document.getElementById("tabBtnAssign");
+      const btnQuickOpenAssign = document.getElementById("btnQuickOpenAssign");
+      const panelAssign = document.getElementById("panelAssign");
+      const panelTracking = document.getElementById("panelTracking");
+
+      if (!isLeader) {
+        if (tabBtnAssign) tabBtnAssign.style.display = "none";
+        if (btnQuickOpenAssign) btnQuickOpenAssign.style.display = "none";
+        if (panelAssign) panelAssign.classList.add("hidden");
+        if (panelTracking) panelTracking.classList.remove("hidden");
+      } else {
+        if (tabBtnAssign) tabBtnAssign.style.display = "";
+        if (btnQuickOpenAssign) btnQuickOpenAssign.style.display = "";
+
+        // 1. Tự động điền Người giao việc = Thông tin người đang đăng nhập
+        const leaderInput = document.getElementById("assignLeader");
+        if (leaderInput) {
+          leaderInput.value = `${userName} — ${userRole}`;
+        }
+        const leaderNote = document.getElementById("assignLeaderDeptNote");
+        if (leaderNote) {
+          leaderNote.textContent = `Tài khoản: ${userName} (${userRole} - ${userDept})`;
+        }
+
+        // 2. Tự động điền và khóa Tổ chuyên môn đối với Tổ trưởng, Tổ phó
+        const filterDeptSelect = document.getElementById("filterStaffDept");
+        const lockIcon = document.getElementById("lockStaffDeptIcon");
+        const deptHint = document.getElementById("filterStaffDeptHint");
+
+        if (userRank === 3 || userRank === 4) {
+          // Khóa cứng theo Tổ chuyên môn của Tổ trưởng / Tổ phó
+          if (filterDeptSelect) {
+            for (let i = 0; i < filterDeptSelect.options.length; i++) {
+              const optVal = filterDeptSelect.options[i].value;
+              if (optVal !== "ALL" && isSameDepartment(optVal, userDept)) {
+                filterDeptSelect.selectedIndex = i;
+                break;
+              }
+            }
+            filterDeptSelect.disabled = true;
+            filterDeptSelect.classList.add("bg-slate-100", "cursor-not-allowed", "opacity-90");
+          }
+          if (lockIcon) lockIcon.classList.remove("hidden");
+          if (deptHint) {
+            deptHint.innerHTML = `<span class="text-amber-700 font-semibold"><i class="fa-solid fa-lock mr-1"></i> Cố định theo ${userDept}</span>`;
+          }
+        } else {
+          // Ban Giám đốc hoặc IT Admin: Toàn quyền chọn hoặc để Tất cả
+          if (filterDeptSelect) {
+            filterDeptSelect.disabled = false;
+            filterDeptSelect.classList.remove("bg-slate-100", "cursor-not-allowed", "opacity-90");
+            filterDeptSelect.value = "ALL";
+          }
+          if (lockIcon) lockIcon.classList.add("hidden");
+          if (deptHint) {
+            deptHint.textContent = "Chọn tổ để thu hẹp danh sách cán bộ bên cạnh (hoặc để Tất cả)";
           }
         }
       }
+
+      // Nạp danh sách cán bộ nhận việc tương ứng với quyền hạn của người đăng nhập
+      const currentDeptFilter = (userRank === 3 || userRank === 4) 
+        ? userDept 
+        : (document.getElementById("filterStaffDept")?.value || "ALL");
+      populateStaffDropdown(currentDeptFilter);
     }
   } catch (e) {
     console.warn("Lỗi đọc session:", e);
@@ -317,7 +504,7 @@ function initUserSession() {
 }
 
 // ========================================================
-// 3. DROPDOWN DANH SÁCH 82 CÁN BỘ
+// 3. DROPDOWN CÁN BỘ NHẬN VIỆC (TUÂN THỦ CÂY PHÂN CẤP & CHỐNG TỰ GIAO VIỆC)
 // ========================================================
 /**
  * Tự động cập nhật số lượng nhân sự hiển thị trên dropdown Lọc Tổ
@@ -334,7 +521,7 @@ function updateDeptFilterCounts() {
       const count = activeStaffList.filter(s => {
         const d = (s.dept || "").trim().toLowerCase();
         const target = opt.value.trim().toLowerCase();
-        return d === target || d.includes(target) || target.includes(d);
+        return isSameDepartment(d, target);
       }).length;
       opt.textContent = `${opt.value} (${count})`;
     }
@@ -346,10 +533,35 @@ function populateStaffDropdown(filterDept = "ALL") {
   if (!staffSelect) return;
   staffSelect.innerHTML = '<option value="" disabled selected>-- Chọn cán bộ nhận việc --</option>';
 
-  // Lấy tất cả các Tổ/Bộ phận thực tế đang có từ danh sách nhân sự hiện hành
-  const rawDepts = Array.from(new Set(activeStaffList.map(s => (s.dept || "Chi nhánh số 23").trim()))).filter(Boolean);
+  const currentUser = (typeof FamilyAuth !== "undefined" && FamilyAuth.getUser()) || 
+                      JSON.parse(sessionStorage.getItem("currentUser") || sessionStorage.getItem("family_user") || "null");
 
-  // Sắp xếp thứ tự ưu tiên các tổ quen thuộc lên trước:
+  const myRank = getUserRank(currentUser);
+
+  // Nếu người dùng là Chuyên viên/Nhân viên (Rank 5): Không có quyền giao việc
+  if (myRank >= 5) {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.disabled = true;
+    opt.textContent = "-- Đồng chí không có thẩm quyền giao việc --";
+    staffSelect.appendChild(opt);
+    return;
+  }
+
+  // Nếu là Tổ trưởng / Tổ phó: Cố định theo tổ của mình
+  if ((myRank === 3 || myRank === 4) && currentUser) {
+    const userDept = currentUser.department || currentUser.don_vi || currentUser.dept || "";
+    if (userDept) {
+      filterDept = userDept;
+    }
+  }
+
+  // Lọc danh sách nhân sự đủ điều kiện nhận việc từ người đang đăng nhập
+  const eligibleStaff = activeStaffList.filter(s => canAssignTaskTo(currentUser, s));
+
+  // Lấy các tổ có trong danh sách đủ điều kiện
+  const rawDepts = Array.from(new Set(eligibleStaff.map(s => (s.dept || "Chi nhánh số 23").trim()))).filter(Boolean);
+
   const priorityOrder = ["Ban Giám đốc", "Tổ Kỹ thuật Địa chính và Lưu trữ", "Tổ Đăng ký cấp GCN", "Tổ Hành chính Tổng hợp"];
   rawDepts.sort((a, b) => {
     const idxA = priorityOrder.findIndex(p => a.toLowerCase().includes(p.toLowerCase()));
@@ -362,17 +574,18 @@ function populateStaffDropdown(filterDept = "ALL") {
 
   const depts = (filterDept === "ALL" || !filterDept)
     ? rawDepts
-    : [filterDept];
+    : rawDepts.filter(d => isSameDepartment(d, filterDept));
+
+  let totalCount = 0;
 
   depts.forEach(deptName => {
-    const staffInDept = activeStaffList.filter(s => {
+    const staffInDept = eligibleStaff.filter(s => {
       const d = (s.dept || "").trim().toLowerCase();
       const target = deptName.trim().toLowerCase();
-      return d === target || d.includes(target) || target.includes(d);
+      return isSameDepartment(d, target);
     });
 
     if (staffInDept.length > 0) {
-      // Sắp xếp trong tổ theo thứ bậc chức vụ: Giám đốc -> Phó Giám đốc -> Tổ trưởng -> Tổ phó -> Chuyên viên -> Nhân viên
       const rankOrder = ["giám đốc", "phó giám đốc", "tổ trưởng", "tổ phó", "chuyên viên", "nhân viên", "cán bộ"];
       staffInDept.sort((a, b) => {
         const rA = rankOrder.findIndex(r => (a.role || "").toLowerCase().includes(r));
@@ -384,17 +597,26 @@ function populateStaffDropdown(filterDept = "ALL") {
       });
 
       const optGroup = document.createElement("optgroup");
-      optGroup.label = `${deptName} (${staffInDept.length} nhân sự)`;
+      optGroup.label = `${deptName} (${staffInDept.length} cán bộ)`;
       staffInDept.forEach(staff => {
         const opt = document.createElement("option");
         opt.value = staff.id;
         const noteText = staff.note ? ` [${staff.note}]` : "";
         opt.textContent = `${staff.name} — ${staff.role}${noteText}`;
         optGroup.appendChild(opt);
+        totalCount++;
       });
       staffSelect.appendChild(optGroup);
     }
   });
+
+  if (totalCount === 0) {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.disabled = true;
+    opt.textContent = "-- Không có cán bộ cấp dưới trong tổ này --";
+    staffSelect.appendChild(opt);
+  }
 }
 
 function removeAttachedFile() {
@@ -407,20 +629,7 @@ function removeAttachedFile() {
   if (fileLabel) fileLabel.textContent = "Nhấp để chọn tệp từ máy tính...";
 }
 
-// ========================================================
-// Chuẩn hóa bỏ dấu tiếng Việt để tìm kiếm & so khớp an toàn
-function removeVietnameseTones(str) {
-  if (!str) return "";
-  str = String(str).normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  str = str.replace(/[đĐ]/g, "d");
-  return str.toLowerCase().trim();
-}
 
-// Chuẩn hóa số điện thoại để so sánh an toàn
-function normalizePhone(p) {
-  if (!p) return "";
-  return String(p).replace(/^'+/, "").replace(/[\s\.\-]+/g, "").replace(/^0+/, "");
-}
 
 /**
  * Rào chắn Phân Quyền Truy Cập Nhiệm Vụ Giao Việc (RBAC 3 Tầng):
@@ -991,6 +1200,16 @@ window.addEventListener("DOMContentLoaded", () => {
   if (form) {
     form.addEventListener("submit", (e) => {
       e.preventDefault();
+
+      const currentUser = (typeof FamilyAuth !== "undefined" && FamilyAuth.getUser()) || 
+                          JSON.parse(sessionStorage.getItem("currentUser") || sessionStorage.getItem("family_user") || "null");
+
+      const myRank = getUserRank(currentUser);
+      if (myRank >= 5) {
+        showToast("Đồng chí không có thẩm quyền phát lệnh giao việc!", "error");
+        return;
+      }
+
       const staffId = staffSelect?.value;
       const staff = activeStaffList.find(s => s.id === staffId);
       if (!staff) {
@@ -998,9 +1217,17 @@ window.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      if (!canAssignTaskTo(currentUser, staff)) {
+        showToast("Vi phạm quy tắc giao việc: Cấp lãnh đạo chỉ được giao cho cấp dưới thuộc thẩm quyền trong tổ chuyên môn!", "error");
+        return;
+      }
+
+      const leaderValue = document.getElementById("assignLeader")?.value || 
+                          (currentUser ? `${currentUser.fullname || currentUser.name} — ${currentUser.position || currentUser.role}` : "");
+
       const newTask = {
         id: "TASK_" + Math.floor(1000 + Math.random() * 9000),
-        leader: document.getElementById("assignLeader")?.value || "",
+        leader: leaderValue,
         assigneeId: staff.id,
         assigneeName: staff.name,
         assigneeRole: staff.role,
@@ -1047,6 +1274,17 @@ window.addEventListener("DOMContentLoaded", () => {
     const tabBtnTracking = document.getElementById("tabBtnTracking");
     const panelAssign = document.getElementById("panelAssign");
     const panelTracking = document.getElementById("panelTracking");
+
+    const currentUser = (typeof FamilyAuth !== "undefined" && FamilyAuth.getUser()) || 
+                        JSON.parse(sessionStorage.getItem("currentUser") || sessionStorage.getItem("family_user") || "null");
+
+    if (tabName === "assign") {
+      const myRank = getUserRank(currentUser);
+      if (myRank >= 5) {
+        showToast("Đồng chí không có quyền giao việc! Chức năng này chỉ dành cho Ban Giám đốc và Lãnh đạo các Tổ chuyên môn.", "error");
+        tabName = "tracking";
+      }
+    }
 
     if (tabName === "assign") {
       if (tabBtnAssign) tabBtnAssign.classList.add("active");
@@ -1127,6 +1365,7 @@ window.addEventListener("DOMContentLoaded", () => {
     btnReset.addEventListener("click", () => {
       document.getElementById("taskAssignmentForm")?.reset();
       removeAttachedFile();
+      initUserSession(); // Khôi phục lại tên lãnh đạo, tổ cố định và dropdown
       showToast("Đã làm mới biểu mẫu giao việc");
     });
   }

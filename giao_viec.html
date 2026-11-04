@@ -236,7 +236,7 @@
             </div>
             <div>
               <h2 class="text-base font-bold text-white">PHIẾU PHÁT LỆNH GIAO VIỆC & ĐÔN ĐỐC TIẾN ĐỘ</h2>
-              <p class="text-xs text-slate-300">Phân công nhiệm vụ cụ thể cho 82 cán bộ viên chức thuộc 5 tổ chuyên môn</p>
+              <p class="text-xs text-slate-300">Phân công nhiệm vụ cụ thể theo đúng thẩm quyền và tổ chuyên môn (75 nhân sự)</p>
             </div>
           </div>
           
@@ -254,44 +254,40 @@
         <form id="taskAssignmentForm" class="p-6 space-y-6">
           <!-- Hàng 1: Người giao việc & Tổ nhận việc -->
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            <!-- 1. Người giao việc -->
+            <!-- 1. Người giao việc (Tự động cố định theo tài khoản đang đăng nhập) -->
             <div>
               <label for="assignLeader" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                 Lãnh đạo giao việc / Người chỉ đạo <span class="text-rose-500">*</span>
               </label>
               <div class="relative">
-                <select id="assignLeader" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-                  <option value="Nguyễn Chiến Thắng (Giám đốc)">Nguyễn Chiến Thắng — Giám đốc Chi nhánh</option>
-                  <option value="Đặng Huy Cường (Phó Giám đốc)">Đặng Huy Cường — Phó Giám đốc Chi nhánh</option>
-                  <option value="Nguyễn Thị Lệ Hằng (Phó Giám đốc)">Nguyễn Thị Lệ Hằng — Phó Giám đốc Chi nhánh</option>
-                  <option value="Trần Thanh Triết (Tổ trưởng KTĐC)">Trần Thanh Triết — Tổ trưởng Kỹ thuật Địa chính</option>
-                  <option value="Đặng Thị Tuyết Trinh (Tổ phó KTĐC)">Đặng Thị Tuyết Trinh — Tổ phó Kỹ thuật Địa chính</option>
-                  <option value="Nguyễn Thị Thùy Trang (Tổ trưởng ĐKGCN)">Nguyễn Thị Thùy Trang — Tổ trưởng Đăng ký cấp GCN</option>
-                  <option value="Huỳnh Tấn Nguyên (Tổ phó ĐKGCN)">Huỳnh Tấn Nguyên — Tổ phó Đăng ký cấp GCN</option>
-                  <option value="Nguyễn Thành Như Bảo (Tổ phó ĐKGCN)">Nguyễn Thành Như Bảo — Tổ phó ĐKGCN</option>
-                  <option value="Nguyễn Thị Thu Minh (Tổ phó ĐKGCN)">Nguyễn Thị Thu Minh — Tổ phó ĐKGCN</option>
-                  <option value="Nguyễn Thị Bích Tuyền (Tổ trưởng HCTH)">Nguyễn Thị Bích Tuyền — Tổ trưởng Hành chính Tổng hợp</option>
-                  <option value="Bùi Thị Minh Nguyệt (Tổ phó HCTH)">Bùi Thị Minh Nguyệt — Tổ phó Hành chính Tổng hợp</option>
-                  <option value="Hồ Thị Hồng Linh (Tổ phó HCTH)">Hồ Thị Hồng Linh — Tổ phó Hành chính Tổng hợp</option>
-                  <option value="Nguyễn Thị Mai (Tổ phó HCTH)">Nguyễn Thị Mai — Tổ phó Hành chính Tổng hợp</option>
-                </select>
+                <input type="text" id="assignLeader" name="assignLeader" readonly required
+                  class="w-full bg-slate-100 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm font-bold focus:outline-hidden cursor-not-allowed select-none transition"
+                  placeholder="Đang nhận diện tài khoản đăng nhập...">
+                <span class="absolute right-3.5 top-3 text-slate-400 text-xs">
+                  <i class="fa-solid fa-lock"></i>
+                </span>
               </div>
-              <p class="text-[11px] text-slate-500 mt-1">Tự động nhận diện theo tài khoản đăng nhập</p>
+              <p id="assignLeaderDeptNote" class="text-[11px] text-blue-700 font-medium mt-1 truncate">Tự động nhận diện theo tài khoản đăng nhập</p>
             </div>
 
-            <!-- 2. Lọc nhanh Tổ chuyên môn -->
+            <!-- 2. Tổ chuyên môn nhận việc -->
             <div>
               <label for="filterStaffDept" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Lọc theo Tổ chuyên môn
+                Tổ chuyên môn nhận việc
               </label>
-              <select id="filterStaffDept" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-                <option value="ALL">-- Tất cả cán bộ trong cơ quan (75 nhân sự) --</option>
-                <option value="Tổ Kỹ thuật Địa chính và Lưu trữ">Tổ Kỹ thuật Địa chính và Lưu trữ (27)</option>
-                <option value="Tổ Đăng ký cấp GCN">Tổ Đăng ký cấp GCN (27)</option>
-                <option value="Tổ Hành chính Tổng hợp">Tổ Hành chính Tổng hợp (18)</option>
-                <option value="Ban Giám đốc">Ban Giám đốc (3)</option>
-              </select>
-              <p class="text-[11px] text-slate-500 mt-1">Chọn tổ để thu hẹp danh sách cán bộ bên cạnh</p>
+              <div class="relative">
+                <select id="filterStaffDept" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                  <option value="ALL">-- Tất cả cán bộ trong cơ quan (75 nhân sự) --</option>
+                  <option value="Tổ Kỹ thuật Địa chính và Lưu trữ">Tổ Kỹ thuật Địa chính và Lưu trữ (27)</option>
+                  <option value="Tổ Đăng ký cấp GCN">Tổ Đăng ký cấp GCN (27)</option>
+                  <option value="Tổ Hành chính Tổng hợp">Tổ Hành chính Tổng hợp (18)</option>
+                  <option value="Ban Giám đốc">Ban Giám đốc (3)</option>
+                </select>
+                <span id="lockStaffDeptIcon" class="hidden absolute right-8 top-3 text-amber-500 text-xs">
+                  <i class="fa-solid fa-lock"></i>
+                </span>
+              </div>
+              <p id="filterStaffDeptHint" class="text-[11px] text-slate-500 mt-1">Chọn tổ để thu hẹp danh sách cán bộ bên cạnh</p>
             </div>
 
             <!-- 3. Cán bộ tiếp nhận việc (Tự động nạp từ Sheet TaiKhoan) -->

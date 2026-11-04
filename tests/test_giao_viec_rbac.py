@@ -1,3 +1,8 @@
+import sys
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8')
 # -*- coding: utf-8 -*-
 """
 E2E RBAC TEST SUITE FOR GIAO_VIEC MODULE

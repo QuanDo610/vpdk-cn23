@@ -1428,6 +1428,13 @@ function handleCreateTask(data, ss) {
   const createdAt = data.createdAt || `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
   const taskId = data.id || ('TASK_' + Math.floor(1000 + Math.random() * 9000));
 
+  // Rào chắn bảo mật: Nghiêm cấm tự giao việc cho chính mình
+  const leaderNorm = removeVietnameseTones(data.leader || "").toLowerCase();
+  const assigneeNorm = removeVietnameseTones(data.assigneeName || "").toLowerCase();
+  if (leaderNorm && assigneeNorm && (leaderNorm.includes(assigneeNorm) || assigneeNorm.includes(leaderNorm))) {
+    return { success: false, message: "Lỗi bảo mật: Lãnh đạo không được tự giao việc cho chính mình!" };
+  }
+
   // Tự động upload tệp đính kèm vào thư mục VPDK_CN23_SYSTEM/giao-viec/
   let fileUrl = data.fileUrl || "";
   const fileBase64 = data.fileBase64 || (data.attachedFile && data.attachedFile.base64);
