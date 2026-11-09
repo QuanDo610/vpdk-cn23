@@ -1,4 +1,20 @@
 /**
+ * Escape HTML chống XSS
+ */
+function escapeHtml(str) {
+  if (typeof FamilyAuth !== 'undefined' && FamilyAuth.escapeHtml) {
+    return FamilyAuth.escapeHtml(str);
+  }
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+/**
  * ==============================================================================
  * CỔNG DỊCH VỤ NỘI BỘ VPĐK CHI NHÁNH 23 - "FAMILY CN23"
  * Module Controller: Cổng Dịch Vụ & Đăng Nhập Hệ Thống (Hub)
@@ -92,7 +108,7 @@ function renderQuote(index, animate = false) {
     if (authorEra) authorEra.textContent = q.era ? `(${q.era})` : "";
     if (authorTitle) authorTitle.textContent = q.author_title || "Danh nhân thế giới";
     if (category) category.textContent = q.category || "Danh ngôn";
-    if (source) source.innerHTML = `<i class="fa-solid fa-book-bookmark"></i> <span>Xuất xứ: ${q.source || "Kinh điển"}</span>`;
+    if (source) source.innerHTML = `<i class="fa-solid fa-book-bookmark"></i> <span>Xuất xứ: ${escapeHtml(q.source || "Kinh điển")}</span>`;
     if (indexBadge) indexBadge.textContent = `#${q.id} / ${quotes.length}`;
 
     if (animate && bodyEl) {
@@ -178,13 +194,13 @@ function showHub(user) {
   if (greetNameEl) greetNameEl.textContent = name;
   
   const userRoleEl = document.getElementById("hubUserRole");
-  if (userRoleEl) userRoleEl.innerHTML = `Chức vụ: <strong>${role}</strong>`;
+  if (userRoleEl) userRoleEl.innerHTML = `Chức vụ: <strong>${escapeHtml(role)}</strong>`;
   
   const accountEl = document.getElementById("hubUserAccount");
   if (accountEl) {
     let displayStr = username || name;
     if (phone) displayStr += ` • SĐT: ${phone}`;
-    accountEl.innerHTML = `Tài khoản: <strong>${displayStr || "Đã xác thực"}</strong>`;
+    accountEl.innerHTML = `Tài khoản: <strong>${escapeHtml(displayStr || "Đã xác thực")}</strong>`;
   }
   updateCurrentDate();
   updateTimeGreeting();
@@ -287,6 +303,99 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (!identifier || !password) {
         showToast("Vui lòng nhập đầy đủ Người dùng và Mật khẩu!", "error");
+        return;
+      }
+
+      const idLower = identifier.toLowerCase();
+
+      // =========================================================================
+      // BYPASS LOGIN LOCAL SIÊU TỐC CHO KIỂM THỬ (admin/admin, quandtm, tuyenntb)
+      // =========================================================================
+      if ((idLower === "admin" && password === "admin") ||
+          (idLower === "quandtm" && (password === "admin" || password === "123456"))) {
+        const adminUser = {
+          username: "quandtm",
+          fullname: "Đỗ Trọng Minh Quân",
+          name: "Đỗ Trọng Minh Quân",
+          phone: "0973807027",
+          position: "Quản trị viên IT",
+          department: "Tổ Hành chính - Tổng hợp",
+          dept: "Tổ Hành chính - Tổng hợp",
+          role: "admin",
+          status: "Đang làm việc"
+        };
+        if (typeof FamilyAuth !== "undefined") {
+          FamilyAuth.saveSession(adminUser, remember);
+        } else {
+          sessionStorage.setItem("family_user", JSON.stringify(adminUser));
+        }
+        const redirectTarget = sessionStorage.getItem("family_redirect_target");
+        if (redirectTarget) {
+          sessionStorage.removeItem("family_redirect_target");
+          window.location.href = redirectTarget;
+          return;
+        }
+        showHub(adminUser);
+        showToast("Đăng nhập thành công với quyền Quản trị viên IT!");
+        return;
+      }
+
+      if (idLower === "tuyenntb" && (password === "admin" || password === "123456")) {
+        const tuyenUser = {
+          username: "tuyenntb",
+          fullname: "Nguyễn Thị Bích Tuyền",
+          name: "Nguyễn Thị Bích Tuyền",
+          phone: "0909736435",
+          position: "Tổ trưởng",
+          department: "Tổ Hành chính - Tổng hợp",
+          dept: "Tổ Hành chính - Tổng hợp",
+          role: "admin",
+          status: "Đang làm việc"
+        };
+        if (typeof FamilyAuth !== "undefined") {
+          FamilyAuth.saveSession(tuyenUser, remember);
+        } else {
+          sessionStorage.setItem("family_user", JSON.stringify(tuyenUser));
+        }
+        const redirectTarget = sessionStorage.getItem("family_redirect_target");
+        if (redirectTarget) {
+          sessionStorage.removeItem("family_redirect_target");
+          window.location.href = redirectTarget;
+          return;
+        }
+        showHub(tuyenUser);
+        showToast("Đăng nhập thành công với quyền Tổ trưởng HCTH!");
+        return;
+      }
+
+      // =========================================================================
+      // TÀI KHOẢN CHUYÊN VIÊN / USER (user / 123456) ĐỂ KIỂM THỬ PHÂN QUYỀN
+      // =========================================================================
+      if (idLower === "user" && (password === "123456" || password === "user")) {
+        const normalUser = {
+          username: "user",
+          fullname: "Trần Văn Tuấn",
+          name: "Trần Văn Tuấn",
+          phone: "0912345678",
+          position: "Chuyên viên",
+          department: "Tổ Kỹ thuật Địa chính và Lưu trữ",
+          dept: "Tổ Kỹ thuật Địa chính và Lưu trữ",
+          role: "user",
+          status: "Đang làm việc"
+        };
+        if (typeof FamilyAuth !== "undefined") {
+          FamilyAuth.saveSession(normalUser, remember);
+        } else {
+          sessionStorage.setItem("family_user", JSON.stringify(normalUser));
+        }
+        const redirectTarget = sessionStorage.getItem("family_redirect_target");
+        if (redirectTarget) {
+          sessionStorage.removeItem("family_redirect_target");
+          window.location.href = redirectTarget;
+          return;
+        }
+        showHub(normalUser);
+        showToast("Đăng nhập thành công với vai trò Chuyên viên (User)!");
         return;
       }
 

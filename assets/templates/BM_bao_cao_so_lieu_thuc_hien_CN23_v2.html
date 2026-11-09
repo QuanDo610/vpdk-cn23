@@ -1,0 +1,4180 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hệ thống Điều hành Giao việc & Báo cáo Công việc Hàng ngày - Chi nhánh số 23 (v2)</title>
+  
+  <!-- Chart.js for data visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-hover: #1e40af;
+      --primary-light: #eff6ff;
+      --secondary: #0d9488;
+      --secondary-light: #ccfbf1;
+      --accent: #6366f1;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --border-focus: #3b82f6;
+      --success: #16a34a;
+      --success-bg: #dcfce7;
+      --warning: #ea580c;
+      --warning-bg: #ffedd5;
+      --danger: #dc2626;
+      --danger-bg: #fee2e2;
+      --urgent: #991b1b;
+      --urgent-bg: #ffe4e6;
+      --purple: #7c3aed;
+      --purple-bg: #f3e8ff;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.08);
+      --radius: 12px;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --primary-light: #1e3a5f;
+      --secondary-light: #134e4a;
+      --purple-bg: #3b0764;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding: 24px 16px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 1360px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header-card {
+      background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 60%, #0d9488 100%);
+      color: #ffffff;
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin-bottom: 22px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+    }
+
+    .org-badge {
+      display: inline-block;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(4px);
+      padding: 5px 14px;
+      border-radius: 9999px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .header-card h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+      letter-spacing: -0.02em;
+    }
+
+    .header-card p {
+      font-size: 0.95rem;
+      opacity: 0.92;
+      max-width: 900px;
+    }
+
+    .header-card .version-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #10b981;
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 9999px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    .theme-toggle-btn {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .theme-toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-1px);
+    }
+
+    /* Tabs Navigation */
+    .tabs-nav {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 22px;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 2px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      padding: 12px 18px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .tab-btn:hover {
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      background: var(--card-bg);
+      box-shadow: 0 -2px 6px rgba(0,0,0,0.04);
+    }
+
+    [data-theme="dark"] .tab-btn.active {
+      color: #60a5fa;
+      border-bottom-color: #60a5fa;
+    }
+
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Live KPI bar */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .kpi-title {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .kpi-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin: 6px 0;
+      letter-spacing: -0.02em;
+    }
+
+    .kpi-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      width: fit-content;
+    }
+    .kpi-badge.pass { background: var(--success-bg); color: var(--success); }
+    .kpi-badge.warn { background: var(--warning-bg); color: var(--warning); }
+    .kpi-badge.fail { background: var(--danger-bg); color: var(--danger); }
+    .kpi-badge.urgent { background: var(--urgent-bg); color: var(--urgent); font-weight: 700; }
+    .kpi-badge.purple { background: var(--purple-bg); color: var(--purple); }
+    .kpi-badge.info { background: var(--primary-light); color: var(--primary); }
+
+    /* Department Summary Chips */
+    .dept-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .dept-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-left: 5px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      box-shadow: var(--shadow);
+    }
+    .dept-card.ktdc { border-left-color: var(--secondary); }
+    .dept-card.hcth { border-left-color: var(--purple); }
+
+    .dept-card h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .dept-card-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      text-align: center;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--border);
+    }
+
+    .dept-stat-val {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .dept-stat-lbl {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    /* Cards & Forms */
+    .main-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 26px;
+      margin-bottom: 26px;
+    }
+
+    /* Quick Entry Droplist Card */
+    .quick-entry-box {
+      background: linear-gradient(135deg, var(--card-bg) 0%, var(--primary-light) 100%);
+      border: 2px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 22px;
+      box-shadow: var(--shadow);
+    }
+    [data-theme="dark"] .quick-entry-box {
+      background: #1e293b;
+      border-color: #3b82f6;
+    }
+
+    .section-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--primary);
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 10px;
+      margin-top: 26px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-title:first-of-type {
+      margin-top: 0;
+    }
+
+    [data-theme="dark"] .section-title {
+      color: #60a5fa;
+    }
+
+    .section-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-top: -10px;
+      margin-bottom: 18px;
+    }
+
+    /* Form Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .label-hint {
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    input[type="datetime-local"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text-main);
+      font-size: 0.92rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.15);
+    }
+
+    input[readonly] {
+      background-color: rgba(148, 163, 184, 0.12);
+      cursor: not-allowed;
+      font-weight: 700;
+    }
+
+    .highlight-input {
+      background-color: var(--primary-light) !important;
+      border-color: #93c5fd;
+      color: var(--primary);
+    }
+    [data-theme="dark"] .highlight-input {
+      color: #93c5fd;
+    }
+
+    /* Daily Report Table Specific */
+    .table-container {
+      overflow-x: auto;
+      margin-top: 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--bg);
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.03em;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    tr:hover td {
+      background: rgba(148, 163, 184, 0.05);
+    }
+
+    /* Highlight animated row when selected */
+    @keyframes highlightRowAnim {
+      0% { background-color: rgba(59, 130, 246, 0.35); }
+      100% { background-color: transparent; }
+    }
+    .row-highlight-active {
+      animation: highlightRowAnim 2.5s ease-out;
+      outline: 2px solid var(--primary);
+    }
+
+    /* Subtotal & Section Rows */
+    tr.tr-section-header {
+      background: #f1f5f9;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    [data-theme="dark"] tr.tr-section-header {
+      background: #1e293b;
+      color: #93c5fd;
+    }
+
+    tr.tr-grandtotal {
+      background: linear-gradient(90deg, #eff6ff 0%, #f0fdf4 100%);
+      font-weight: 800;
+      font-size: 0.95rem;
+      border-top: 2px solid var(--primary);
+      border-bottom: 2px solid var(--primary);
+      color: var(--primary);
+    }
+    [data-theme="dark"] tr.tr-grandtotal {
+      background: #1e3a5f;
+      color: #67e8f9;
+    }
+
+    .daily-cell-input {
+      width: 84px;
+      padding: 6px 8px;
+      font-size: 0.9rem;
+      text-align: right;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--text-main);
+      font-weight: 600;
+    }
+    .daily-cell-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.15);
+    }
+
+    .num-display {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+    }
+
+    .progress-bar-wrap {
+      width: 100%;
+      height: 6px;
+      background: var(--border);
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--secondary);
+      border-radius: 9999px;
+      transition: width 0.3s;
+    }
+
+    /* Actions & Buttons */
+    .toolbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .btn {
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.88rem;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    }
+
+    .btn-secondary {
+      background: var(--border);
+      color: var(--text-main);
+    }
+    .btn-secondary:hover {
+      background: #cbd5e1;
+    }
+
+    .btn-success {
+      background: var(--secondary);
+      color: white;
+    }
+    .btn-success:hover {
+      background: #0f766e;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-main);
+    }
+    .btn-outline:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+
+    .action-icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 6px;
+      color: var(--text-muted);
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+    .action-icon-btn:hover {
+      color: var(--danger);
+      background: var(--danger-bg);
+    }
+    .action-icon-btn.done:hover {
+      color: var(--success);
+      background: var(--success-bg);
+    }
+
+    /* File drop styling */
+    .file-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      background: var(--bg);
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .file-input-wrapper:hover {
+      border-color: var(--primary);
+    }
+    .file-input-wrapper input[type="file"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    /* Reconciliation callout */
+    .recon-box {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-left: 4px solid var(--secondary);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin: 18px 0;
+      font-size: 0.86rem;
+    }
+    [data-theme="dark"] .recon-box {
+      background: #1e293b;
+      border-color: #475569;
+    }
+    .recon-box strong {
+      color: var(--primary);
+    }
+    [data-theme="dark"] .recon-box strong {
+      color: #93c5fd;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0f172a;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s;
+      z-index: 9999;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .toast.success { background: #15803d; }
+    .toast.error { background: #b91c1c; }
+
+    /* Print styling */
+    @media print {
+      body {
+        background: white !important;
+        color: black !important;
+        padding: 0 !important;
+      }
+      .header-card {
+        background: none !important;
+        color: black !important;
+        border: 1px solid #333 !important;
+        box-shadow: none !important;
+        padding: 14px !important;
+      }
+      .theme-toggle-btn, .tabs-nav, .toolbar-actions, .btn, .no-print, .quick-entry-box {
+        display: none !important;
+      }
+      .main-card {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+      }
+      .daily-cell-input {
+        border: none !important;
+        background: none !important;
+        padding: 0 !important;
+        font-weight: 700 !important;
+      }
+      .tab-content {
+        display: none !important;
+      }
+      #tab-bao-cao-hang-ngay {
+        display: block !important;
+      }
+    }
+  
+    /* ========================================== */
+    /* ROLE SWITCHER & EXECUTIVE MONITORING STYLES */
+    /* ========================================== */
+    .role-bar-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.22);
+    }
+
+    .role-badge-current {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.16);
+      padding: 6px 16px;
+      border-radius: 9999px;
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      transition: all 0.2s;
+    }
+    .role-badge-current.admin-mode {
+      border-color: #f59e0b;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
+    }
+    .role-badge-current.user-mode {
+      border-color: #14b8a6;
+      box-shadow: 0 0 10px rgba(20, 184, 166, 0.25);
+    }
+
+    .role-toggle-group {
+      display: inline-flex;
+      background: rgba(0, 0, 0, 0.28);
+      border-radius: 9999px;
+      padding: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      gap: 4px;
+    }
+
+    .role-toggle-btn {
+      border: none;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.85);
+      padding: 7px 18px;
+      border-radius: 9999px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .role-toggle-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.15);
+    }
+    .role-toggle-btn.active {
+      background: #ffffff;
+      color: var(--primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    .role-toggle-btn#btnRoleUser.active {
+      color: #0d9488;
+    }
+
+    .role-dept-select {
+      background: rgba(255, 255, 255, 0.95);
+      color: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      outline: none;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Admin Executive Monitoring Hub */
+    .admin-hub-card {
+      background: var(--card-bg);
+      border: 2px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 22px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+    }
+    [data-theme="dark"] .admin-hub-card {
+      background: #1e293b;
+      border-color: #3b82f6;
+    }
+
+    .admin-hub-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+    }
+
+    .monitor-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 16px;
+    }
+
+    .monitor-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+    .monitor-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+    .monitor-card.status-submitted {
+      border-color: var(--success);
+      background: var(--success-bg);
+    }
+    [data-theme="dark"] .monitor-card.status-submitted {
+      background: rgba(22, 163, 74, 0.15);
+      border-color: #22c55e;
+    }
+    .monitor-card.status-inprogress {
+      border-color: var(--warning);
+      background: var(--warning-bg);
+    }
+    [data-theme="dark"] .monitor-card.status-inprogress {
+      background: rgba(234, 88, 12, 0.15);
+      border-color: #f97316;
+    }
+
+    .monitor-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .monitor-dept-name {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+    .monitor-status-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    .monitor-card.status-submitted .monitor-status-badge {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+    .monitor-card.status-inprogress .monitor-status-badge {
+      background: var(--warning);
+      color: white;
+      border-color: var(--warning);
+    }
+
+    .monitor-stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      text-align: center;
+      background: var(--card-bg);
+      padding: 10px 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .monitor-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding-top: 6px;
+      border-top: 1px dashed var(--border);
+    }
+
+    .btn-micro {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-micro:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    /* User Workspace Hub */
+    .user-hub-card {
+      background: linear-gradient(135deg, var(--card-bg) 0%, var(--secondary-light) 100%);
+      border: 2px solid var(--secondary);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 22px;
+      box-shadow: var(--shadow);
+    }
+    [data-theme="dark"] .user-hub-card {
+      background: #1e293b;
+      border-color: #14b8a6;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Header -->
+    <header class="header-card">
+      <button class="theme-toggle-btn" id="themeToggle" title="Chuyển chế độ Sáng / Tối">
+        <span id="themeIcon">🌙</span> <span id="themeText">Chế độ tối</span>
+      </button>
+      <div class="org-badge">VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI TP. HỒ CHÍ MINH — CHI NHÁNH SỐ 23</div>
+      <h1>
+        HỆ THỐNG ĐIỀU HÀNH GIAO VIỆC & BÁO CÁO CÔNG VIỆC HÀNG NGÀY
+        <span class="version-pill">Phiên bản v2.0 (Chuẩn mới)</span>
+      </h1>
+      <p>Nền tảng thường trực: Báo cáo công việc hàng ngày theo danh mục nghiệp vụ chi tiết (Cấp GCN, GDBĐ, Hồ sơ kỹ thuật địa chính, Cung cấp thông tin) & Giao việc chỉ đạo 82 nhân sự</p>
+    
+      <!-- Thanh Phân quyền Lãnh đạo / Admin & Nhân viên / User -->
+      <div class="role-bar-wrap">
+        <div class="role-badge-current admin-mode" id="currentRoleBadge">
+          <span id="roleIcon">👑</span>
+          <span>VAI TRÒ:</span>
+          <strong id="roleTitleText" style="text-transform: uppercase;">LÃNH ĐẠO / ADMIN</strong>
+          <span id="roleDeptSubtitle" style="opacity: 0.92; font-weight: normal; margin-left: 4px;">— Toàn quyền theo dõi & chốt số</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <!-- Nút chuyển đổi vai trò 1-click -->
+          <div class="role-toggle-group">
+            <button type="button" class="role-toggle-btn active" id="btnRoleAdmin" onclick="switchUserRole('ADMIN')">
+              <span>👑</span> Lãnh đạo / Admin
+            </button>
+            <button type="button" class="role-toggle-btn" id="btnRoleUser" onclick="switchUserRole('USER')">
+              <span>👤</span> Nhân viên / User
+            </button>
+          </div>
+
+          <!-- Bộ chọn Tổ khi ở chế độ USER -->
+          <div id="userDeptSelectorWrap" style="display: none; align-items: center; gap: 6px;">
+            <label for="userDeptSelector" style="color: white; font-size: 0.82rem; font-weight: 700;">Tổ nghiệp vụ:</label>
+            <select id="userDeptSelector" class="role-dept-select" onchange="onUserDeptChange(this.value)">
+              <option value="SEC_1" selected>🏢 Tổ 1: Đăng ký & Cấp GCN (27 NS)</option>
+              <option value="SEC_2">📐 Tổ 2: Kỹ thuật địa chính & LT (30 NS)</option>
+              <option value="SEC_3">📑 Tổ 3: HCTH & Một cửa (22 NS)</option>
+              <option value="ALL">👥 Toàn cơ quan (Xem chung)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="tabs-nav">
+      <button class="tab-btn active" data-tab="tab-bao-cao-hang-ngay">
+        <span>📊</span> 1. BÁO CÁO CÔNG VIỆC HÀNG NGÀY (CHUẨN FILE MỚI)
+      </button>
+      <button class="tab-btn" data-tab="tab-giao-viec">
+        <span>✍️</span> 2. LÃNH ĐẠO GIAO VIỆC & CHỈ ĐẠO CÁN BỘ
+      </button>
+      <button class="tab-btn" data-tab="tab-theo-doi-viec">
+        <span>📋</span> 3. BẢNG TIẾN ĐỘ CÔNG VIỆC ĐÃ GIAO
+      </button>
+      <button class="tab-btn" data-tab="tab-quan-tri-tthc">
+        <span>📈</span> 4. QUẢN TRỊ TTHC & SỐ HÓA ĐIỀU HÀNH
+      </button>
+    </nav>
+
+    <!-- ========================================== -->
+    <!-- TAB 1: BÁO CÁO CÔNG VIỆC HÀNG NGÀY (CORE) -->
+    <!-- ========================================== -->
+    <div id="tab-bao-cao-hang-ngay" class="tab-content active">
+
+      
+      <!-- ============================================== -->
+      <!-- BẢNG GIÁM SÁT TÌNH HÌNH BÁO CÁO NGÀY (ADMIN)  -->
+      <!-- ============================================== -->
+      <section id="adminMonitoringHub" class="admin-hub-card">
+        <div class="admin-hub-header">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="font-size: 1.8rem; background: var(--primary-light); padding: 8px 12px; border-radius: 12px;">👑</div>
+            <div>
+              <h2 style="font-size: 1.12rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px;">
+                BẢNG GIÁM SÁT TIẾN ĐỘ BÁO CÁO CỦA CÁC TỔ — CHI NHÁNH SỐ 23
+                <span class="kpi-badge info" style="font-size: 0.72rem;">Dành cho Lãnh đạo</span>
+              </h2>
+              <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;">
+                Theo dõi tình trạng nộp số liệu hàng ngày của 3 Tổ chuyên môn. Bấm "Xem chi tiết" để lọc trực tiếp trên bảng.
+              </p>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <span id="badgeLockStatus" class="kpi-badge pass" style="font-size: 0.82rem; padding: 6px 14px; font-weight: 700;">
+              🟢 ĐANG TIẾP NHẬN SỐ LIỆU NGÀY
+            </span>
+            <button type="button" class="btn btn-outline" id="btnAdminRefreshMonitor" onclick="updateAdminMonitoringHub()" title="Làm mới trạng thái giám sát">
+              <span>🔄</span> Cập nhật
+            </button>
+            <button type="button" class="btn btn-primary" id="btnAdminQuickLock" onclick="lockAdminDailyReport()" title="Khóa sổ báo cáo ngày hôm nay">
+              <span>🔒</span> Chốt sổ ngày
+            </button>
+          </div>
+        </div>
+
+        <!-- 3 Department Status Cards for Admin Monitoring -->
+        <div class="monitor-grid">
+          <!-- Tổ 1 -->
+          <div class="monitor-card" id="cardMonitorSec1">
+            <div class="monitor-card-header">
+              <span class="monitor-dept-name">🏢 1. TỔ ĐĂNG KÝ & CẤP GCN</span>
+              <span class="monitor-status-badge" id="statusBadgeSec1">⚪ Chưa gửi</span>
+            </div>
+            <div class="monitor-stats-row">
+              <div><div style="color:var(--text-muted); font-size:0.7rem;">TIẾP NHẬN</div><strong id="monNhanSec1" style="color:var(--primary); font-size:1.1rem;">0</strong></div>
+              <div><div style="color:var(--text-muted); font-size:0.7rem;">ĐÃ GIẢI QUYẾT</div><strong id="monGqSec1" style="color:var(--secondary); font-size:1.1rem;">0</strong></div>
+              <div><div style="color:var(--text-muted); font-size:0.7rem;">CHƯA XỬ LÝ</div><strong id="monChuaSec1" style="color:var(--danger); font-size:1.1rem;">0</strong></div>
+            </div>
+            <div class="monitor-footer">
+              <span id="monTimeSec1" style="font-size: 0.74rem; color: var(--text-muted);">🕒 Chưa ghi nhận gửi</span>
+              <button type="button" class="btn-micro" onclick="focusDepartmentTable('SEC_1')">🔍 Xem Tổ 1</button>
+            </div>
+          </div>
+
+          <!-- Tổ 2 -->
+          <div class="monitor-card" id="cardMonitorSec2">
+            <div class="monitor-card-header">
+              <span class="monitor-dept-name">📐 2. TỔ KỸ THUẬT ĐỊA CHÍNH</span>
+              <span class="monitor-status-badge" id="statusBadgeSec2">⚪ Chưa gửi</span>
+            </div>
+            <div class="monitor-stats-row">
+              <div><div style="color:var(--text-muted); font-size:0.7rem;">TIẾP NHẬN</div><strong id="monNhanSec2" style="color:var(--primary); font-size:1.1rem;">0</strong></div>
+              <div><div style="color:var(--text-muted); font-size:0.7rem;">ĐÃ GIẢI QUYẾT</div><strong id="monGqSec2" style="color:var(--secondary); font-size:1.1rem;">0</strong></div>
+              <div><div style="color:var(--text-muted); font-size:0.7rem;">CHƯA XỬ LÝ</div><strong id="monChuaSec2" style="color:var(--danger); font-size:1.1rem;">0</strong></div>
+            </div>
+            <div class="monitor-footer">
+              <span id="monTimeSec2" style="font-size: 0.74rem; color: var(--text-muted);">🕒 Chưa ghi nhận gửi</span>
+              <button type="button" class="btn-micro" onclick="focusDepartmentTable('SEC_2')">🔍 Xem Tổ 2</button>
+            </div>
+          </div>
+
+          <!-- Tổ 3 -->
+          <div class="monitor-card" id="cardMonitorSec3">
+            <div class="monitor-card-header">
+              <span class="monitor-dept-name">📑 3. TỔ HCTH / MỘT CỬA</span>
+              <span class="monitor-status-badge" id="statusBadgeSec3">⚪ Chưa gửi</span>
+            </div>
+            <div class="monitor-stats-row">
+              <div><div style="color:var(--text-muted); font-size:0.7rem;">TIẾP NHẬN</div><strong id="monNhanSec3" style="color:var(--primary); font-size:1.1rem;">0</strong></div>
+              <div><div style="color:var(--text-muted); font-size:0.7rem;">ĐÃ GIẢI QUYẾT</div><strong id="monGqSec3" style="color:var(--secondary); font-size:1.1rem;">0</strong></div>
+              <div><div style="color:var(--text-muted); font-size:0.7rem;">CHƯA XỬ LÝ</div><strong id="monChuaSec3" style="color:var(--danger); font-size:1.1rem;">0</strong></div>
+            </div>
+            <div class="monitor-footer">
+              <span id="monTimeSec3" style="font-size: 0.74rem; color: var(--text-muted);">🕒 Chưa ghi nhận gửi</span>
+              <button type="button" class="btn-micro" onclick="focusDepartmentTable('SEC_3')">🔍 Xem Tổ 3</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================== -->
+      <!-- KHÔNG GIAN LÀM VIỆC DÀNH CHO USER (CHUYÊN VIÊN) -->
+      <!-- ============================================== -->
+      <section id="userWorkspaceHub" class="user-hub-card" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="font-size: 2rem; background: var(--secondary-light); padding: 8px 14px; border-radius: 12px;">👤</div>
+            <div>
+              <h2 style="font-size: 1.15rem; font-weight: 800; color: var(--secondary);">
+                KHÔNG GIAN NHẬP LIỆU BÁO CÁO NGÀY — <span id="userDeptTitleDisplay">TỔ KỸ THUẬT ĐỊA CHÍNH</span>
+              </h2>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 3px;">
+                Đồng chí vui lòng cập nhật số liệu tiếp nhận và giải quyết trong ngày của Tổ. Sau khi hoàn tất, hãy bấm <strong>"GỬI BÁO CÁO LÊN LÃNH ĐẠO"</strong> để cập nhật vào bảng giám sát chung.
+              </p>
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <span id="userSubmissionStatusBadge" class="kpi-badge warn" style="font-size: 0.82rem; padding: 6px 14px; font-weight: 700;">
+              ⚪ Chưa gửi báo cáo hôm nay
+            </span>
+            <button type="button" class="btn btn-primary" id="btnUserSubmitReport" onclick="submitUserReport()" style="background: var(--secondary); border-color: var(--secondary); font-weight: 800; font-size: 0.92rem; padding: 10px 18px; box-shadow: 0 4px 10px rgba(13, 148, 136, 0.3);">
+              📤 GỬI BÁO CÁO LÊN LÃNH ĐẠO
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Executive KPI Cards -->
+      <section class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-title">Tổng tồn kỳ trước</div>
+          <div class="kpi-value" id="kpiDailyTonTruoc" style="color: #64748b;">0</div>
+          <div class="kpi-badge info">Đầu kỳ báo cáo</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Tiếp nhận trong ngày / kỳ</div>
+          <div class="kpi-value" id="kpiDailyTiepNhan" style="color: var(--primary);">0</div>
+          <div class="kpi-badge pass">Hồ sơ tiếp nhận mới</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Đã giải quyết trả KQ</div>
+          <div class="kpi-value" id="kpiDailyDaGiaiQuyet" style="color: var(--secondary);">0</div>
+          <div class="kpi-badge pass" id="kpiDailySolveRate">Tỷ lệ: 0.0%</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Chưa giải quyết (Tồn cuối)</div>
+          <div class="kpi-value" id="kpiDailyChuaGiaiQuyet" style="color: var(--danger);">0</div>
+          <div class="kpi-badge warn" id="kpiDailyBacklogRate">Tồn đọng: 0.0%</div>
+        </div>
+      </section>
+
+      <!-- Department Quick Summary Chips -->
+      <div class="dept-cards-grid">
+        <!-- Tổ Đăng ký cấp GCN -->
+        <div class="dept-card">
+          <h3>
+            <span>🏢 I. CẤP GCN & GIAO DỊCH BẢO ĐẢM</span>
+            <span class="kpi-badge pass" style="font-size:0.7rem;">Tổ ĐK&CGCN (27 NS)</span>
+          </h3>
+          <div style="font-size:0.8rem; color:var(--text-muted);">Biến động nhà đất, Đăng ký thế chấp, Xóa thế chấp, Thay đổi thông tin...</div>
+          <div class="dept-card-stats">
+            <div>
+              <div class="dept-stat-val" id="sumDeptGcnTon">0</div>
+              <div class="dept-stat-lbl">Tồn trước</div>
+            </div>
+            <div>
+              <div class="dept-stat-val" style="color:var(--primary);" id="sumDeptGcnNhan">0</div>
+              <div class="dept-stat-lbl">Tiếp nhận</div>
+            </div>
+            <div>
+              <div class="dept-stat-val" style="color:var(--secondary);" id="sumDeptGcnGQ">0</div>
+              <div class="dept-stat-lbl">Đã giải quyết</div>
+            </div>
+            <div>
+              <div class="dept-stat-val" style="color:var(--danger);" id="sumDeptGcnChua">0</div>
+              <div class="dept-stat-lbl">Chưa giải quyết</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tổ KTĐC & Lưu trữ -->
+        <div class="dept-card ktdc">
+          <h3>
+            <span>📐 II. HỒ SƠ KỸ THUẬT ĐỊA CHÍNH</span>
+            <span class="kpi-badge purple" style="font-size:0.7rem;">Tổ KTĐC&LT (30 NS)</span>
+          </h3>
+          <div style="font-size:0.8rem; color:var(--text-muted);">Đo vẽ hiện trạng, Kiểm tra bản vẽ công ty, Xác minh hiện trạng, Trích lục...</div>
+          <div class="dept-card-stats">
+            <div>
+              <div class="dept-stat-val" id="sumDeptKtdcTon">0</div>
+              <div class="dept-stat-lbl">Tồn trước</div>
+            </div>
+            <div>
+              <div class="dept-stat-val" style="color:var(--primary);" id="sumDeptKtdcNhan">0</div>
+              <div class="dept-stat-lbl">Tiếp nhận</div>
+            </div>
+            <div>
+              <div class="dept-stat-val" style="color:var(--secondary);" id="sumDeptKtdcGQ">0</div>
+              <div class="dept-stat-lbl">Đã giải quyết</div>
+            </div>
+            <div>
+              <div class="dept-stat-val" style="color:var(--danger);" id="sumDeptKtdcChua">0</div>
+              <div class="dept-stat-lbl">Chưa giải quyết</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cung cấp thông tin / Tổ HCTH -->
+        <div class="dept-card hcth">
+          <h3>
+            <span>📑 III. CUNG CẤP THÔNG TIN</span>
+            <span class="kpi-badge info" style="font-size:0.7rem;">Tổ HCTH / Một cửa (22 NS)</span>
+          </h3>
+          <div style="font-size:0.8rem; color:var(--text-muted);">Cung cấp thông tin hộ cá nhân, Hỗ trợ tư pháp (Tòa án, THA, Công an, Thuế...)</div>
+          <div class="dept-card-stats">
+            <div>
+              <div class="dept-stat-val" id="sumDeptCcttTon">0</div>
+              <div class="dept-stat-lbl">Tồn trước</div>
+            </div>
+            <div>
+              <div class="dept-stat-val" style="color:var(--primary);" id="sumDeptCcttNhan">0</div>
+              <div class="dept-stat-lbl">Tiếp nhận</div>
+            </div>
+            <div>
+              <div class="dept-stat-val" style="color:var(--secondary);" id="sumDeptCcttGQ">0</div>
+              <div class="dept-stat-lbl">Đã giải quyết</div>
+            </div>
+            <div>
+              <div class="dept-stat-val" style="color:var(--danger);" id="sumDeptCcttChua">0</div>
+              <div class="dept-stat-lbl">Chưa giải quyết</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Daily Table Card -->
+      <main class="main-card">
+        
+        <!-- ============================================== -->
+        <!-- ĐIỀN SỐ LIỆU NHANH THEO DROPLIST (YÊU CẦU MỚI) -->
+        <!-- ============================================== -->
+        <div class="quick-entry-box">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;">
+            <div style="font-size: 1.05rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px;">
+              <span>⚡</span> ĐIỀN SỐ LIỆU NHANH THEO DROPLIST LOẠI HỒ SƠ
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">
+              Chọn loại hồ sơ bất kỳ từ danh sách để tự điền số liệu thực tế phát sinh trong ngày
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: minmax(280px, 2.5fr) 1fr 1fr 1fr 1fr auto; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+            <!-- Droplist chọn loại hồ sơ -->
+            <div class="form-group">
+              <label for="selectQuickItem">1. Chọn loại hồ sơ cần điền số liệu: <span style="color:red">*</span></label>
+              <select id="selectQuickItem" style="font-weight: 700; border: 2px solid var(--primary); background: var(--card-bg);">
+                <option value="" selected>-- Nhấp để chọn loại hồ sơ từ danh mục --</option>
+                <optgroup label="I. CÔNG TÁC CẤP GCN VÀ BIẾN ĐỘNG NHÀ ĐẤT (Tổ ĐK&CGCN)">
+                  <option value="1.1">a) Cấp GCN cho người nhận chuyển nhượng tại các dự án</option>
+                  <option value="1.2">b) Cấp GCN mới + Trình cấp GCN</option>
+                  <option value="1.3">c) Đăng ký xác nhận thay đổi chủ sở hữu (Xác nhận trên GCN)</option>
+                  <option value="1.4">d) Đơn xin rút hoặc trả hồ sơ (mục 1b, 1c)</option>
+                </optgroup>
+                <optgroup label="2. Đăng ký Giao dịch Bảo đảm - Mẫu 01 (Tổ ĐK&CGCN)">
+                  <option value="2.1">Thế chấp</option>
+                  <option value="2.2">Xóa Thế chấp</option>
+                  <option value="2.3">Văn bản thông báo</option>
+                  <option value="2.4">Đăng ký thay đổi</option>
+                  <option value="2.5">Loại khác</option>
+                </optgroup>
+                <optgroup label="3. Các loại đăng ký biến động khác (Tổ ĐK&CGCN)">
+                  <option value="3.1">Cập nhật số nhà, CCCD mới, thay đổi họ tên, năm sinh, v.v.</option>
+                  <option value="3.2">Xóa nợ tiền sử dụng đất</option>
+                  <option value="3.3">Đơn xin rút hoặc trả hồ sơ (biến động khác)</option>
+                </optgroup>
+                <optgroup label="II. HỒ SƠ KỸ THUẬT ĐỊA CHÍNH (Tổ KTĐC&LT)">
+                  <option value="4.1">1. Công tác đo vẽ hiện trạng</option>
+                  <option value="4.2">2. Xác nhận hồ sơ vị trí đất, cho thửa chính thức</option>
+                  <option value="4.3">3. Kiểm tra bản vẽ (của các Công ty đo vẽ) - Tổng số</option>
+                  <option value="4.3.1">  └─ Bản vẽ đạt yêu cầu của công ty</option>
+                  <option value="4.3.2">  └─ Bản vẽ không đạt yêu cầu của công ty</option>
+                  <option value="4.4">4. Xác minh hiện trạng (khảo sát bản vẽ công ty/trích lục có khảo sát)</option>
+                  <option value="4.5">5. Đã trích lục (hồ sơ trích lục)</option>
+                </optgroup>
+                <optgroup label="III. TỔNG HỢP CUNG CẤP THÔNG TIN (Tổ HCTH / Một cửa)">
+                  <option value="5.1">1. Cung cấp thông tin cho hộ gia đình, cá nhân</option>
+                  <option value="5.2">2. Cung cấp thông tin hỗ trợ tư pháp và các cơ quan (Tòa án, THA, Công an, Thuế…)</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <!-- Tồn kỳ trước -->
+            <div class="form-group">
+              <label for="quickTonTruoc">2. Tồn kỳ trước:</label>
+              <input type="number" min="0" id="quickTonTruoc" value="0" style="text-align: right; font-weight: 700;">
+            </div>
+
+            <!-- Tiếp nhận trong ngày -->
+            <div class="form-group">
+              <label for="quickTiepNhan">3. Tiếp nhận:</label>
+              <input type="number" min="0" id="quickTiepNhan" value="0" style="text-align: right; font-weight: 700; color: var(--primary);">
+            </div>
+
+            <!-- Đã giải quyết trong ngày -->
+            <div class="form-group">
+              <label for="quickDaGiaiQuyet">4. Đã giải quyết:</label>
+              <input type="number" min="0" id="quickDaGiaiQuyet" value="0" style="text-align: right; font-weight: 700; color: var(--secondary);">
+            </div>
+
+            <!-- Chưa giải quyết (Tự tính) -->
+            <div class="form-group">
+              <label for="quickChuaGiaiQuyet">5. Chưa GQ (Tồn):</label>
+              <input type="number" id="quickChuaGiaiQuyet" readonly value="0" class="highlight-input" style="text-align: right; font-weight: 800; color: var(--danger);">
+            </div>
+
+            <!-- Nút Cập nhật -->
+            <div class="form-group">
+              <label style="visibility: hidden;">Lưu</label>
+              <button type="button" class="btn btn-primary" id="btnApplyQuickEntry" style="white-space: nowrap; padding: 10px 18px;">
+                <span>💾</span> Cập nhật
+              </button>
+            </div>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 10px;">
+            <em>💡 Sau khi chọn loại hồ sơ và nhập số liệu, nhấp <strong>Cập nhật</strong> (hoặc nhấn phím Enter). Dòng tương ứng trong bảng phía dưới sẽ tự động cập nhật, đồng thời tự động đồng bộ bộ lọc nhóm nghiệp vụ để dòng hồ sơ luôn hiển thị.</em>
+          </div>
+        </div>
+
+        <!-- Toolbar & Filter -->
+        <div class="toolbar-actions">
+          <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+            <div class="form-group" style="width: auto; min-width: 170px;">
+              <label for="reportDailyDate">Ngày báo cáo:</label>
+              <input type="date" id="reportDailyDate" style="padding: 7px 10px;">
+            </div>
+            <div class="form-group" style="width: auto; min-width: 220px;">
+              <label for="filterDailyDept">Lọc hiển thị theo Khối:</label>
+              <select id="filterDailyDept" style="padding: 7px 10px;">
+                <option value="ALL">-- Tất cả nhóm nghiệp vụ (Toàn bảng) --</option>
+                <option value="SEC_1">I. Cấp GCN & Giao dịch bảo đảm</option>
+                <option value="SEC_2">II. Hồ sơ Kỹ thuật địa chính</option>
+                <option value="SEC_3">III. Tổng hợp Cung cấp thông tin</option>
+              </select>
+            </div>
+            <div class="form-group" style="width: auto; min-width: 240px;">
+              <label for="selectFilterItemDirect">Hoặc lọc đúng 1 loại hồ sơ trên bảng:</label>
+              <select id="selectFilterItemDirect" style="padding: 7px 10px;">
+                <option value="ALL">-- Hiển thị tất cả các loại hồ sơ --</option>
+                <!-- Rendered dynamically -->
+              </select>
+            </div>
+            <div class="form-group" style="width: auto;">
+              <label style="visibility: hidden;">Xóa lọc</label>
+              <button type="button" class="btn btn-outline" id="btnResetFilters" title="Hiển thị lại toàn bộ các loại hồ sơ trên bảng" style="padding: 7px 12px; font-size: 0.82rem;">
+                ✕ Xem tất cả
+              </button>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end;">
+            <button class="btn btn-outline admin-only-control" id="btnLoadExcelBaseline" title="Tải số liệu từ file Excel cũ để đối soát tham khảo nếu cần">
+              <span>📥</span> Nạp số liệu tham chiếu (Excel cũ)
+            </button>
+            <button class="btn btn-secondary admin-only-control" id="btnResetDailyInputs" title="Đưa toàn bộ số liệu về 0 để nhập mới">
+              <span>🔄</span> Đưa tất cả về 0
+            </button>
+            <button class="btn btn-success" id="btnExportDailyCsv">
+              <span>📊</span> Xuất Excel (CSV)
+            </button>
+            <button class="btn btn-outline" id="btnPrintDailyReport">
+              <span>🖨️</span> In Báo cáo Ngày (A4)
+            </button>
+            <button class="btn btn-primary user-only-control" id="btnUserSubmitReportToolbar" onclick="submitUserReport()" style="display:none; background:var(--secondary); border-color:var(--secondary); font-weight:700;">
+              <span>📤</span> GỬI BÁO CÁO LÊN LÃNH ĐẠO
+            </button>
+            <button class="btn btn-primary admin-only-control" id="btnSaveDailyRecord">
+              <span>💾</span> LƯU BÁO CÁO NGÀY
+            </button>
+          </div>
+        </div>
+
+        <!-- Notification Banner -->
+        <div class="recon-box">
+          <strong>📋 QUY TRÌNH NHẬP SỐ LIỆU HÀNG NGÀY:</strong>
+          Hệ thống mặc định bắt đầu sạch sẽ với số liệu <strong>0</strong> (không lấy số liệu giả định). 
+          Mọi người có thể chọn loại hồ sơ từ <strong>Droplist bên trên</strong> hoặc <strong>gõ trực tiếp vào các ô trong bảng</strong> để điền số liệu thực tế phát sinh trong ngày.
+        </div>
+
+        <!-- Editable Data Table -->
+        <div class="table-container">
+          <table id="dailyReportTable">
+            <thead>
+              <tr>
+                <th style="width: 50px; text-align:center;">Mã</th>
+                <th>Loại hồ sơ / Hạng mục công việc hàng ngày</th>
+                <th style="width: 110px; text-align:right;">Số tồn kỳ trước</th>
+                <th style="width: 110px; text-align:right;">Tiếp nhận trong ngày</th>
+                <th style="width: 110px; text-align:right;">Tổng cần xử lý</th>
+                <th style="width: 110px; text-align:right;">Đã giải quyết</th>
+                <th style="width: 110px; text-align:right;">Chưa giải quyết</th>
+                <th style="width: 120px; text-align:center;">Tiến độ giải quyết</th>
+                <th style="width: 120px;">Ghi chú / Căn cứ</th>
+              </tr>
+            </thead>
+            <tbody id="dailyReportTableBody">
+              <!-- Dynamically rendered -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Charts Container -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-top: 26px;">
+          <div style="background: var(--bg); padding: 18px; border-radius: 8px; border: 1px solid var(--border);">
+            <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; color: var(--text-main);">
+              📊 Phân bổ Tiếp nhận & Đã giải quyết theo 3 Khối nghiệp vụ
+            </h4>
+            <div style="position: relative; height: 260px;">
+              <canvas id="chartDeptComparison"></canvas>
+            </div>
+          </div>
+          <div style="background: var(--bg); padding: 18px; border-radius: 8px; border: 1px solid var(--border);">
+            <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; color: var(--text-main);">
+              🍩 Tỷ trọng Hồ sơ Chưa giải quyết (Tồn đọng)
+            </h4>
+            <div style="position: relative; height: 260px;">
+              <canvas id="chartBacklogDonut"></canvas>
+            </div>
+          </div>
+        </div>
+
+      </main>
+
+      <!-- Saved Daily Reports Archive -->
+      <section class="main-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
+          <div>
+            <h3 style="font-size: 1.1rem; font-weight: 700;">📅 LỊCH SỬ BÁO CÁO CÔNG VIỆC HÀNG NGÀY ĐÃ LƯU</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Quản lý và tra cứu các ngày báo cáo đã thực hiện trên trình duyệt</p>
+          </div>
+          <div>
+            <button class="btn btn-outline" id="btnClearDailyHistory" style="color:var(--danger); font-size:0.82rem;">
+              Xóa toàn bộ lịch sử ngày
+            </button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table id="dailyHistoryTable">
+            <thead>
+              <tr>
+                <th>STT</th>
+                <th>Ngày báo cáo</th>
+                <th>Tổng tồn trước</th>
+                <th>Tiếp nhận</th>
+                <th>Đã giải quyết</th>
+                <th>Chưa giải quyết</th>
+                <th>Tỷ lệ giải quyết</th>
+                <th>Thời điểm lưu</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="dailyHistoryTableBody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: LÃNH ĐẠO GIAO VIỆC CHO CẤP DƯỚI -->
+    <!-- ========================================== -->
+    <div id="tab-giao-viec" class="tab-content">
+
+      <!-- Notice when in User mode -->
+      <div id="userTaskNotice" class="recon-box" style="display:none; background:rgba(30, 58, 138, 0.08); border-color:var(--primary); margin-bottom:18px;">
+        <strong>📢 LƯU Ý PHÂN QUYỀN:</strong> Chức năng Giao việc & Chỉ đạo trực tiếp thuộc thẩm quyền của Ban Giám đốc và Lãnh đạo các Tổ. Chuyên viên theo dõi và cập nhật tiến độ công việc được giao tại <strong>Tab 3 (Bảng tiến độ công việc đã giao)</strong>.
+      </div>
+      <!-- Summary KPI Task Bar -->
+      <section class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-title">Tổng nhiệm vụ đã giao</div>
+          <div class="kpi-value" id="kpiTotalTasks">0</div>
+          <div class="label-hint">Lũy kế toàn đơn vị</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Đang thực hiện trong hạn</div>
+          <div class="kpi-value" style="color: var(--secondary);" id="kpiInProgressTasks">0</div>
+          <div class="kpi-badge pass">Tiến độ bình thường</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Nhiệm vụ Quá hạn Deadline</div>
+          <div class="kpi-value" style="color: var(--danger);" id="kpiOverdueTasks">0</div>
+          <div class="kpi-badge urgent" id="kpiOverdueBadge">Cần đôn đốc khẩn</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Đã hoàn thành</div>
+          <div class="kpi-value" style="color: var(--success);" id="kpiCompletedTasks">0</div>
+          <div class="kpi-badge pass" id="kpiCompletionRate">Tỷ lệ: 0.0%</div>
+        </div>
+      </section>
+
+      <!-- Task Assignment Form -->
+      <main class="main-card">
+        <form id="taskAssignmentForm">
+          <h2 class="section-title">
+            <span>🎯</span> I. THÔNG TIN PHÂN CÔNG & CÁN BỘ TIẾP NHẬN (82 NHÂN SỰ)
+          </h2>
+          <p class="section-desc">Ban Giám đốc hoặc Lãnh đạo các Tổ giao việc trực tiếp cho nhân viên cấp dưới theo danh sách biên chế chính thức</p>
+
+          <div class="grid-3">
+            <!-- 1. Người giao việc -->
+            <div class="form-group">
+              <label for="assignLeader">Lãnh đạo giao việc <span style="color:red">*</span></label>
+              <select id="assignLeader" required>
+                <optgroup label="Ban Giám đốc Chi nhánh 23">
+                  <option value="Nguyễn Chiến Thắng (Giám đốc)" selected>Nguyễn Chiến Thắng — Giám đốc</option>
+                  <option value="Đặng Huy Cường (Phó Giám đốc)">Đặng Huy Cường — Phó Giám đốc</option>
+                  <option value="Nguyễn Thị Lệ Hằng (Phó Giám đốc)">Nguyễn Thị Lệ Hằng — Phó Giám đốc</option>
+                </optgroup>
+                <optgroup label="Lãnh đạo Tổ chuyên môn">
+                  <option value="Trần Thanh Triết (Tổ trưởng Tổ KTĐC&LT)">Trần Thanh Triết — Tổ trưởng Tổ KTĐC&LT</option>
+                  <option value="Đặng Thị Tuyết Trinh (Tổ phó Tổ KTĐC&LT)">Đặng Thị Tuyết Trinh — Tổ phó Tổ KTĐC&LT</option>
+                  <option value="Nguyễn Thị Thùy Trang (Tổ trưởng Tổ ĐK&CGCN)">Nguyễn Thị Thùy Trang — Tổ trưởng Tổ ĐK&CGCN</option>
+                  <option value="Nguyễn Thị Thu Minh (Tổ phó Tổ ĐK&CGCN)">Nguyễn Thị Thu Minh — Tổ phó Tổ ĐK&CGCN</option>
+                  <option value="Huỳnh Tấn Nguyên (Tổ phó Tổ ĐK&CGCN)">Huỳnh Tấn Nguyên — Tổ phó Tổ ĐK&CGCN</option>
+                  <option value="Nguyễn Thành Như Bảo (Tổ phó Tổ ĐK&CGCN)">Nguyễn Thành Như Bảo — Tổ phó Tổ ĐK&CGCN</option>
+                  <option value="Nguyễn Thị Bích Tuyền (Tổ trưởng Tổ HCTH)">Nguyễn Thị Bích Tuyền — Tổ trưởng Tổ HCTH</option>
+                  <option value="Bùi Thị Minh Nguyệt (Tổ phó Tổ HCTH)">Bùi Thị Minh Nguyệt — Tổ phó Tổ HCTH</option>
+                  <option value="Hồ Thị Hồng Linh (Tổ phó Tổ HCTH)">Hồ Thị Hồng Linh — Tổ phó Tổ HCTH</option>
+                  <option value="Nguyễn Thị Mai (Tổ phó Tổ HCTH)">Nguyễn Thị Mai — Tổ phó Tổ HCTH</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <!-- 2. Lọc nhanh theo Tổ -->
+            <div class="form-group">
+              <label for="filterStaffDept">Lọc nhanh theo Tổ chuyên môn</label>
+              <select id="filterStaffDept">
+                <option value="ALL">-- Tất cả các Tổ (82 nhân sự) --</option>
+                <option value="Tổ Kỹ thuật Địa chính và Lưu trữ">Tổ Kỹ thuật Địa chính và Lưu trữ (30 người)</option>
+                <option value="Tổ Đăng ký cấp GCN">Tổ Đăng ký cấp GCN (27 người)</option>
+                <option value="Tổ Hành chính Tổng hợp">Tổ Hành chính Tổng hợp (22 người)</option>
+                <option value="Ban Giám đốc">Ban Giám đốc (3 người)</option>
+              </select>
+              <span class="label-hint">Thu hẹp danh sách nhân sự bên cạnh</span>
+            </div>
+
+            <!-- 3. Cán bộ nhận việc (Droplist 82 nhân viên) -->
+            <div class="form-group">
+              <label for="assignStaff">Nhân viên nhận việc (Chi nhánh số 23) <span style="color:red">*</span></label>
+              <select id="assignStaff" required>
+                <!-- Rendered dynamically from 82 staff array -->
+              </select>
+              <span class="label-hint" id="assignStaffDetail">Chức vụ & Tổ tiếp nhận</span>
+            </div>
+          </div>
+
+          <h2 class="section-title">
+            <span>📝</span> II. NỘI DUNG NHIỆM VỤ, Ý KIẾN CHỈ ĐẠO & VĂN BẢN ĐÍNH KÈM
+          </h2>
+
+          <div class="grid-2">
+            <!-- Tên công việc -->
+            <div class="form-group">
+              <label for="taskTitle">Tên công việc / Nhiệm vụ giao việc <span style="color:red">*</span></label>
+              <input type="text" id="taskTitle" placeholder="Ví dụ: Rà soát hồ sơ cấp đổi GCN trễ hạn, thẩm tra bản đồ địa chính..." required>
+            </div>
+
+            <!-- Mức độ ưu tiên -->
+            <div class="form-group">
+              <label for="taskPriority">Mức độ ưu tiên / Tính chất văn bản <span style="color:red">*</span></label>
+              <select id="taskPriority" required>
+                <option value="Bình thường">Bình thường (Đúng hạn theo quy trình)</option>
+                <option value="Khẩn" style="color: var(--warning); font-weight: 600;">Khẩn (Ưu tiên xử lý trước)</option>
+                <option value="Hỏa tốc" style="color: var(--danger); font-weight: 700;">Hỏa tốc / Tối khẩn (Xử lý ngay)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Văn bản đính kèm & Căn cứ pháp lý -->
+          <div class="grid-2" style="margin-top: 14px;">
+            <div class="form-group">
+              <label for="taskDocRef">Số hiệu văn bản đính kèm / Căn cứ giao việc</label>
+              <input type="text" id="taskDocRef" placeholder="Ví dụ: Công văn số ...; Quyết định phân công số ...; Tờ trình ...">
+              <span class="label-hint">Ghi rõ số hiệu công văn, quyết định, kế hoạch chỉ đạo</span>
+            </div>
+
+            <div class="form-group">
+              <label>Đính kèm tệp văn bản (PDF, Word, Excel, Bản vẽ)</label>
+              <div class="file-input-wrapper">
+                <input type="file" id="taskFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg">
+                <span id="fileUploadIcon">📎</span>
+                <span id="fileUploadLabel" class="label-hint">Nhấp để chọn tệp đính kèm từ máy tính (tối đa 25MB)</span>
+              </div>
+              <div id="fileUploadPreview" class="file-preview" style="display: none; font-size:0.85rem; color:var(--primary); margin-top:4px;"></div>
+            </div>
+          </div>
+
+          <!-- Ý kiến chỉ đạo của Lãnh đạo -->
+          <div class="form-group" style="margin-top: 14px;">
+            <label for="leaderGuidance">Ý kiến chỉ đạo cụ thể của Lãnh đạo <span style="color:red">*</span></label>
+            <textarea id="leaderGuidance" rows="3" placeholder="Nhập ý kiến chỉ đạo chi tiết của Lãnh đạo: Yêu cầu phương pháp xử lý, các đơn vị/tổ phải phối hợp, tiêu chuẩn chất lượng sản phẩm đầu ra, thời điểm phải báo cáo sơ bộ..." required></textarea>
+          </div>
+
+          <!-- Thời hạn hoàn thành -->
+          <div class="grid-2" style="margin-top: 14px;">
+            <div class="form-group">
+              <label for="taskDeadline">Thời hạn hoàn thành (Deadline) <span style="color:red">*</span></label>
+              <input type="datetime-local" id="taskDeadline" required>
+              <span class="label-hint">Thời điểm bắt buộc cán bộ phải hoàn thành báo cáo Lãnh đạo</span>
+            </div>
+
+            <div class="form-group">
+              <label for="taskNote">Ghi chú bổ sung (nếu có)</label>
+              <input type="text" id="taskNote" placeholder="Ví dụ: Trình ký qua phần mềm VBDLis; Báo cáo tại cuộc họp giao ban...">
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:22px; padding-top:16px; border-top:1px solid var(--border);">
+            <button type="button" class="btn btn-outline" id="btnResetTaskForm">
+              <span>🔄</span> Làm mới
+            </button>
+            <button type="button" class="btn btn-secondary" id="btnPrintTaskTicket">
+              <span>🖨️</span> In phiếu giao việc
+            </button>
+            <button type="submit" class="btn btn-primary" id="btnSubmitTask">
+              <span>🚀</span> PHÁT LỆNH GIAO VIỆC CHO CÁN BỘ
+            </button>
+          </div>
+        </form>
+      </main>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: BẢNG TIẾN ĐỘ & THEO DÕI CÔNG VIỆC -->
+    <!-- ========================================== -->
+    <div id="tab-theo-doi-viec" class="tab-content">
+      <section class="main-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+          <div>
+            <h2 style="font-size: 1.2rem; font-weight: 700;">📋 BẢNG TIẾN ĐỘ CÔNG VIỆC & Ý KIẾN CHỈ ĐẠO</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Giám sát trạng thái thực hiện, thời hạn hoàn thành và ý kiến chỉ đạo đối với từng cán bộ</p>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <select id="filterTaskStatus" style="width: auto; padding: 6px 12px; font-size: 0.85rem;">
+              <option value="ALL">-- Tất cả trạng thái --</option>
+              <option value="Đang thực hiện">Đang thực hiện</option>
+              <option value="Quá hạn">Quá hạn Deadline</option>
+              <option value="Đã hoàn thành">Đã hoàn thành</option>
+            </select>
+            <select id="filterTaskDept" style="width: auto; padding: 6px 12px; font-size: 0.85rem;">
+              <option value="ALL">-- Tất cả các Tổ --</option>
+              <option value="Tổ Kỹ thuật Địa chính và Lưu trữ">Tổ KTĐC & Lưu trữ</option>
+              <option value="Tổ Đăng ký cấp GCN">Tổ ĐK & Cấp GCN</option>
+              <option value="Tổ Hành chính Tổng hợp">Tổ Hành chính - Tổng hợp</option>
+            </select>
+            <button class="btn btn-success" id="btnExportTaskCsv" style="padding: 6px 14px; font-size: 0.85rem;">
+              <span>📊</span> Xuất Excel
+            </button>
+            <button class="btn btn-outline" id="btnClearAllTasks" style="padding: 6px 12px; font-size: 0.85rem; color: var(--danger);">
+              Xóa tất cả
+            </button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table id="taskTable">
+            <thead>
+              <tr>
+                <th>Mã việc</th>
+                <th>Người giao (Lãnh đạo)</th>
+                <th>Cán bộ nhận việc</th>
+                <th>Tổ chuyên môn</th>
+                <th>Tên công việc / Nhiệm vụ</th>
+                <th>Văn bản đính kèm</th>
+                <th>Ý kiến chỉ đạo</th>
+                <th>Hạn hoàn thành (Deadline)</th>
+                <th>Độ khẩn</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="taskTableBody">
+              <!-- Dynamically rendered -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: QUẢN TRỊ TTHC & SỐ HÓA ĐIỀU HÀNH -->
+    <!-- ========================================== -->
+    <div id="tab-quan-tri-tthc" class="tab-content">
+      
+      <!-- Live KPI bar -->
+      <section class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-title">Hồ sơ tiếp nhận TTHC</div>
+          <div class="kpi-value" id="kpiTotalReceive">0</div>
+          <div class="label-hint" id="kpiReceiveDetail">Trực tiếp: 0 | Trực tuyến: 0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Tỷ lệ DVC trực tuyến</div>
+          <div class="kpi-value" id="kpiOnlineRate">0.0%</div>
+          <div class="kpi-badge warn" id="kpiOnlineBadge">Chỉ tiêu: ≥ 50.0%</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Tỷ lệ giải quyết đúng hạn</div>
+          <div class="kpi-value" id="kpiOnTimeRate">0.0%</div>
+          <div class="kpi-badge warn" id="kpiOnTimeBadge">Chỉ tiêu: ≥ 98.0%</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Tỷ lệ TT trực tuyến</div>
+          <div class="kpi-value" id="kpiPayOnlineRate">0.0%</div>
+          <div class="kpi-badge warn" id="kpiPayOnlineBadge">Chỉ tiêu: ≥ 40.0%</div>
+        </div>
+      </section>
+
+      <!-- Main Entry Form -->
+      <main class="main-card">
+        <form id="performanceReportForm">
+
+          <!-- THÔNG TIN ĐƠN VỊ VÀ KỲ BÁO CÁO -->
+          <h2 class="section-title">
+            <span>🏛️</span> I. ĐƠN VỊ TỔ VÀ THỜI GIAN BÁO CÁO
+          </h2>
+          <div class="grid-4">
+            <div class="form-group">
+              <label for="toChuyenMon">Tổ chuyên môn báo cáo <span style="color:red">*</span></label>
+              <select id="toChuyenMon" required>
+                <option value="" disabled selected>-- Chọn Tổ chuyên môn --</option>
+                <option value="Tổ Đăng ký cấp GCN">Tổ Đăng ký cấp GCN</option>
+                <option value="Tổ Kỹ thuật Địa chính và Lưu trữ">Tổ Kỹ thuật Địa chính và Lưu trữ</option>
+                <option value="Tổ Hành chính Tổng hợp">Tổ Hành chính Tổng hợp</option>
+              </select>
+              <span class="label-hint">Dữ liệu ghi nhận chung theo phạm vi toàn Tổ</span>
+            </div>
+
+            <div class="form-group">
+              <label for="loaiKyBaoCao">Loại kỳ báo cáo <span style="color:red">*</span></label>
+              <select id="loaiKyBaoCao" required>
+                <option value="Định kỳ Hàng ngày">Định kỳ Hàng ngày</option>
+                <option value="Định kỳ Hàng tuần">Định kỳ Hàng tuần</option>
+                <option value="Định kỳ Hàng tháng" selected>Định kỳ Hàng tháng</option>
+                <option value="Định kỳ Hàng quý">Định kỳ Hàng quý</option>
+                <option value="Báo cáo 6 tháng / Năm">Báo cáo 6 tháng / Năm</option>
+                <option value="Đột xuất / Theo chuyên đề">Đột xuất / Theo chuyên đề</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="tenKyBaoCao">Tên kỳ / Đợt báo cáo <span style="color:red">*</span></label>
+              <input type="text" id="tenKyBaoCao" placeholder="Ví dụ: Ngày 04/11/2026, Tuần 45..." required value="Tháng 10/2026">
+            </div>
+
+            <div class="form-group">
+              <label for="ngayChotSoLieu">Ngày chốt số liệu <span style="color:red">*</span></label>
+              <input type="date" id="ngayChotSoLieu" required>
+            </div>
+          </div>
+
+          <!-- 1. TIẾP NHẬN HỒ SƠ TRONG KỲ -->
+          <h2 class="section-title">
+            <span>📥</span> II. TIẾP NHẬN HỒ SƠ TTHC
+          </h2>
+          <div class="grid-4">
+            <div class="form-group">
+              <label for="tiepNhanTrucTiep">Trực tiếp (Tại Một cửa)</label>
+              <input type="number" id="tiepNhanTrucTiep" min="0" value="0" class="calc-trigger">
+            </div>
+            <div class="form-group">
+              <label for="tiepNhanTrucTuyen">Trực tuyến (Cổng DVC)</label>
+              <input type="number" id="tiepNhanTrucTuyen" min="0" value="0" class="calc-trigger">
+            </div>
+            <div class="form-group">
+              <label for="tongTiepNhan">Tổng tiếp nhận</label>
+              <input type="number" id="tongTiepNhan" readonly class="highlight-input">
+            </div>
+            <div class="form-group">
+              <label for="tyLeTrucTuyen">Tỷ lệ trực tuyến (%)</label>
+              <input type="text" id="tyLeTrucTuyen" readonly class="highlight-input">
+            </div>
+          </div>
+
+          <!-- 2. KẾT QUẢ GIẢI QUYẾT TTHC TRẢ TRONG KỲ -->
+          <h2 class="section-title">
+            <span>📤</span> III. KẾT QUẢ GIẢI QUYẾT TTHC ĐÃ TRẢ
+          </h2>
+          <div class="grid-4">
+            <div class="form-group">
+              <label for="traTruocHan">Trả trước hạn</label>
+              <input type="number" id="traTruocHan" min="0" value="0" class="calc-trigger">
+            </div>
+            <div class="form-group">
+              <label for="traDungHan">Trả đúng hạn</label>
+              <input type="number" id="traDungHan" min="0" value="0" class="calc-trigger">
+            </div>
+            <div class="form-group">
+              <label for="traQuaHan" style="color: var(--danger)">Quá hạn (Trễ hạn)</label>
+              <input type="number" id="traQuaHan" min="0" value="0" class="calc-trigger" style="border-color: #fca5a5;">
+            </div>
+            <div class="form-group">
+              <label for="tongGiaiQuyet">Tổng đã giải quyết</label>
+              <input type="number" id="tongGiaiQuyet" readonly class="highlight-input">
+            </div>
+          </div>
+          <div class="grid-2" style="margin-top: 12px;">
+            <div class="form-group">
+              <label for="tyLeDungHan">Tỷ lệ giải quyết đúng & trước hạn (%)</label>
+              <input type="text" id="tyLeDungHan" readonly class="highlight-input">
+            </div>
+            <div class="form-group">
+              <label for="soThuXinLoi">Số văn bản xin lỗi đã phát hành (nếu có trễ hạn)</label>
+              <input type="number" id="soThuXinLoi" min="0" value="0">
+            </div>
+          </div>
+
+          <!-- 3. HỒ SƠ ĐANG GIẢI QUYẾT (TỒN CUỐI KỲ) -->
+          <h2 class="section-title">
+            <span>📂</span> IV. HỒ SƠ ĐANG GIẢI QUYẾT (TỒN CUỐI KỲ)
+          </h2>
+          <div class="grid-3">
+            <div class="form-group">
+              <label for="tonTrongHan">Tồn trong hạn (Đang xử lý)</label>
+              <input type="number" id="tonTrongHan" min="0" value="0" class="calc-trigger">
+            </div>
+            <div class="form-group">
+              <label for="tonQuaHan" style="color: var(--danger)">Tồn quá hạn (Đã trễ chưa trả KQ)</label>
+              <input type="number" id="tonQuaHan" min="0" value="0" class="calc-trigger" style="border-color: #fca5a5;">
+            </div>
+            <div class="form-group">
+              <label for="tongDangGiaiQuyet">Tổng hồ sơ đang thụ lý</label>
+              <input type="number" id="tongDangGiaiQuyet" readonly class="highlight-input">
+            </div>
+          </div>
+
+          <!-- 4. NGHĨA VỤ TÀI CHÍNH VÀ THANH TOÁN TRỰC TUYẾN -->
+          <h2 class="section-title">
+            <span>💳</span> V. NGHĨA VỤ TÀI CHÍNH & THANH TOÁN TRỰC TUYẾN
+          </h2>
+          <div class="grid-4">
+            <div class="form-group">
+              <label for="hsCoNghiaVuTC">Hồ sơ có nghĩa vụ TC</label>
+              <input type="number" id="hsCoNghiaVuTC" min="0" value="0" class="calc-trigger">
+            </div>
+            <div class="form-group">
+              <label for="hsThanhToanTT">Thanh toán trực tuyến</label>
+              <input type="number" id="hsThanhToanTT" min="0" value="0" class="calc-trigger">
+            </div>
+            <div class="form-group">
+              <label for="tyLeThanhToanTT">Tỷ lệ thanh toán TT (%)</label>
+              <input type="text" id="tyLeThanhToanTT" readonly class="highlight-input">
+            </div>
+            <div class="form-group">
+              <label for="soTienThanhToanTT">Tổng số tiền TT trực tuyến (VNĐ)</label>
+              <input type="number" id="soTienThanhToanTT" min="0" value="0" step="1000">
+            </div>
+          </div>
+
+          <!-- 5. SỐ HÓA HỒ SƠ VÀ TÁI SỬ DỤNG DỮ LIỆU -->
+          <h2 class="section-title">
+            <span>📑</span> VI. SỐ HÓA HỒ SƠ & TÁI SỬ DỤNG DỮ LIỆU SỐ HÓA
+          </h2>
+          <div class="grid-4">
+            <div class="form-group">
+              <label for="soHoaDauVao">Số hóa thành phần đầu vào</label>
+              <input type="number" id="soHoaDauVao" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label for="soHoaDauRa">Số hóa KQ đầu ra (ký số)</label>
+              <input type="number" id="soHoaDauRa" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label for="taiSuDungSoHoa">Tái sử dụng KQ số hóa</label>
+              <input type="number" id="taiSuDungSoHoa" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label for="chungThucBanSaoDT">Chứng thực bản sao điện tử</label>
+              <input type="number" id="chungThucBanSaoDT" min="0" value="0">
+            </div>
+          </div>
+
+          <!-- 6. PHẦN MỀM SỐ VBDLIS VÀ CSDL DÂN CƯ -->
+          <h2 class="section-title">
+            <span>💻</span> VII. ĐỒNG BỘ PHẦN MỀM VBDLIS & KHAI THÁC CSDL
+          </h2>
+          <div class="grid-3">
+            <div class="form-group">
+              <label for="dongBoVBDLis">Số HS đồng bộ trạng thái VBDLis & TTHC</label>
+              <input type="number" id="dongBoVBDLis" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label for="loiNghenPhanMem" style="color: var(--danger)">Số HS chậm/nghẽn luồng trên phần mềm</label>
+              <input type="number" id="loiNghenPhanMem" min="0" value="0" style="border-color: #fca5a5;">
+            </div>
+            <div class="form-group">
+              <label for="traCuuCSDLDanCu">Số lượt tra cứu CSDL dân cư/đất đai</label>
+              <input type="number" id="traCuuCSDLDanCu" min="0" value="0">
+            </div>
+          </div>
+
+          <!-- 7. GHI CHÚ, VƯỚNG MẮC TRONG KỲ -->
+          <h2 class="section-title">
+            <span>📝</span> VIII. VƯỚNG MẮC & ĐỀ XUẤT CỦA TỔ TRONG KỲ
+          </h2>
+          <div class="form-group">
+            <label for="ghiChuVuongMac">Khó khăn, vướng mắc phát sinh hoặc hồ sơ phức tạp cần hỗ trợ</label>
+            <textarea id="ghiChuVuongMac" rows="3" placeholder="Ghi nhận các vướng mắc về đường truyền phần mềm, hồ sơ pháp lý phức tạp, hoặc các kiến nghị gửi Ban Giám đốc Chi nhánh..."></textarea>
+          </div>
+
+          <!-- Form Buttons -->
+          <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:22px; padding-top:16px; border-top:1px solid var(--border);">
+            <button type="button" class="btn btn-outline" id="btnResetForm">
+              <span>🔄</span> Làm mới biểu mẫu
+            </button>
+            <button type="button" class="btn btn-secondary" id="btnPrintForm">
+              <span>🖨️</span> In phiếu báo cáo
+            </button>
+            <button type="button" class="btn btn-success" id="btnExportCsv">
+              <span>📊</span> Xuất Excel (CSV)
+            </button>
+            <button type="submit" class="btn btn-primary" id="btnSaveRecord">
+              <span>💾</span> LƯU DỮ LIỆU TTHC CỦA TỔ
+            </button>
+          </div>
+
+        </form>
+      </main>
+
+      <!-- Table of Saved Records -->
+      <section class="main-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 14px;">
+          <div>
+            <h2 style="font-size: 1.15rem; font-weight: 700;">📋 LỊCH SỬ DỮ LIỆU BÁO CÁO CÁC KỲ CỦA CÁC TỔ</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Dữ liệu được lưu trữ trực tiếp trên trình duyệt, có thể xuất Excel phục vụ tổng hợp lâu dài</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <select id="filterTo" style="width: auto; padding: 6px 12px; font-size: 0.85rem;">
+              <option value="ALL">Tất cả các Tổ</option>
+              <option value="Tổ Đăng ký cấp GCN">Tổ Đăng ký cấp GCN</option>
+              <option value="Tổ Kỹ thuật Địa chính và Lưu trữ">Tổ Kỹ thuật Địa chính và Lưu trữ</option>
+              <option value="Tổ Hành chính Tổng hợp">Tổ Hành chính Tổng hợp</option>
+            </select>
+            <button class="btn btn-outline" id="btnClearHistory" style="padding: 6px 12px; font-size: 0.85rem; color: var(--danger);">
+              Xóa toàn bộ
+            </button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table id="historyTable">
+            <thead>
+              <tr>
+                <th>STT</th>
+                <th>Kỳ báo cáo</th>
+                <th>Tổ chuyên môn</th>
+                <th>Ngày chốt</th>
+                <th>Tổng tiếp nhận</th>
+                <th>Tỷ lệ trực tuyến</th>
+                <th>Đã giải quyết</th>
+                <th>Đúng hạn (%)</th>
+                <th>Quá hạn</th>
+                <th>Tồn cuối kỳ</th>
+                <th>TT trực tuyến</th>
+                <th>Số tiền TT (VNĐ)</th>
+                <th>Số hóa đầu vào</th>
+                <th>Số hóa đầu ra</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <!-- Dynamic rows -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast">Thông báo</div>
+
+  <script>
+    // ==========================================
+    // 1. DANH MỤC HẠNG MỤC CÔNG VIỆC BÁO CÁO HÀNG NGÀY
+    // (Khởi tạo mặc định SẠCH SẼ = 0, KHÔNG DÙNG SỐ LIỆU GIẢ ĐỊNH)
+    // ==========================================
+    const DAILY_REPORT_ITEMS = [
+      // PHẦN I: CÔNG TÁC CẤP GCN VÀ GIAO DỊCH BẢO ĐẢM (Tổ Đăng ký cấp GCN)
+      {
+        id: "1.1",
+        sectionId: "SEC_1",
+        sectionTitle: "I. CÔNG TÁC CẤP GCN VÀ GIAO DỊCH BẢO ĐẢM",
+        dept: "Tổ Đăng ký cấp GCN",
+        subgroup: "1. Công tác đăng ký biến động nhà đất",
+        name: "a) Cấp GCN cho người nhận chuyển nhượng tại các dự án",
+        tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0, chuaGiaiQuyet: 0,
+        note: "Mục 1a (Dự án)"
+      },
+      {
+        id: "1.2",
+        sectionId: "SEC_1",
+        sectionTitle: "I. CÔNG TÁC CẤP GCN VÀ GIAO DỊCH BẢO ĐẢM",
+        dept: "Tổ Đăng ký cấp GCN",
+        subgroup: "1. Công tác đăng ký biến động nhà đất",
+        name: "b) Cấp GCN mới + Trình cấp GCN",
+        tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0, chuaGiaiQuyet: 0,
+        note: "Mục 1b (Cấp mới & trình cấp)"
+      },
+      {
+        id: "1.3",
+        sectionId: "SEC_1",
+        sectionTitle: "I. CÔNG TÁC CẤP GCN VÀ GIAO DỊCH BẢO ĐẢM",
+        dept: "Tổ Đăng ký cấp GCN",
+        subgroup: "1. Công tác đăng ký biến động nhà đất",
+        name: "c) Đăng ký xác nhận thay đổi chủ sở hữu (Xác nhận trên GCN)",
+        tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0, chuaGiaiQuyet: 0,
+        note: "Mục 1c (Đổi chủ sở hữu)"
+      },
+      {
+        id: "1.4",
+        sectionId: "SEC_1",
+        sectionTitle: "I. CÔNG TÁC CẤP GCN VÀ GIAO DỊCH BẢO ĐẢM",
+        dept: "Tổ Đăng ký cấp GCN",
+        subgroup: "1. Công tác đăng ký biến động nhà đất",
+        name: "d) Đơn xin rút hoặc trả hồ sơ (mục 1b, 1c)",
+        tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0, chuaGiaiQuyet: 0,
+        note: "Đơn rút / trả hồ sơ"
+      },
+
+      // 2. Đăng ký Giao dịch Bảo đảm (Mẫu 01)
+      {
+        id: "2.1",
+        sectionId: "SEC_1",
+        sectionTitle: "I. CÔNG TÁC CẤP GCN VÀ GIAO DỊCH BẢO ĐẢM",
+        dept: "Tổ Đăng ký cấp GCN",
+        subgroup: "2. Đăng ký Giao dịch Bảo đảm (Mẫu 01)",
+        name: "Thế chấp",
+        tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0, chuaGiaiQuyet: 0,
+        note: "Đăng ký thế chấp"
+      },
+      {
+        id: "2.2",
+        sectionId: "SEC_1",
+        sectionTitle: "I. CÔNG TÁC CẤP GCN VÀ GIAO DỊCH BẢO ĐẢM",
+        dept: "Tổ Đăng ký cấp GCN",
+        subgroup: "2. Đăng ký Giao dịch Bảo đảm (Mẫu 01)",
+        name: "Xóa Thế chấp",
+        tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0, chuaGiaiQuyet: 0,
+        note: "Xóa đăng ký thế chấp"
+      },
+      {
+        id: "2.3",
+        sectionId: "SEC_1",
+        sectionTitle: "I. CÔNG TÁC CẤP GCN VÀ GIAO DỊCH BẢO ĐẢM",
+        dept: "Tổ Đăng ký cấp GCN",
+        subgroup: "2. Đăng ký Giao dịch Bảo đảm (Mẫu 01)",
+        name: "Văn bản thông báo",
+        tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0, chuaGiaiQuyet: 0,
+        note: "Thông báo thế chấp"
+      },
+      {
+        id: "2.4",
+        sectionId: "SEC_1",
+        sectionTitle: "I. CÔNG TÁC CẤP GCN VÀ GIAO DỊCH BẢO ĐẢM",
+        dept: "Tổ Đăng ký cấp GCN",
+        subgroup: "2. Đăng ký Giao dịch Bảo đảm (Mẫu 01)",
+        name: "Đăng ký thay đổi",
+        tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0, chuaGiaiQuyet: 0,
+        note: "Thay đổi nội dung GDBĐ"
+      },
+      {
+        id: "2.5",
+        sectionId: "SEC_1",
+        sectionTitle: "I. CÔNG TÁC CẤP GCN VÀ GIAO DỊCH BẢO ĐẢM",
+        dept: "Tổ Đăng ký cấp GCN",
+        subgroup: "2. Đăng ký Giao dịch Bảo đảm (Mẫu 01)",
+        name: "Loại khác",
+        tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0, chuaGiaiQuyet: 0,
+        note: "GDBĐ loại khác"
+      },
+
+      // 3. Các loại đăng ký biến động khác
+      {
+        id: "3.1",
+        sectionId: "SEC_1",
+        sectionTitle: "I. CÔNG TÁC CẤP GCN VÀ GIAO DỊCH BẢO ĐẢM",
+        dept: "Tổ Đăng ký cấp GCN",
+        subgroup: "3. Các loại đăng ký biến động khác",
+        name: "Cập nhật số nhà, CCCD mới, thay đổi họ tên, năm sinh, v.v.",
+        tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0, chuaGiaiQuyet: 0,
+        note: "Cập nhật số nhà, CCCD..."
+      },
+      {
+        id: "3.2",
+        sectionId: "SEC_1",
+        sectionTitle: "I. CÔNG TÁC CẤP GCN VÀ GIAO DỊCH BẢO ĐẢM",
+        dept: "Tổ Đăng ký cấp GCN",
+        subgroup: "3. Các loại đăng ký biến động khác",
+        name: "Xóa nợ tiền sử dụng đất",
+        tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0, chuaGiaiQuyet: 0,
+        note: "Xóa nợ tiền SDĐ"
+      },
+      {
+        id: "3.3",
+        sectionId: "SEC_1",
+        sectionTitle: "I. CÔNG TÁC CẤP GCN VÀ GIAO DỊCH BẢO ĐẢM",
+        dept: "Tổ Đăng ký cấp GCN",
+        subgroup: "3. Các loại đăng ký biến động khác",
+        name: "Đơn xin rút hoặc trả hồ sơ (biến động khác)",
+        tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0, chuaGiaiQuyet: 0,
+        note: "Đơn rút / trả hồ sơ"
+      },
+
+      // PHẦN II: HỒ SƠ KỸ THUẬT ĐỊA CHÍNH (Tổ Kỹ thuật Địa chính & Lưu trữ)
+      {
+        id: "4.1",
+        sectionId: "SEC_2",
+        sectionTitle: "II. HỒ SƠ KỸ THUẬT ĐỊA CHÍNH",
+        dept: "Tổ Kỹ thuật Địa chính và Lưu trữ",
+        subgroup: "Công tác chuyên môn KTĐC",
+        name: "1. Công tác đo vẽ hiện trạng",
+        tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0, chuaGiaiQuyet: 0,
+        note: "Đo vẽ hiện trạng"
+      },
+      {
+        id: "4.2",
+        sectionId: "SEC_2",
+        sectionTitle: "II. HỒ SƠ KỸ THUẬT ĐỊA CHÍNH",
+        dept: "Tổ Kỹ thuật Địa chính và Lưu trữ",
+        subgroup: "Công tác chuyên môn KTĐC",
+        name: "2. Xác nhận hồ sơ vị trí đất, cho thửa chính thức",
+        tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0, chuaGiaiQuyet: 0,
+        note: "Vị trí đất, cho thửa chính thức"
+      },
+      {
+        id: "4.3",
+        sectionId: "SEC_2",
+        sectionTitle: "II. HỒ SƠ KỸ THUẬT ĐỊA CHÍNH",
+        dept: "Tổ Kỹ thuật Địa chính và Lưu trữ",
+        subgroup: "Công tác chuyên môn KTĐC",
+        name: "3. Kiểm tra bản vẽ (của các Công ty đo vẽ) - Tổng số",
+        tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0, chuaGiaiQuyet: 0,
+        note: "Kiểm tra bản vẽ công ty"
+      },
+      {
+        id: "4.3.1",
+        sectionId: "SEC_2",
+        sectionTitle: "II. HỒ SƠ KỸ THUẬT ĐỊA CHÍNH",
+        dept: "Tổ Kỹ thuật Địa chính và Lưu trữ",
+        subgroup: "Công tác chuyên môn KTĐC",
+        name: "  └─ Trong đó: Bản vẽ đạt yêu cầu của công ty",
+        tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0, chuaGiaiQuyet: 0,
+        isChild: true,
+        note: "Đạt yêu cầu"
+      },
+      {
+        id: "4.3.2",
+        sectionId: "SEC_2",
+        sectionTitle: "II. HỒ SƠ KỸ THUẬT ĐỊA CHÍNH",
+        dept: "Tổ Kỹ thuật Địa chính và Lưu trữ",
+        subgroup: "Công tác chuyên môn KTĐC",
+        name: "  └─ Trong đó: Bản vẽ không đạt yêu cầu của công ty",
+        tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0, chuaGiaiQuyet: 0,
+        isChild: true,
+        note: "Không đạt yêu cầu"
+      },
+      {
+        id: "4.4",
+        sectionId: "SEC_2",
+        sectionTitle: "II. HỒ SƠ KỸ THUẬT ĐỊA CHÍNH",
+        dept: "Tổ Kỹ thuật Địa chính và Lưu trữ",
+        subgroup: "Công tác chuyên môn KTĐC",
+        name: "4. Xác minh hiện trạng (khảo sát bản vẽ công ty hoặc trích lục có khảo sát)",
+        tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0, chuaGiaiQuyet: 0,
+        note: "Xác minh hiện trạng"
+      },
+      {
+        id: "4.5",
+        sectionId: "SEC_2",
+        sectionTitle: "II. HỒ SƠ KỸ THUẬT ĐỊA CHÍNH",
+        dept: "Tổ Kỹ thuật Địa chính và Lưu trữ",
+        subgroup: "Công tác chuyên môn KTĐC",
+        name: "5. Đã trích lục (hồ sơ trích lục)",
+        tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0, chuaGiaiQuyet: 0,
+        note: "Hồ sơ trích lục"
+      },
+
+      // PHẦN III: TỔNG HỢP CUNG CẤP THÔNG TIN (Tổ Hành chính Tổng hợp / Một cửa)
+      {
+        id: "5.1",
+        sectionId: "SEC_3",
+        sectionTitle: "III. TỔNG HỢP CUNG CẤP THÔNG TIN",
+        dept: "Tổ Hành chính Tổng hợp",
+        subgroup: "Cung cấp thông tin đất đai",
+        name: "1. Cung cấp thông tin cho hộ gia đình, cá nhân",
+        tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0, chuaGiaiQuyet: 0,
+        note: "Một cửa / Cá nhân"
+      },
+      {
+        id: "5.2",
+        sectionId: "SEC_3",
+        sectionTitle: "III. TỔNG HỢP CUNG CẤP THÔNG TIN",
+        dept: "Tổ Hành chính Tổng hợp",
+        subgroup: "Cung cấp thông tin đất đai",
+        name: "2. Cung cấp thông tin hỗ trợ tư pháp và các cơ quan (Tòa án, Thi hành án, Công an, Thuế…)",
+        tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0, chuaGiaiQuyet: 0,
+        note: "Hỗ trợ tư pháp"
+      }
+    ];
+
+    // Dữ liệu mẫu tham chiếu từ file Excel gốc (chỉ dùng khi người dùng chủ động bấm Nạp tham chiếu)
+    const EXCEL_BASELINE_REFERENCE = [
+      { id: "1.1", tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0 },
+      { id: "1.2", tonTruoc: 257, tiepNhan: 716, daGiaiQuyet: 504 },
+      { id: "1.3", tonTruoc: 1, tiepNhan: 18, daGiaiQuyet: 10 },
+      { id: "1.4", tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0 },
+      { id: "2.1", tonTruoc: 133, tiepNhan: 441, daGiaiQuyet: 353 },
+      { id: "2.2", tonTruoc: 139, tiepNhan: 273, daGiaiQuyet: 229 },
+      { id: "2.3", tonTruoc: 7, tiepNhan: 6, daGiaiQuyet: 7 },
+      { id: "2.4", tonTruoc: 2, tiepNhan: 31, daGiaiQuyet: 19 },
+      { id: "2.5", tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0 },
+      { id: "3.1", tonTruoc: 23, tiepNhan: 37, daGiaiQuyet: 39 },
+      { id: "3.2", tonTruoc: 3, tiepNhan: 22, daGiaiQuyet: 19 },
+      { id: "3.3", tonTruoc: 0, tiepNhan: 3, daGiaiQuyet: 3 },
+      { id: "4.1", tonTruoc: 1946, tiepNhan: 611, daGiaiQuyet: 304 },
+      { id: "4.2", tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 0 },
+      { id: "4.3", tonTruoc: 46, tiepNhan: 52, daGiaiQuyet: 50 },
+      { id: "4.3.1", tonTruoc: 0, tiepNhan: 0, daGiaiQuyet: 24 },
+      { id: "4.3.2", tonTruoc: 37, tiepNhan: 0, daGiaiQuyet: 26 },
+      { id: "4.4", tonTruoc: 26, tiepNhan: 0, daGiaiQuyet: 0 },
+      { id: "4.5", tonTruoc: 508, tiepNhan: 636, daGiaiQuyet: 540 },
+      { id: "5.1", tonTruoc: 45, tiepNhan: 536, daGiaiQuyet: 530 },
+      { id: "5.2", tonTruoc: 63, tiepNhan: 0, daGiaiQuyet: 0 }
+    ];
+
+    // ==========================================
+    // 2. DANH SÁCH 82 NHÂN SỰ CHÍNH THỨC CHI NHÁNH SỐ 23
+    // ==========================================
+    const STAFF_CN23 = [
+      // Ban Giám đốc (3)
+      { id: "BGD_01", name: "Nguyễn Chiến Thắng", role: "Giám đốc", dept: "Ban Giám đốc", note: "" },
+      { id: "BGD_02", name: "Đặng Huy Cường", role: "Phó Giám đốc", dept: "Ban Giám đốc", note: "" },
+      { id: "BGD_03", name: "Nguyễn Thị Lệ Hằng", role: "Phó Giám đốc", dept: "Ban Giám đốc", note: "" },
+
+      // Tổ Kỹ thuật Địa chính và Lưu trữ (30)
+      { id: "KTDC_01", name: "Trần Thanh Triết", role: "Tổ trưởng", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_02", name: "Đặng Thị Tuyết Trinh", role: "Tổ phó", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_03", name: "Đỗ Văn Đông", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_04", name: "Nguyễn Văn Tiến", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_05", name: "Nguyễn Thanh Sang", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "Xin nghỉ việc 01/11/2026" },
+      { id: "KTDC_06", name: "Lưu Văn Tuấn", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_07", name: "Đoàn Văn Sang", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_08", name: "Ân Văn Tuấn", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_09", name: "Phạm Minh Trí", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_10", name: "Phạm Thành Vũ", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_11", name: "Nguyễn Quốc Danh", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_12", name: "Lê Quang Khoa", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_13", name: "Đoàn Thanh Phong", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_14", name: "Ngô Thị Cẩm Thúy", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_15", name: "Phạm Trần Hồng Như", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_16", name: "Phạm Hoàng Oanh", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_17", name: "Lê Thị Thùy Duyên", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_18", name: "Nguyễn Thanh Điền", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_19", name: "Huỳnh Thành Duy", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "Xin nghỉ việc 01/11/2026" },
+      { id: "KTDC_20", name: "Vương Ánh Xuân", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_21", name: "Nguyễn Tuấn Anh", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_22", name: "Nguyễn Hoàng Xuân", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_23", name: "Lê Thị Phương Mai", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_24", name: "Lê Ngọc Bảo Ngân", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_25", name: "Hồ Lê Thanh Vũ", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_26", name: "Huỳnh Quốc Nam", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_27", name: "Phạm Minh Hoàng", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
+      { id: "KTDC_28", name: "Nguyễn Tuấn Kiệt", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "Chuyển từ CN28 ngày 01/8/2026" },
+      { id: "KTDC_29", name: "Trần Thị Hoàng Yến", role: "Nhân viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "Thử việc đến 01/11/2026" },
+      { id: "KTDC_30", name: "Nguyễn Hoài Bảo Phúc", role: "Nhân viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "Thử việc đến 01/11/2026" },
+
+      // Tổ Đăng ký cấp GCN (27)
+      { id: "DKGCN_01", name: "Nguyễn Thị Thùy Trang", role: "Tổ trưởng", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_02", name: "Nguyễn Thị Thu Minh", role: "Tổ phó", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_03", name: "Huỳnh Tấn Nguyên", role: "Tổ phó", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_04", name: "Nguyễn Thành Như Bảo", role: "Tổ phó", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_05", name: "Nguyễn Tiến Thịnh", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_06", name: "Hoàng Minh Tú", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_07", name: "Huỳnh Thị Ái Nhi", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_08", name: "Trần Nguyễn Hoài Lam", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_09", name: "Nguyễn Thị Huỳnh Mai", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_10", name: "Nguyễn Văn Khánh", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_11", name: "Trần Thị Thùy Trang", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_12", name: "Tạ Nguyễn Bích Trang", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_13", name: "Nguyễn Thị Lệ Thu", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_14", name: "Phạm Nguyễn Lan Anh", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_15", name: "Nguyễn Trần Thảo Vy", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_16", name: "Lê Sơn Thanh", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_17", name: "Nguyễn Bích Ngọc", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_18", name: "Nguyễn Trung Thành", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_19", name: "Nguyễn Thị Dáng", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_20", name: "Phạm Thị Yến Nhi", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_21", name: "Phan Trọng Hiệp", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_22", name: "Nguyễn Thị Ngọc Thảo", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_23", name: "Nguyễn Nhật Quyền Trinh", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_24", name: "Đỗ Thị Yến", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+      { id: "DKGCN_25", name: "Võ Tường Lam", role: "Nhân viên", dept: "Tổ Đăng ký cấp GCN", note: "Thử việc đến 01/11/2026" },
+      { id: "DKGCN_26", name: "Nguyễn Ngọc Quế Trân", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "Chuyển từ CS2 qua ngày 03/9/2026" },
+      { id: "DKGCN_27", name: "Trần Đình Siêu", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
+
+      // Tổ Hành chính Tổng hợp (22)
+      { id: "HCTH_01", name: "Nguyễn Thị Bích Tuyền", role: "Tổ trưởng", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_02", name: "Bùi Thị Minh Nguyệt", role: "Tổ phó", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_03", name: "Hồ Thị Hồng Linh", role: "Tổ phó", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_04", name: "Nguyễn Thị Mai", role: "Tổ phó", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_05", name: "Võ Phi Trúc", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_06", name: "Trương Ngô Hồng Duyên", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_07", name: "Nguyễn Anh Khôi", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_08", name: "Quản Nguyễn Thảo Nguyên", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_09", name: "Nguyễn Hoàng Duy", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_10", name: "Nguyễn Thị Trúc Phương", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_11", name: "Trần Quốc Hưng", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_12", name: "Đoàn Thị Hoàng An", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_13", name: "Nguyễn Thị Ngọc Trản", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_14", name: "Nguyễn Khánh Duy", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_15", name: "Nguyễn Duy Tấn", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_16", name: "Nguyễn Thảo Tuyết Nhi", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_17", name: "Lê Hồng Phong", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_18", name: "Nguyễn Thanh Phú", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_19", name: "Hồ Lê Thanh Vũ", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_20", name: "Nguyễn Hoàng Tiến", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_21", name: "Lê Thị Thúy Hằng", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
+      { id: "HCTH_22", name: "Đỗ Trọng Minh Quân", role: "Nhân viên", dept: "Tổ Hành chính Tổng hợp", note: "Thử việc đến 01/11/2026" }
+    ];
+
+    // Local Storage Keys
+    const STORAGE_KEY_DAILY_ITEMS = 'CN23_DAILY_REPORT_DATA_V3_CLEAN';
+    const STORAGE_KEY_DAILY_HISTORY = 'CN23_DAILY_REPORT_HISTORY_V3';
+    const STORAGE_KEY_TASKS = 'CN23_TASK_ASSIGNMENTS_V1';
+    const STORAGE_KEY_PERFORMANCE = 'CN23_PERFORMANCE_RECORDS_V1';
+
+    // Xóa cache cũ của phiên bản trước để đảm bảo không bị lưu số 3.974
+    try {
+      localStorage.removeItem('CN23_DAILY_REPORT_DATA_V2');
+    } catch(e) {}
+
+    // Current working items state (Bắt đầu SẠCH SẼ với 0)
+    let currentDailyData = JSON.parse(JSON.stringify(DAILY_REPORT_ITEMS));
+
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_DAILY_ITEMS);
+      if (saved) {
+        currentDailyData = JSON.parse(saved);
+      }
+    } catch(e) {}
+
+    // Initialize Date picker
+    const todayStr = new Date().toISOString().split('T')[0];
+    document.getElementById('reportDailyDate').value = todayStr;
+    document.getElementById('ngayChotSoLieu').value = todayStr;
+
+    // ==========================================
+    // 3. TAB NAVIGATION
+    // ==========================================
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        btn.classList.add('active');
+        const targetTab = btn.getAttribute('data-tab');
+        document.getElementById(targetTab).classList.add('active');
+
+        if (targetTab === 'tab-bao-cao-hang-ngay') {
+          setTimeout(updateCharts, 100);
+        }
+      });
+    });
+
+    // Populate the Filter-Direct Select dropdown
+    const filterDirectSelect = document.getElementById('selectFilterItemDirect');
+    function populateFilterDirectDropdown() {
+      filterDirectSelect.innerHTML = '<option value="ALL">-- Hiển thị tất cả các loại hồ sơ --</option>';
+      const groups = [
+        { label: "I. CÔNG TÁC CẤP GCN & GIAO DỊCH BẢO ĐẢM", sec: "SEC_1" },
+        { label: "II. HỒ SƠ KỸ THUẬT ĐỊA CHÍNH", sec: "SEC_2" },
+        { label: "III. TỔNG HỢP CUNG CẤP THÔNG TIN", sec: "SEC_3" }
+      ];
+
+      groups.forEach(g => {
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = g.label;
+        currentDailyData.filter(i => i.sectionId === g.sec).forEach(item => {
+          const opt = document.createElement('option');
+          opt.value = item.id;
+          opt.textContent = `${item.id} - ${item.name.trim()}`;
+          optgroup.appendChild(opt);
+        });
+        filterDirectSelect.appendChild(optgroup);
+      });
+    }
+
+    // ==========================================
+    // 4. DAILY WORK REPORT RENDERING & CALCULATION
+    // ==========================================
+    
+    // ==========================================
+    // ROLE & PERMISSIONS STATE MANAGEMENT (ADMIN vs USER)
+    // ==========================================
+    const STORAGE_KEY_USER_ROLE = 'CN23_CURRENT_ROLE_V1';
+    const STORAGE_KEY_USER_DEPT = 'CN23_CURRENT_USER_DEPT_V1';
+    const STORAGE_KEY_SUBMISSIONS = 'CN23_DEPT_SUBMISSIONS_V2';
+
+    let currentRole = localStorage.getItem(STORAGE_KEY_USER_ROLE) || 'ADMIN';
+    let currentUserDept = localStorage.getItem(STORAGE_KEY_USER_DEPT) || 'SEC_1';
+
+    function getStoredSubmissions() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_SUBMISSIONS);
+        if (raw) return JSON.parse(raw);
+      } catch(e) {}
+      return {
+        date: new Date().toISOString().split('T')[0],
+        isLocked: false,
+        SEC_1: { status: 'pending', time: null, user: null },
+        SEC_2: { status: 'pending', time: null, user: null },
+        SEC_3: { status: 'pending', time: null, user: null }
+      };
+    }
+
+    function saveStoredSubmissions(sub) {
+      try {
+        localStorage.setItem(STORAGE_KEY_SUBMISSIONS, JSON.stringify(sub));
+      } catch(e) {}
+    }
+
+    let currentSubmissions = getStoredSubmissions();
+
+    // Switch Role function
+    function switchUserRole(newRole) {
+      currentRole = newRole;
+      localStorage.setItem(STORAGE_KEY_USER_ROLE, newRole);
+      applyRolePermissions();
+      if (newRole === 'ADMIN') {
+        showToast('👑 Đã chuyển sang chế độ: QUẢN TRỊ VIÊN / LÃNH ĐẠO CHI NHÁNH', 'info');
+      } else {
+        const deptNames = {
+          'SEC_1': 'Tổ Đăng ký & Cấp GCN',
+          'SEC_2': 'Tổ Kỹ thuật địa chính & Lưu trữ',
+          'SEC_3': 'Tổ Hành chính tổng hợp / Một cửa',
+          'ALL': 'Toàn cơ quan'
+        };
+        showToast(`👤 Đã chuyển sang chế độ: NHÂN VIÊN (${deptNames[currentUserDept] || 'Chuyên viên'})`, 'info');
+      }
+    }
+
+    // Change Department when in User role
+    function onUserDeptChange(newDept) {
+      currentUserDept = newDept;
+      localStorage.setItem(STORAGE_KEY_USER_DEPT, newDept);
+      applyRolePermissions();
+      showToast('Đã đổi sang không gian làm việc của: ' + (newDept === 'SEC_1' ? 'Tổ ĐK&CGCN' : (newDept === 'SEC_2' ? 'Tổ KTĐC' : (newDept === 'SEC_3' ? 'Tổ HCTH' : 'Toàn cơ quan'))));
+    }
+
+    // Populate Quick Item Dropdown based on Department
+    function populateQuickItemDropdown(deptSec = 'ALL') {
+      const selectQuickItem = document.getElementById('selectQuickItem');
+      if (!selectQuickItem) return;
+
+      const curVal = selectQuickItem.value;
+      selectQuickItem.innerHTML = '<option value="" selected>-- Nhấp để chọn loại hồ sơ từ danh mục --</option>';
+
+      const secConfigs = [
+        {
+          sec: 'SEC_1',
+          label: 'I. CÔNG TÁC CẤP GCN VÀ BIẾN ĐỘNG NHÀ ĐẤT (Tổ ĐK&CGCN)',
+          groups: [
+            {
+              sublabel: '1. Công tác đăng ký biến động nhà đất (Tổ ĐK&CGCN)',
+              ids: ['1.1', '1.2', '1.3', '1.4']
+            },
+            {
+              sublabel: '2. Đăng ký Giao dịch Bảo đảm - Mẫu 01 (Tổ ĐK&CGCN)',
+              ids: ['2.1', '2.2', '2.3', '2.4', '2.5']
+            },
+            {
+              sublabel: '3. Các loại đăng ký biến động khác (Tổ ĐK&CGCN)',
+              ids: ['3.1', '3.2', '3.3']
+            }
+          ]
+        },
+        {
+          sec: 'SEC_2',
+          label: 'II. HỒ SƠ KỸ THUẬT ĐỊA CHÍNH (Tổ KTĐC&LT)',
+          groups: [
+            {
+              sublabel: 'II. HỒ SƠ KỸ THUẬT ĐỊA CHÍNH (Tổ KTĐC&LT)',
+              ids: ['4.1', '4.2', '4.3', '4.3.1', '4.3.2', '4.4', '4.5']
+            }
+          ]
+        },
+        {
+          sec: 'SEC_3',
+          label: 'III. TỔNG HỢP CUNG CẤP THÔNG TIN (Tổ HCTH / Một cửa)',
+          groups: [
+            {
+              sublabel: 'III. TỔNG HỢP CUNG CẤP THÔNG TIN (Tổ HCTH / Một cửa)',
+              ids: ['5.1', '5.2']
+            }
+          ]
+        }
+      ];
+
+      secConfigs.forEach(s => {
+        if (deptSec === 'ALL' || deptSec === s.sec) {
+          s.groups.forEach(g => {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = g.sublabel;
+            g.ids.forEach(id => {
+              const item = currentDailyData.find(i => i.id === id);
+              if (item) {
+                const opt = document.createElement('option');
+                opt.value = item.id;
+                opt.textContent = `${item.id} - ${item.name}`;
+                optgroup.appendChild(opt);
+              }
+            });
+            selectQuickItem.appendChild(optgroup);
+          });
+        }
+      });
+
+      if (curVal && selectQuickItem.querySelector(`option[value="${curVal}"]`)) {
+        selectQuickItem.value = curVal;
+      }
+    }
+
+    // Apply Role-Based Access Control & Visibility
+    function applyRolePermissions() {
+      const btnAdmin = document.getElementById('btnRoleAdmin');
+      const btnUser = document.getElementById('btnRoleUser');
+      const roleBadge = document.getElementById('currentRoleBadge');
+      const roleTitle = document.getElementById('roleTitleText');
+      const roleSubtitle = document.getElementById('roleDeptSubtitle');
+      const roleIcon = document.getElementById('roleIcon');
+      const deptWrap = document.getElementById('userDeptSelectorWrap');
+      const deptSelect = document.getElementById('userDeptSelector');
+
+      const adminHub = document.getElementById('adminMonitoringHub');
+      const userHub = document.getElementById('userWorkspaceHub');
+      const userDeptTitle = document.getElementById('userDeptTitleDisplay');
+      const userSubBadge = document.getElementById('userSubmissionStatusBadge');
+
+      const adminControls = document.querySelectorAll('.admin-only-control');
+      const userControls = document.querySelectorAll('.user-only-control');
+      const userTaskNotice = document.getElementById('userTaskNotice');
+
+      const deptNames = {
+        'SEC_1': 'TỔ 1: ĐĂNG KÝ & CẤP GCN',
+        'SEC_2': 'TỔ 2: KỸ THUẬT ĐỊA CHÍNH & LƯU TRỮ',
+        'SEC_3': 'TỔ 3: HÀNH CHÍNH TỔNG HỢP & MỘT CỬA',
+        'ALL': 'TOÀN CƠ QUAN'
+      };
+
+      if (currentRole === 'ADMIN') {
+        // Active Admin Button
+        btnAdmin.classList.add('active');
+        btnUser.classList.remove('active');
+
+        // Badge
+        roleBadge.className = 'role-badge-current admin-mode';
+        roleIcon.textContent = '👑';
+        roleTitle.textContent = 'LÃNH ĐẠO / ADMIN';
+        roleSubtitle.textContent = '— Toàn quyền theo dõi & chốt số';
+
+        // Hubs
+        if (adminHub) adminHub.style.display = 'block';
+        if (userHub) userHub.style.display = 'none';
+        if (deptWrap) deptWrap.style.display = 'none';
+
+        // Buttons
+        adminControls.forEach(el => el.style.display = 'inline-flex');
+        userControls.forEach(el => el.style.display = 'none');
+
+        // Task notice
+        if (userTaskNotice) userTaskNotice.style.display = 'none';
+
+        // Quick Droplist shows ALL 21 items
+        populateQuickItemDropdown('ALL');
+
+        // Update Admin Hub
+        updateAdminMonitoringHub();
+      } else {
+        // Active User Button
+        btnAdmin.classList.remove('active');
+        btnUser.classList.add('active');
+
+        // Badge
+        roleBadge.className = 'role-badge-current user-mode';
+        roleIcon.textContent = '👤';
+        roleTitle.textContent = 'NHÂN VIÊN / CHUYÊN VIÊN';
+        roleSubtitle.textContent = `— ${deptNames[currentUserDept] || 'Chuyên viên'}`;
+
+        // Hubs
+        if (adminHub) adminHub.style.display = 'none';
+        if (userHub) userHub.style.display = 'block';
+        if (deptWrap) {
+          deptWrap.style.display = 'inline-flex';
+          deptSelect.value = currentUserDept;
+        }
+
+        if (userDeptTitle) {
+          userDeptTitle.textContent = deptNames[currentUserDept] || 'TỔ CHUYÊN MÔN';
+        }
+
+        // Buttons: Hide dangerous admin controls
+        adminControls.forEach(el => el.style.display = 'none');
+        userControls.forEach(el => el.style.display = 'inline-flex');
+
+        // Task notice
+        if (userTaskNotice) userTaskNotice.style.display = 'block';
+
+        // Filter Table to User's Dept
+        const filterDeptSelect = document.getElementById('filterDailyDept');
+        if (filterDeptSelect) {
+          filterDeptSelect.value = currentUserDept;
+        }
+
+        // Quick Droplist shows only items of this Dept
+        populateQuickItemDropdown(currentUserDept);
+
+        // Update User Submission Status Badge
+        updateUserSubmissionBadge();
+      }
+
+      // Re-render table with active filter
+      renderDailyReportTable();
+    }
+
+    // Update User Submission Status Badge
+    function updateUserSubmissionBadge() {
+      const badge = document.getElementById('userSubmissionStatusBadge');
+      if (!badge) return;
+
+      const sub = currentSubmissions[currentUserDept];
+      if (currentSubmissions.isLocked) {
+        badge.className = 'kpi-badge urgent';
+        badge.innerHTML = '🔒 Báo cáo ngày đã được Lãnh đạo chốt sổ';
+      } else if (sub && sub.status === 'submitted') {
+        badge.className = 'kpi-badge pass';
+        badge.innerHTML = `🟢 Đã gửi báo cáo ngày (lúc ${sub.time})`;
+      } else {
+        badge.className = 'kpi-badge warn';
+        badge.innerHTML = '⚪ Chưa gửi báo cáo hôm nay';
+      }
+    }
+
+    // Update Admin Monitoring Hub Metrics
+    function updateAdminMonitoringHub() {
+      const adminHub = document.getElementById('adminMonitoringHub');
+      if (!adminHub) return;
+
+      const todayStr = document.getElementById('reportDailyDate').value || new Date().toISOString().split('T')[0];
+
+      // Aggregate by department
+      let stats = {
+        SEC_1: { ton: 0, nhan: 0, gq: 0, chua: 0 },
+        SEC_2: { ton: 0, nhan: 0, gq: 0, chua: 0 },
+        SEC_3: { ton: 0, nhan: 0, gq: 0, chua: 0 }
+      };
+
+      currentDailyData.forEach(item => {
+        if (!item.isChild && stats[item.sectionId]) {
+          stats[item.sectionId].ton += (parseInt(item.tonTruoc) || 0);
+          stats[item.sectionId].nhan += (parseInt(item.tiepNhan) || 0);
+          stats[item.sectionId].gq += (parseInt(item.daGiaiQuyet) || 0);
+          stats[item.sectionId].chua += (parseInt(item.chuaGiaiQuyet) || 0);
+        }
+      });
+
+      // Update SEC_1
+      document.getElementById('monNhanSec1').textContent = stats.SEC_1.nhan.toLocaleString('vi-VN');
+      document.getElementById('monGqSec1').textContent = stats.SEC_1.gq.toLocaleString('vi-VN');
+      document.getElementById('monChuaSec1').textContent = stats.SEC_1.chua.toLocaleString('vi-VN');
+
+      // Update SEC_2
+      document.getElementById('monNhanSec2').textContent = stats.SEC_2.nhan.toLocaleString('vi-VN');
+      document.getElementById('monGqSec2').textContent = stats.SEC_2.gq.toLocaleString('vi-VN');
+      document.getElementById('monChuaSec2').textContent = stats.SEC_2.chua.toLocaleString('vi-VN');
+
+      // Update SEC_3
+      document.getElementById('monNhanSec3').textContent = stats.SEC_3.nhan.toLocaleString('vi-VN');
+      document.getElementById('monGqSec3').textContent = stats.SEC_3.gq.toLocaleString('vi-VN');
+      document.getElementById('monChuaSec3').textContent = stats.SEC_3.chua.toLocaleString('vi-VN');
+
+      // Update Statuses
+      const secKeys = ['SEC_1', 'SEC_2', 'SEC_3'];
+      const cardIds = ['cardMonitorSec1', 'cardMonitorSec2', 'cardMonitorSec3'];
+      const badgeIds = ['statusBadgeSec1', 'statusBadgeSec2', 'statusBadgeSec3'];
+      const timeIds = ['monTimeSec1', 'monTimeSec2', 'monTimeSec3'];
+
+      secKeys.forEach((k, idx) => {
+        const card = document.getElementById(cardIds[idx]);
+        const badge = document.getElementById(badgeIds[idx]);
+        const timeEl = document.getElementById(timeIds[idx]);
+        const sub = currentSubmissions[k];
+        const s = stats[k];
+
+        card.classList.remove('status-submitted', 'status-inprogress');
+
+        if (sub && sub.status === 'submitted') {
+          card.classList.add('status-submitted');
+          badge.textContent = `🟢 Đã nộp (${sub.time})`;
+          timeEl.textContent = `🕒 Gửi lúc: ${sub.time}`;
+        } else if (s.nhan > 0 || s.gq > 0) {
+          card.classList.add('status-inprogress');
+          badge.textContent = '🟡 Đang nhập liệu';
+          timeEl.textContent = `🕒 Đã có ${s.nhan + s.gq} hs phát sinh`;
+        } else {
+          badge.textContent = '⚪ Chưa gửi';
+          timeEl.textContent = '🕒 Chưa ghi nhận gửi';
+        }
+      });
+
+      // Update Lock Badge & Button
+      const badgeLock = document.getElementById('badgeLockStatus');
+      const btnLock = document.getElementById('btnAdminQuickLock');
+      if (currentSubmissions.isLocked) {
+        badgeLock.className = 'kpi-badge urgent';
+        badgeLock.textContent = '🔒 ĐÃ KHÓA SỔ BÁO CÁO NGÀY';
+        if (btnLock) btnLock.innerHTML = '<span>🔓</span> Mở khóa sổ';
+      } else {
+        badgeLock.className = 'kpi-badge pass';
+        badgeLock.textContent = '🟢 ĐANG TIẾP NHẬN SỐ LIỆU NGÀY';
+        if (btnLock) btnLock.innerHTML = '<span>🔒</span> Chốt sổ ngày';
+      }
+    }
+
+    // Submit Report (User Action)
+    function submitUserReport() {
+      if (currentSubmissions.isLocked) {
+        showToast('Báo cáo ngày đã được Lãnh đạo khóa sổ. Vui lòng liên hệ Admin để mở lại!', 'error');
+        return;
+      }
+
+      const nowTime = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+      const deptNames = {
+        'SEC_1': 'Tổ Đăng ký & Cấp GCN',
+        'SEC_2': 'Tổ Kỹ thuật địa chính & Lưu trữ',
+        'SEC_3': 'Tổ Hành chính tổng hợp / Một cửa',
+        'ALL': 'Toàn đơn vị'
+      };
+
+      currentSubmissions[currentUserDept] = {
+        status: 'submitted',
+        time: nowTime,
+        date: document.getElementById('reportDailyDate').value || new Date().toISOString().split('T')[0]
+      };
+
+      saveStoredSubmissions(currentSubmissions);
+      updateUserSubmissionBadge();
+      updateAdminMonitoringHub();
+
+      showToast(`🎉 Đã gửi báo cáo ngày của ${deptNames[currentUserDept]} lên Lãnh đạo thành công (lúc ${nowTime})!`, 'success');
+    }
+
+    // Lock / Unlock Daily Report (Admin Action)
+    function lockAdminDailyReport() {
+      if (!currentSubmissions.isLocked) {
+        if (confirm('Xác nhận CHỐT SỔ BÁO CÁO NGÀY hôm nay? Toàn bộ số liệu sẽ được khóa và ghi nhận vào sổ nhật ký lưu trữ.')) {
+          currentSubmissions.isLocked = true;
+          saveStoredSubmissions(currentSubmissions);
+          updateAdminMonitoringHub();
+          updateUserSubmissionBadge();
+
+          // Auto-trigger save daily record to history
+          const saveBtn = document.getElementById('btnSaveDailyRecord');
+          if (saveBtn) saveBtn.click();
+
+          showToast('🔒 Đã chốt sổ và lưu trữ báo cáo ngày của toàn Chi nhánh số 23!', 'success');
+        }
+      } else {
+        if (confirm('Báo cáo ngày hiện đang bị khóa. Bạn có muốn MỞ KHÓA để các Tổ tiếp tục điều chỉnh số liệu?')) {
+          currentSubmissions.isLocked = false;
+          saveStoredSubmissions(currentSubmissions);
+          updateAdminMonitoringHub();
+          updateUserSubmissionBadge();
+          showToast('🔓 Đã mở khóa sổ báo cáo ngày cho các Tổ tiếp tục nhập liệu!', 'info');
+        }
+      }
+    }
+
+    // Focus Department Table from Admin Hub
+    function focusDepartmentTable(secId) {
+      document.getElementById('filterDailyDept').value = secId;
+      document.getElementById('selectFilterItemDirect').value = 'ALL';
+      renderDailyReportTable();
+
+      const tableBody = document.getElementById('dailyReportTableBody');
+      if (tableBody) {
+        tableBody.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      const secNames = {
+        'SEC_1': 'Tổ 1: Đăng ký & Cấp GCN',
+        'SEC_2': 'Tổ 2: Kỹ thuật địa chính',
+        'SEC_3': 'Tổ 3: Hành chính tổng hợp'
+      };
+      showToast(`Đã lọc bảng theo ${secNames[secId] || secId}!`);
+    }
+
+    const tbodyDaily = document.getElementById('dailyReportTableBody');
+
+    function renderDailyReportTable() {
+      const filterDept = document.getElementById('filterDailyDept').value;
+      const filterItemDirect = document.getElementById('selectFilterItemDirect').value;
+      tbodyDaily.innerHTML = '';
+
+      let curSection = '';
+      let curSubgroup = '';
+
+      let grandTotals = { ton: 0, nhan: 0, gq: 0, chua: 0 };
+      let deptStats = {
+        gcn: { ton: 0, nhan: 0, gq: 0, chua: 0 },
+        ktdc: { ton: 0, nhan: 0, gq: 0, chua: 0 },
+        cctt: { ton: 0, nhan: 0, gq: 0, chua: 0 }
+      };
+
+      currentDailyData.forEach((item, index) => {
+        const ton = parseInt(item.tonTruoc) || 0;
+        const nhan = parseInt(item.tiepNhan) || 0;
+        const gq = parseInt(item.daGiaiQuyet) || 0;
+        const chua = ton + nhan - gq;
+        item.chuaGiaiQuyet = chua;
+
+        const isChildRow = item.isChild === true;
+
+        if (!isChildRow) {
+          grandTotals.ton += ton;
+          grandTotals.nhan += nhan;
+          grandTotals.gq += gq;
+          grandTotals.chua += chua;
+
+          if (item.sectionId === 'SEC_1') {
+            deptStats.gcn.ton += ton;
+            deptStats.gcn.nhan += nhan;
+            deptStats.gcn.gq += gq;
+            deptStats.gcn.chua += chua;
+          } else if (item.sectionId === 'SEC_2') {
+            deptStats.ktdc.ton += ton;
+            deptStats.ktdc.nhan += nhan;
+            deptStats.ktdc.gq += gq;
+            deptStats.ktdc.chua += chua;
+          } else if (item.sectionId === 'SEC_3') {
+            deptStats.cctt.ton += ton;
+            deptStats.cctt.nhan += nhan;
+            deptStats.cctt.gq += gq;
+            deptStats.cctt.chua += chua;
+          }
+        }
+
+        // Filtering logic
+        if (filterItemDirect !== 'ALL') {
+          if (item.id !== filterItemDirect) return;
+        } else if (filterDept !== 'ALL') {
+          if (item.sectionId !== filterDept) return;
+        }
+
+        // Section header row
+        if (item.sectionTitle !== curSection && filterItemDirect === 'ALL') {
+          curSection = item.sectionTitle;
+          const trSec = document.createElement('tr');
+          trSec.className = 'tr-section-header';
+          trSec.innerHTML = `
+            <td colspan="9" style="padding: 10px 14px; font-size: 0.95rem;">
+              <strong>${curSection}</strong> 
+              <span class="kpi-badge info" style="margin-left: 8px;">Đơn vị phụ trách: ${item.dept}</span>
+            </td>
+          `;
+          tbodyDaily.appendChild(trSec);
+        }
+
+        // Subgroup header row
+        if (item.subgroup && item.subgroup !== curSubgroup && item.sectionId === 'SEC_1' && filterItemDirect === 'ALL') {
+          curSubgroup = item.subgroup;
+          const trSub = document.createElement('tr');
+          trSub.style.background = 'rgba(148, 163, 184, 0.08)';
+          trSub.style.fontWeight = '700';
+          trSub.innerHTML = `
+            <td colspan="9" style="padding: 8px 14px; color: var(--text-main); font-size: 0.88rem;">
+              📁 ${curSubgroup}
+            </td>
+          `;
+          tbodyDaily.appendChild(trSub);
+        }
+
+        // Item data row
+        const tr = document.createElement('tr');
+        tr.id = `row_item_${item.id.replace(/\./g, '_')}`;
+        if (isChildRow) {
+          tr.style.background = 'rgba(148, 163, 184, 0.03)';
+          tr.style.fontStyle = 'italic';
+        }
+
+        const totalNeedHandle = ton + nhan;
+        const rateSolve = totalNeedHandle > 0 ? ((gq / totalNeedHandle) * 100).toFixed(1) : 0;
+
+        tr.innerHTML = `
+          <td style="text-align: center; font-weight: 700; color: var(--text-muted);">${item.id}</td>
+          <td>
+            <strong>${item.name}</strong>
+          </td>
+          <td class="num-display">
+            <input type="number" min="0" class="daily-cell-input" data-idx="${index}" data-field="tonTruoc" value="${ton}">
+          </td>
+          <td class="num-display">
+            <input type="number" min="0" class="daily-cell-input" data-idx="${index}" data-field="tiepNhan" value="${nhan}">
+          </td>
+          <td class="num-display" style="font-weight: 700; color: var(--text-main);">${totalNeedHandle.toLocaleString('vi-VN')}</td>
+          <td class="num-display">
+            <input type="number" min="0" class="daily-cell-input" data-idx="${index}" data-field="daGiaiQuyet" value="${gq}">
+          </td>
+          <td class="num-display" style="font-weight: 800; color: ${chua > 0 ? 'var(--danger)' : 'var(--success)'};">
+            ${chua.toLocaleString('vi-VN')}
+          </td>
+          <td>
+            <div style="font-size: 0.78rem; font-weight: 700; text-align: center;">${rateSolve}%</div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill" style="width: ${Math.min(rateSolve, 100)}%;"></div>
+            </div>
+          </td>
+          <td style="font-size: 0.78rem; color: var(--text-muted);">${item.note || ''}</td>
+        `;
+        tbodyDaily.appendChild(tr);
+      });
+
+      // Render Grand Total Row at bottom
+      const trGrand = document.createElement('tr');
+      trGrand.className = 'tr-grandtotal';
+      const grandTotalNeed = grandTotals.ton + grandTotals.nhan;
+      const grandRate = grandTotalNeed > 0 ? ((grandTotals.gq / grandTotalNeed) * 100).toFixed(1) : 0;
+      trGrand.innerHTML = `
+        <td style="text-align:center;">★</td>
+        <td>TỔNG CỘNG TOÀN CHI NHÁNH SỐ 23</td>
+        <td class="num-display">${grandTotals.ton.toLocaleString('vi-VN')}</td>
+        <td class="num-display">${grandTotals.nhan.toLocaleString('vi-VN')}</td>
+        <td class="num-display">${grandTotalNeed.toLocaleString('vi-VN')}</td>
+        <td class="num-display">${grandTotals.gq.toLocaleString('vi-VN')}</td>
+        <td class="num-display" style="color: var(--danger); font-size:1.05rem;">${grandTotals.chua.toLocaleString('vi-VN')}</td>
+        <td style="text-align:center;">
+          <span class="kpi-badge pass" style="font-size:0.8rem;">${grandRate}%</span>
+        </td>
+        <td>Tổng hợp tự động</td>
+      `;
+      tbodyDaily.appendChild(trGrand);
+
+      // Update Executive KPI Cards
+      document.getElementById('kpiDailyTonTruoc').textContent = grandTotals.ton.toLocaleString('vi-VN');
+      document.getElementById('kpiDailyTiepNhan').textContent = grandTotals.nhan.toLocaleString('vi-VN');
+      document.getElementById('kpiDailyDaGiaiQuyet').textContent = grandTotals.gq.toLocaleString('vi-VN');
+      document.getElementById('kpiDailyChuaGiaiQuyet').textContent = grandTotals.chua.toLocaleString('vi-VN');
+
+      document.getElementById('kpiDailySolveRate').textContent = `Tỷ lệ giải quyết: ${grandRate}%`;
+      const backlogRate = grandTotalNeed > 0 ? ((grandTotals.chua / grandTotalNeed) * 100).toFixed(1) : 0;
+      document.getElementById('kpiDailyBacklogRate').textContent = `Tồn đọng: ${backlogRate}%`;
+
+      // Update Department Summary Cards
+      document.getElementById('sumDeptGcnTon').textContent = deptStats.gcn.ton.toLocaleString('vi-VN');
+      document.getElementById('sumDeptGcnNhan').textContent = deptStats.gcn.nhan.toLocaleString('vi-VN');
+      document.getElementById('sumDeptGcnGQ').textContent = deptStats.gcn.gq.toLocaleString('vi-VN');
+      document.getElementById('sumDeptGcnChua').textContent = deptStats.gcn.chua.toLocaleString('vi-VN');
+
+      document.getElementById('sumDeptKtdcTon').textContent = deptStats.ktdc.ton.toLocaleString('vi-VN');
+      document.getElementById('sumDeptKtdcNhan').textContent = deptStats.ktdc.nhan.toLocaleString('vi-VN');
+      document.getElementById('sumDeptKtdcGQ').textContent = deptStats.ktdc.gq.toLocaleString('vi-VN');
+      document.getElementById('sumDeptKtdcChua').textContent = deptStats.ktdc.chua.toLocaleString('vi-VN');
+
+      document.getElementById('sumDeptCcttTon').textContent = deptStats.cctt.ton.toLocaleString('vi-VN');
+      document.getElementById('sumDeptCcttNhan').textContent = deptStats.cctt.nhan.toLocaleString('vi-VN');
+      document.getElementById('sumDeptCcttGQ').textContent = deptStats.cctt.gq.toLocaleString('vi-VN');
+      document.getElementById('sumDeptCcttChua').textContent = deptStats.cctt.chua.toLocaleString('vi-VN');
+
+      // Attach direct cell input event listeners
+      document.querySelectorAll('.daily-cell-input').forEach(inp => {
+        inp.addEventListener('input', (e) => {
+          const idx = parseInt(e.target.getAttribute('data-idx'));
+          const field = e.target.getAttribute('data-field');
+          const val = parseInt(e.target.value) || 0;
+          currentDailyData[idx][field] = val;
+          renderDailyReportTable();
+          updateCharts();
+        });
+      });
+    }
+
+    // ==========================================
+    // 5. DROPLIST ĐIỀN SỐ LIỆU NHANH
+    // ==========================================
+    const selectQuickItem = document.getElementById('selectQuickItem');
+    const quickTonTruoc = document.getElementById('quickTonTruoc');
+    const quickTiepNhan = document.getElementById('quickTiepNhan');
+    const quickDaGiaiQuyet = document.getElementById('quickDaGiaiQuyet');
+    const quickChuaGiaiQuyet = document.getElementById('quickChuaGiaiQuyet');
+    const btnApplyQuickEntry = document.getElementById('btnApplyQuickEntry');
+
+    function calculateQuickChua() {
+      const ton = parseInt(quickTonTruoc.value) || 0;
+      const nhan = parseInt(quickTiepNhan.value) || 0;
+      const gq = parseInt(quickDaGiaiQuyet.value) || 0;
+      quickChuaGiaiQuyet.value = ton + nhan - gq;
+    }
+
+    quickTonTruoc.addEventListener('input', calculateQuickChua);
+    quickTiepNhan.addEventListener('input', calculateQuickChua);
+    quickDaGiaiQuyet.addEventListener('input', calculateQuickChua);
+
+    // Khi chọn loại hồ sơ từ droplist
+    selectQuickItem.addEventListener('change', () => {
+      const selectedId = selectQuickItem.value;
+      if (!selectedId) return;
+
+      const item = currentDailyData.find(i => i.id === selectedId);
+      if (item) {
+        quickTonTruoc.value = item.tonTruoc || 0;
+        quickTiepNhan.value = item.tiepNhan || 0;
+        quickDaGiaiQuyet.value = item.daGiaiQuyet || 0;
+        calculateQuickChua();
+
+        // Tự động đồng bộ bộ lọc nhóm nghiệp vụ để dòng hồ sơ không bao giờ bị ẩn
+        const currentDeptFilter = document.getElementById('filterDailyDept').value;
+        if (currentDeptFilter !== 'ALL' && currentDeptFilter !== item.sectionId) {
+          document.getElementById('filterDailyDept').value = 'ALL';
+        }
+        document.getElementById('selectFilterItemDirect').value = 'ALL';
+        renderDailyReportTable();
+
+        // Cuộn tới dòng và hiệu ứng nổi bật (flash highlight)
+        const rowId = `row_item_${item.id.replace(/\./g, '_')}`;
+        const targetRow = document.getElementById(rowId);
+        if (targetRow) {
+          targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          targetRow.classList.remove('row-highlight-active');
+          void targetRow.offsetWidth; // trigger reflow
+          targetRow.classList.add('row-highlight-active');
+        }
+
+        // Focus vào ô tiếp nhận để nhập nhanh
+        quickTiepNhan.focus();
+        quickTiepNhan.select();
+      }
+    });
+
+    // Lưu cập nhật từ quick entry
+    function applyQuickEntry() {
+      const selectedId = selectQuickItem.value;
+      if (!selectedId) {
+        showToast('Vui lòng chọn một loại hồ sơ từ droplist trước!', 'error');
+        selectQuickItem.focus();
+        return;
+      }
+
+      const item = currentDailyData.find(i => i.id === selectedId);
+      if (item) {
+        const ton = parseInt(quickTonTruoc.value) || 0;
+        const nhan = parseInt(quickTiepNhan.value) || 0;
+        const gq = parseInt(quickDaGiaiQuyet.value) || 0;
+
+        item.tonTruoc = ton;
+        item.tiepNhan = nhan;
+        item.daGiaiQuyet = gq;
+        item.chuaGiaiQuyet = ton + nhan - gq;
+
+        localStorage.setItem(STORAGE_KEY_DAILY_ITEMS, JSON.stringify(currentDailyData));
+        renderDailyReportTable();
+        updateCharts();
+
+        showToast(`Đã cập nhật số liệu cho: ${item.name}!`, 'success');
+
+        // Cuộn tới dòng và highlight
+        const rowId = `row_item_${item.id.replace(/\./g, '_')}`;
+        const targetRow = document.getElementById(rowId);
+        if (targetRow) {
+          targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          targetRow.classList.remove('row-highlight-active');
+          void targetRow.offsetWidth;
+          targetRow.classList.add('row-highlight-active');
+        }
+      }
+    }
+
+    btnApplyQuickEntry.addEventListener('click', applyQuickEntry);
+
+    // Hỗ trợ phím Enter để lưu nhanh
+    [quickTonTruoc, quickTiepNhan, quickDaGiaiQuyet].forEach(inp => {
+      inp.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          applyQuickEntry();
+        }
+      });
+    });
+
+    // Đồng bộ khi chọn lọc 1 loại hồ sơ trên bảng
+    filterDirectSelect.addEventListener('change', () => {
+      const val = filterDirectSelect.value;
+      if (val !== 'ALL') {
+        const item = currentDailyData.find(i => i.id === val);
+        if (item) {
+          document.getElementById('filterDailyDept').value = 'ALL';
+          selectQuickItem.value = val;
+          quickTonTruoc.value = item.tonTruoc || 0;
+          quickTiepNhan.value = item.tiepNhan || 0;
+          quickDaGiaiQuyet.value = item.daGiaiQuyet || 0;
+          calculateQuickChua();
+        }
+      }
+      renderDailyReportTable();
+    });
+
+    document.getElementById('filterDailyDept').addEventListener('change', () => {
+      document.getElementById('selectFilterItemDirect').value = 'ALL';
+      renderDailyReportTable();
+    });
+
+    document.getElementById('btnResetFilters').addEventListener('click', () => {
+      document.getElementById('filterDailyDept').value = 'ALL';
+      document.getElementById('selectFilterItemDirect').value = 'ALL';
+      renderDailyReportTable();
+      showToast('Đã xóa bộ lọc, hiển thị toàn bộ 21 hạng mục');
+    });
+
+    // Nạp số liệu tham chiếu (từ file Excel cũ) khi cần đối soát
+    document.getElementById('btnLoadExcelBaseline').addEventListener('click', () => {
+      if (confirm('Bạn có muốn nạp số liệu tham chiếu (từ file Excel gốc tháng 10/2026) vào bảng để đối chiếu?')) {
+        EXCEL_BASELINE_REFERENCE.forEach(ref => {
+          const item = currentDailyData.find(i => i.id === ref.id);
+          if (item) {
+            item.tonTruoc = ref.tonTruoc;
+            item.tiepNhan = ref.tiepNhan;
+            item.daGiaiQuyet = ref.daGiaiQuyet;
+            item.chuaGiaiQuyet = ref.tonTruoc + ref.tiepNhan - ref.daGiaiQuyet;
+          }
+        });
+        localStorage.setItem(STORAGE_KEY_DAILY_ITEMS, JSON.stringify(currentDailyData));
+        renderDailyReportTable();
+        updateCharts();
+        showToast('Đã nạp số liệu tham chiếu từ file Excel cũ!');
+      }
+    });
+
+    // Đưa tất cả số liệu về 0 sạch sẽ
+    document.getElementById('btnResetDailyInputs').addEventListener('click', () => {
+      if (confirm('Xác nhận đưa toàn bộ số liệu của tất cả các loại hồ sơ về 0 để bắt đầu nhập ngày mới?')) {
+        currentDailyData.forEach(item => {
+          item.tonTruoc = 0;
+          item.tiepNhan = 0;
+          item.daGiaiQuyet = 0;
+          item.chuaGiaiQuyet = 0;
+        });
+        localStorage.setItem(STORAGE_KEY_DAILY_ITEMS, JSON.stringify(currentDailyData));
+        renderDailyReportTable();
+        updateCharts();
+        quickTonTruoc.value = 0;
+        quickTiepNhan.value = 0;
+        quickDaGiaiQuyet.value = 0;
+        quickChuaGiaiQuyet.value = 0;
+        showToast('Toàn bộ số liệu đã đưa về 0 sạch sẽ!');
+      }
+    });
+
+    // Save Daily Record to History
+    function getStoredDailyHistory() {
+      const data = localStorage.getItem(STORAGE_KEY_DAILY_HISTORY);
+      return data ? JSON.parse(data) : [];
+    }
+
+    function saveStoredDailyHistory(history) {
+      localStorage.setItem(STORAGE_KEY_DAILY_HISTORY, JSON.stringify(history));
+      renderDailyHistoryTable();
+    }
+
+    function renderDailyHistoryTable() {
+      const history = getStoredDailyHistory();
+      const tbody = document.getElementById('dailyHistoryTableBody');
+      tbody.innerHTML = '';
+
+      if (history.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 18px;">Chưa có bản ghi lịch sử ngày nào được lưu. Hãy nhấp "LƯU BÁO CÁO NGÀY" phía trên.</td></tr>`;
+        return;
+      }
+
+      history.forEach((rec, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td><strong>${rec.date}</strong></td>
+          <td class="num-display">${(rec.totalTon || 0).toLocaleString('vi-VN')}</td>
+          <td class="num-display" style="color:var(--primary); font-weight:700;">${(rec.totalNhan || 0).toLocaleString('vi-VN')}</td>
+          <td class="num-display" style="color:var(--secondary); font-weight:700;">${(rec.totalGQ || 0).toLocaleString('vi-VN')}</td>
+          <td class="num-display" style="color:var(--danger); font-weight:700;">${(rec.totalChua || 0).toLocaleString('vi-VN')}</td>
+          <td style="text-align:center;"><span class="kpi-badge pass">${rec.rateSolve || '0.0%'}</span></td>
+          <td style="font-size:0.8rem; color:var(--text-muted);">${rec.savedAt}</td>
+          <td>
+            <button class="action-icon-btn done" title="Nạp lại số liệu ngày này" onclick="loadHistoryDailyRecord('${rec.id}')">↩</button>
+            <button class="action-icon-btn" title="Xóa bản ghi này" onclick="deleteHistoryDailyRecord('${rec.id}')">🗑️</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.loadHistoryDailyRecord = function(id) {
+      const history = getStoredDailyHistory();
+      const rec = history.find(h => h.id === id);
+      if (rec && rec.data) {
+        currentDailyData = JSON.parse(JSON.stringify(rec.data));
+        document.getElementById('reportDailyDate').value = rec.date;
+        renderDailyReportTable();
+        updateCharts();
+        showToast(`Đã nạp lại số liệu báo cáo ngày ${rec.date}!`);
+      }
+    };
+
+    window.deleteHistoryDailyRecord = function(id) {
+      if (!confirm('Bạn có chắc muốn xóa bản ghi lịch sử ngày này?')) return;
+      let history = getStoredDailyHistory();
+      history = history.filter(h => h.id !== id);
+      saveStoredDailyHistory(history);
+      showToast('Đã xóa bản ghi lịch sử!');
+    };
+
+    document.getElementById('btnClearDailyHistory').addEventListener('click', () => {
+      if (confirm('CẢNH BÁO: Bạn có chắc chắn muốn xóa TOÀN BỘ lịch sử các ngày đã lưu?')) {
+        localStorage.removeItem(STORAGE_KEY_DAILY_HISTORY);
+        renderDailyHistoryTable();
+        showToast('Đã xóa toàn bộ lịch sử ngày');
+      }
+    });
+
+    document.getElementById('btnSaveDailyRecord').addEventListener('click', () => {
+      const reportDate = document.getElementById('reportDailyDate').value;
+      if (!reportDate) {
+        showToast('Vui lòng chọn ngày báo cáo!', 'error');
+        return;
+      }
+
+      let totalTon = 0, totalNhan = 0, totalGQ = 0, totalChua = 0;
+      currentDailyData.forEach(item => {
+        if (!item.isChild) {
+          totalTon += parseInt(item.tonTruoc) || 0;
+          totalNhan += parseInt(item.tiepNhan) || 0;
+          totalGQ += parseInt(item.daGiaiQuyet) || 0;
+          totalChua += parseInt(item.chuaGiaiQuyet) || 0;
+        }
+      });
+      const grandTotalNeed = totalTon + totalNhan;
+      const rateSolve = grandTotalNeed > 0 ? ((totalGQ / grandTotalNeed) * 100).toFixed(1) + '%' : '0.0%';
+
+      const record = {
+        id: 'DAILY_' + Date.now(),
+        date: reportDate,
+        totalTon: totalTon,
+        totalNhan: totalNhan,
+        totalGQ: totalGQ,
+        totalChua: totalChua,
+        rateSolve: rateSolve,
+        data: JSON.parse(JSON.stringify(currentDailyData)),
+        savedAt: new Date().toLocaleString('vi-VN')
+      };
+
+      const history = getStoredDailyHistory();
+      const existingIdx = history.findIndex(h => h.date === reportDate);
+      if (existingIdx !== -1) {
+        if (confirm(`Số liệu báo cáo của ngày ${reportDate} đã có trong lịch sử. Bạn có muốn CẬP NHẬT đè lại không?`)) {
+          history[existingIdx] = record;
+        } else {
+          return;
+        }
+      } else {
+        history.unshift(record);
+      }
+
+      saveStoredDailyHistory(history);
+      localStorage.setItem(STORAGE_KEY_DAILY_ITEMS, JSON.stringify(currentDailyData));
+      showToast(`Đã lưu thành công báo cáo công việc ngày ${reportDate}!`);
+    });
+
+    // Export Daily CSV
+    document.getElementById('btnExportDailyCsv').addEventListener('click', () => {
+      const reportDate = document.getElementById('reportDailyDate').value || todayStr;
+      const headers = ["Mã", "Nhóm nghiệp vụ", "Tổ phụ trách", "Tên loại hồ sơ", "Tồn kỳ trước", "Tiếp nhận", "Tổng cần xử lý", "Đã giải quyết", "Chưa giải quyết", "Tỷ lệ GQ (%)", "Ghi chú"];
+      const rows = [headers.join(",")];
+
+      currentDailyData.forEach(item => {
+        const ton = parseInt(item.tonTruoc) || 0;
+        const nhan = parseInt(item.tiepNhan) || 0;
+        const gq = parseInt(item.daGiaiQuyet) || 0;
+        const chua = parseInt(item.chuaGiaiQuyet) || 0;
+        const total = ton + nhan;
+        const rate = total > 0 ? ((gq / total) * 100).toFixed(1) : 0;
+
+        const row = [
+          `"${item.id}"`,
+          `"${item.sectionTitle}"`,
+          `"${item.dept}"`,
+          `"${item.name.replace(/"/g, '""')}"`,
+          ton,
+          nhan,
+          total,
+          gq,
+          chua,
+          `"${rate}%"`,
+          `"${(item.note || '').replace(/"/g, '""')}"`
+        ];
+        rows.push(row.join(","));
+      });
+
+      const csvContent = "\uFEFF" + rows.join("\r\n");
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `BC_cong_viec_hang_ngay_CN23_${reportDate}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Đã xuất báo cáo công việc ngày ra file Excel (CSV)!');
+    });
+
+    document.getElementById('btnPrintDailyReport').addEventListener('click', () => {
+      window.print();
+    });
+
+    // ==========================================
+    // 6. CHARTS (CHART.JS)
+    // ==========================================
+    let chartDept = null;
+    let chartDonut = null;
+
+    function initCharts() {
+      const ctxDept = document.getElementById('chartDeptComparison').getContext('2d');
+      chartDept = new Chart(ctxDept, {
+        type: 'bar',
+        data: {
+          labels: ['Cấp GCN & GDBĐ', 'Hồ sơ KT Địa chính', 'Cung cấp thông tin'],
+          datasets: [
+            {
+              label: 'Tiếp nhận mới',
+              data: [0, 0, 0],
+              backgroundColor: '#3b82f6'
+            },
+            {
+              label: 'Đã giải quyết',
+              data: [0, 0, 0],
+              backgroundColor: '#10b981'
+            },
+            {
+              label: 'Chưa giải quyết (Tồn)',
+              data: [0, 0, 0],
+              backgroundColor: '#ef4444'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+
+      const ctxDonut = document.getElementById('chartBacklogDonut').getContext('2d');
+      chartDonut = new Chart(ctxDonut, {
+        type: 'doughnut',
+        data: {
+          labels: ['Cấp GCN & GDBĐ', 'Hồ sơ KT Địa chính', 'Cung cấp thông tin'],
+          datasets: [{
+            data: [0, 0, 0],
+            backgroundColor: ['#6366f1', '#0d9488', '#f59e0b']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+
+      updateCharts();
+    }
+
+    function updateCharts() {
+      if (!chartDept || !chartDonut) return;
+
+      let gcnNhan = 0, gcnGQ = 0, gcnChua = 0;
+      let ktdcNhan = 0, ktdcGQ = 0, ktdcChua = 0;
+      let ccttNhan = 0, ccttGQ = 0, ccttChua = 0;
+
+      currentDailyData.forEach(item => {
+        if (!item.isChild) {
+          const nhan = parseInt(item.tiepNhan) || 0;
+          const gq = parseInt(item.daGiaiQuyet) || 0;
+          const chua = parseInt(item.chuaGiaiQuyet) || 0;
+
+          if (item.sectionId === 'SEC_1') {
+            gcnNhan += nhan; gcnGQ += gq; gcnChua += chua;
+          } else if (item.sectionId === 'SEC_2') {
+            ktdcNhan += nhan; ktdcGQ += gq; ktdcChua += chua;
+          } else if (item.sectionId === 'SEC_3') {
+            ccttNhan += nhan; ccttGQ += gq; ccttChua += chua;
+          }
+        }
+      });
+
+      chartDept.data.datasets[0].data = [gcnNhan, ktdcNhan, ccttNhan];
+      chartDept.data.datasets[1].data = [gcnGQ, ktdcGQ, ccttGQ];
+      chartDept.data.datasets[2].data = [gcnChua, ktdcChua, ccttChua];
+      chartDept.update();
+
+      chartDonut.data.datasets[0].data = [gcnChua, ktdcChua, ccttChua];
+      chartDonut.update();
+    }
+
+    // ==========================================
+    // 7. TAB 2 & 3: TASK ASSIGNMENT & PROGRESS
+    // ==========================================
+    const staffSelect = document.getElementById('assignStaff');
+    const deptFilterSelect = document.getElementById('filterStaffDept');
+    const staffDetailHint = document.getElementById('assignStaffDetail');
+
+    function populateStaffDropdown(filterDept = 'ALL') {
+      staffSelect.innerHTML = '<option value="" disabled selected>-- Chọn cán bộ nhận việc --</option>';
+
+      const depts = filterDept === 'ALL' 
+        ? ["Tổ Kỹ thuật Địa chính và Lưu trữ", "Tổ Đăng ký cấp GCN", "Tổ Hành chính Tổng hợp", "Ban Giám đốc"]
+        : [filterDept];
+
+      depts.forEach(deptName => {
+        const staffInDept = STAFF_CN23.filter(s => s.dept === deptName);
+        if (staffInDept.length > 0) {
+          const optGroup = document.createElement('optgroup');
+          optGroup.label = `${deptName} (${staffInDept.length} nhân sự)`;
+          staffInDept.forEach(staff => {
+            const opt = document.createElement('option');
+            opt.value = staff.id;
+            const noteText = staff.note ? ` [${staff.note}]` : '';
+            opt.textContent = `${staff.name} — ${staff.role}${noteText}`;
+            optGroup.appendChild(opt);
+          });
+          staffSelect.appendChild(optGroup);
+        }
+      });
+    }
+
+    deptFilterSelect.addEventListener('change', () => {
+      populateStaffDropdown(deptFilterSelect.value);
+      staffDetailHint.textContent = 'Đã cập nhật danh sách theo Tổ đã lọc';
+    });
+
+    staffSelect.addEventListener('change', () => {
+      const selectedId = staffSelect.value;
+      const staff = STAFF_CN23.find(s => s.id === selectedId);
+      if (staff) {
+        staffDetailHint.innerHTML = `<strong>Tổ:</strong> ${staff.dept} | <strong>Chức vụ:</strong> ${staff.role} ${staff.note ? `<span style="color:var(--danger)">(${staff.note})</span>` : ''}`;
+      }
+    });
+
+    // File Upload Simulation
+    let attachedFileInfo = null;
+    const fileInput = document.getElementById('taskFileInput');
+    const filePreview = document.getElementById('fileUploadPreview');
+    const fileLabel = document.getElementById('fileUploadLabel');
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        attachedFileInfo = {
+          name: file.name,
+          size: (file.size / 1024).toFixed(1) + ' KB',
+          type: file.type || 'Tệp đính kèm'
+        };
+        filePreview.style.display = 'flex';
+        filePreview.innerHTML = `📄 <strong>${file.name}</strong> (${attachedFileInfo.size}) <span style="cursor:pointer; color:var(--danger);" onclick="removeAttachedFile()">✕ Hủy</span>`;
+        fileLabel.textContent = 'Đã chọn tệp thành công';
+      }
+    });
+
+    window.removeAttachedFile = function() {
+      fileInput.value = '';
+      attachedFileInfo = null;
+      filePreview.style.display = 'none';
+      fileLabel.textContent = 'Nhấp để chọn tệp đính kèm từ máy tính (tối đa 25MB)';
+    };
+
+    function getStoredTasks() {
+      const data = localStorage.getItem(STORAGE_KEY_TASKS);
+      return data ? JSON.parse(data) : [];
+    }
+
+    function saveStoredTasks(tasks) {
+      localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(tasks));
+      updateTaskKPIs();
+      renderTasksTable();
+    }
+
+    function updateTaskKPIs() {
+      const tasks = getStoredTasks();
+      const total = tasks.length;
+      const completed = tasks.filter(t => t.status === 'Đã hoàn thành').length;
+      
+      const now = new Date();
+      let overdue = 0;
+      let inProgress = 0;
+
+      tasks.forEach(t => {
+        if (t.status !== 'Đã hoàn thành') {
+          if (t.deadline && new Date(t.deadline) < now) {
+            overdue++;
+          } else {
+            inProgress++;
+          }
+        }
+      });
+
+      document.getElementById('kpiTotalTasks').textContent = total;
+      document.getElementById('kpiInProgressTasks').textContent = inProgress;
+      document.getElementById('kpiOverdueTasks').textContent = overdue;
+      document.getElementById('kpiCompletedTasks').textContent = completed;
+
+      const rate = total > 0 ? ((completed / total) * 100).toFixed(1) : "0.0";
+      document.getElementById('kpiCompletionRate').textContent = `Tỷ lệ: ${rate}%`;
+
+      const overdueBadge = document.getElementById('kpiOverdueBadge');
+      if (overdue > 0) {
+        overdueBadge.className = 'kpi-badge urgent';
+        overdueBadge.textContent = `⚠️ Có ${overdue} việc quá hạn!`;
+      } else {
+        overdueBadge.className = 'kpi-badge pass';
+        overdueBadge.textContent = '✓ 100% trong hạn';
+      }
+    }
+
+    function renderTasksTable() {
+      const tasks = getStoredTasks();
+      const filterStatus = document.getElementById('filterTaskStatus').value;
+      const filterDept = document.getElementById('filterTaskDept').value;
+      const tbody = document.getElementById('taskTableBody');
+      tbody.innerHTML = '';
+
+      let filtered = tasks;
+      if (filterStatus !== 'ALL') {
+        if (filterStatus === 'Quá hạn') {
+          const now = new Date();
+          filtered = filtered.filter(t => t.status !== 'Đã hoàn thành' && new Date(t.deadline) < now);
+        } else {
+          filtered = filtered.filter(t => t.status === filterStatus);
+        }
+      }
+
+      if (filterDept !== 'ALL') {
+        filtered = filtered.filter(t => t.assigneeDept === filterDept);
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="11" style="text-align:center; padding: 24px; color: var(--text-muted);">Chưa có nhiệm vụ giao việc nào phù hợp với bộ lọc.</td></tr>`;
+        return;
+      }
+
+      const now = new Date();
+
+      filtered.forEach((t) => {
+        const isOverdue = t.status !== 'Đã hoàn thành' && t.deadline && new Date(t.deadline) < now;
+        
+        let pClass = 'pass';
+        if (t.priority === 'Khẩn') pClass = 'warn';
+        if (t.priority === 'Hỏa tốc') pClass = 'urgent';
+
+        let sClass = 'warn';
+        let sText = t.status;
+        if (t.status === 'Đã hoàn thành') {
+          sClass = 'pass';
+        } else if (isOverdue) {
+          sClass = 'urgent';
+          sText = '⚠️ Quá hạn Deadline';
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${t.id}</strong></td>
+          <td>${t.leader}</td>
+          <td><strong>${t.assigneeName}</strong></td>
+          <td>${t.assigneeDept}</td>
+          <td title="${t.title}" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            <strong>${t.title}</strong>
+          </td>
+          <td>
+            ${t.docRef ? `<div>📜 ${t.docRef}</div>` : ''}
+            ${t.attachedFile ? `<div style="font-size:0.75rem; color:var(--primary);">📎 ${t.attachedFile.name}</div>` : '<span style="color:var(--text-muted)">Không có tệp</span>'}
+          </td>
+          <td title="${t.guidance}" style="max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            ${t.guidance}
+          </td>
+          <td style="${isOverdue ? 'color: var(--danger); font-weight: 700;' : ''}">
+            ${t.deadline ? t.deadline.replace('T', ' ') : 'Chưa đặt'}
+          </td>
+          <td><span class="kpi-badge ${pClass}">${t.priority}</span></td>
+          <td><span class="kpi-badge ${sClass}">${sText}</span></td>
+          <td>
+            ${t.status !== 'Đã hoàn thành' ? `
+              <button class="action-icon-btn done" title="Đánh dấu Hoàn thành" onclick="markTaskDone('${t.id}')">✓</button>
+            ` : `
+              <button class="action-icon-btn" title="Chuyển về Đang làm" onclick="markTaskReopen('${t.id}')">↩</button>
+            `}
+            <button class="action-icon-btn" title="In phiếu giao việc này" onclick="printSingleTask('${t.id}')">🖨️</button>
+            <button class="action-icon-btn" title="Xóa nhiệm vụ" onclick="deleteTask('${t.id}')">🗑️</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Submit Task
+    document.getElementById('taskAssignmentForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const staffId = staffSelect.value;
+      const staff = STAFF_CN23.find(s => s.id === staffId);
+      if (!staff) {
+        showToast('Vui lòng chọn nhân viên tiếp nhận việc!', 'error');
+        return;
+      }
+
+      const newTask = {
+        id: 'TASK_' + Math.floor(1000 + Math.random() * 9000),
+        leader: document.getElementById('assignLeader').value,
+        assigneeId: staff.id,
+        assigneeName: staff.name,
+        assigneeRole: staff.role,
+        assigneeDept: staff.dept,
+        title: document.getElementById('taskTitle').value.trim(),
+        priority: document.getElementById('taskPriority').value,
+        docRef: document.getElementById('taskDocRef').value.trim(),
+        attachedFile: attachedFileInfo,
+        guidance: document.getElementById('leaderGuidance').value.trim(),
+        deadline: document.getElementById('taskDeadline').value,
+        note: document.getElementById('taskNote').value.trim(),
+        status: 'Đang thực hiện',
+        createdAt: new Date().toLocaleString('vi-VN')
+      };
+
+      const tasks = getStoredTasks();
+      tasks.unshift(newTask);
+      saveStoredTasks(tasks);
+
+      showToast(`Đã phát lệnh giao việc thành công cho đồng chí ${staff.name}!`);
+
+      document.getElementById('taskTitle').value = '';
+      document.getElementById('taskDocRef').value = '';
+      document.getElementById('leaderGuidance').value = '';
+      document.getElementById('taskNote').value = '';
+      removeAttachedFile();
+      
+      setTimeout(() => {
+        document.querySelector('[data-tab="tab-theo-doi-viec"]').click();
+      }, 700);
+    });
+
+    window.markTaskDone = function(id) {
+      const tasks = getStoredTasks();
+      const task = tasks.find(t => t.id === id);
+      if (task) {
+        task.status = 'Đã hoàn thành';
+        task.completedAt = new Date().toLocaleString('vi-VN');
+        saveStoredTasks(tasks);
+        showToast(`Đã ghi nhận hoàn thành nhiệm vụ ${id}!`);
+      }
+    };
+
+    window.markTaskReopen = function(id) {
+      const tasks = getStoredTasks();
+      const task = tasks.find(t => t.id === id);
+      if (task) {
+        task.status = 'Đang thực hiện';
+        delete task.completedAt;
+        saveStoredTasks(tasks);
+        showToast(`Đã chuyển nhiệm vụ ${id} về trạng thái đang thực hiện`);
+      }
+    };
+
+    window.deleteTask = function(id) {
+      if (!confirm(`Bạn có chắc muốn xóa nhiệm vụ ${id} không?`)) return;
+      let tasks = getStoredTasks();
+      tasks = tasks.filter(t => t.id !== id);
+      saveStoredTasks(tasks);
+      showToast('Đã xóa nhiệm vụ thành công!');
+    };
+
+    window.printSingleTask = function(id) {
+      const tasks = getStoredTasks();
+      const t = tasks.find(t => t.id === id);
+      if (!t) return;
+
+      const printWindow = window.open('', '_blank', 'width=800,height=900');
+      printWindow.document.write(`
+        <html>
+        <head>
+          <title>Phiếu Giao Việc - ${t.id}</title>
+          <style>
+            body { font-family: 'Times New Roman', Times, serif; padding: 40px; line-height: 1.6; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .title { font-size: 18pt; font-weight: bold; text-align: center; margin: 20px 0; text-transform: uppercase; }
+            .row { margin-bottom: 12px; font-size: 13pt; }
+            .label { font-weight: bold; }
+            .box { border: 1px solid #333; padding: 15px; border-radius: 6px; margin: 15px 0; background: #fafafa; }
+            .signatures { display: flex; justify-content: space-between; margin-top: 50px; text-align: center; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div><strong>SỞ NÔNG NGHIỆP VÀ MÔI TRƯỜNG TP. HỒ CHÍ MINH</strong></div>
+            <div><strong>VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI THÀNH PHỐ - CHI NHÁNH SỐ 23</strong></div>
+            <div>***</div>
+          </div>
+          <div class="title">PHIẾU CHỈ ĐẠO GIAO VIỆC & ĐÔN ĐỐC TIẾN ĐỘ</div>
+          <div style="text-align: center; font-style: italic; margin-bottom: 20px;">(Mã nhiệm vụ: ${t.id} - Ngày giao: ${t.createdAt})</div>
+          
+          <div class="row"><span class="label">Người giao việc:</span> ${t.leader}</div>
+          <div class="row"><span class="label">Cán bộ nhận việc:</span> <strong>${t.assigneeName}</strong> (${t.assigneeRole} - ${t.assigneeDept})</div>
+          <div class="row"><span class="label">Tên nhiệm vụ:</span> <strong>${t.title}</strong></div>
+          <div class="row"><span class="label">Mức độ ưu tiên:</span> ${t.priority}</div>
+          <div class="row"><span class="label">Văn bản căn cứ/đính kèm:</span> ${t.docRef || 'Không'} ${t.attachedFile ? `(Tệp: ${t.attachedFile.name})` : ''}</div>
+          <div class="row"><span class="label">Thời hạn hoàn thành (Deadline):</span> <span style="color:red; font-weight:bold;">${t.deadline ? t.deadline.replace('T', ' ') : 'Chưa đặt'}</span></div>
+          
+          <div class="box">
+            <div class="label" style="margin-bottom: 6px;">Ý KIẾN CHỈ ĐẠO CỦA LÃNH ĐẠO:</div>
+            <div>${t.guidance.replace(/\n/g, '<br>')}</div>
+          </div>
+
+          ${t.note ? `<div class="row"><span class="label">Ghi chú:</span> ${t.note}</div>` : ''}
+
+          <div class="signatures">
+            <div>
+              <strong>CÁN BỘ TIẾP NHẬN</strong><br>
+              <em>(Ký và ghi rõ họ tên)</em><br><br><br><br>
+              <strong>${t.assigneeName}</strong>
+            </div>
+            <div>
+              <strong>LÃNH ĐẠO GIAO VIỆC</strong><br>
+              <em>(Ký và ghi rõ họ tên)</em><br><br><br><br>
+              <strong>${t.leader.split('(')[0].trim()}</strong>
+            </div>
+          </div>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => { printWindow.print(); }, 500);
+    };
+
+    document.getElementById('filterTaskStatus').addEventListener('change', renderTasksTable);
+    document.getElementById('filterTaskDept').addEventListener('change', renderTasksTable);
+
+    document.getElementById('btnExportTaskCsv').addEventListener('click', () => {
+      const tasks = getStoredTasks();
+      if (tasks.length === 0) {
+        showToast('Chưa có nhiệm vụ nào để xuất!', 'error');
+        return;
+      }
+
+      const headers = ["Mã việc", "Người giao việc", "Cán bộ nhận", "Chức danh", "Tổ chuyên môn", "Tên nhiệm vụ", "Độ khẩn", "Văn bản căn cứ", "Tệp đính kèm", "Ý kiến chỉ đạo", "Thời hạn (Deadline)", "Trạng thái", "Ngày tạo"];
+      const rows = [headers.join(",")];
+
+      tasks.forEach(t => {
+        const row = [
+          `"${t.id}"`,
+          `"${t.leader}"`,
+          `"${t.assigneeName}"`,
+          `"${t.assigneeRole}"`,
+          `"${t.assigneeDept}"`,
+          `"${t.title.replace(/"/g, '""')}"`,
+          `"${t.priority}"`,
+          `"${(t.docRef || '').replace(/"/g, '""')}"`,
+          `"${t.attachedFile ? t.attachedFile.name : ''}"`,
+          `"${t.guidance.replace(/"/g, '""')}"`,
+          `"${t.deadline || ''}"`,
+          `"${t.status}"`,
+          `"${t.createdAt}"`
+        ];
+        rows.push(row.join(","));
+      });
+
+      const blob = new Blob(["\uFEFF" + rows.join("\r\n")], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `DS_Giao_viec_Chi_dao_CN23_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Đã xuất danh sách giao việc ra Excel!');
+    });
+
+    document.getElementById('btnClearAllTasks').addEventListener('click', () => {
+      if (confirm('CẢNH BÁO: Bạn có chắc chắn muốn xóa TOÀN BỘ danh sách nhiệm vụ đã giao không?')) {
+        localStorage.removeItem(STORAGE_KEY_TASKS);
+        updateTaskKPIs();
+        renderTasksTable();
+        showToast('Đã xóa toàn bộ nhiệm vụ');
+      }
+    });
+
+    document.getElementById('btnResetTaskForm').addEventListener('click', () => {
+      document.getElementById('taskAssignmentForm').reset();
+      removeAttachedFile();
+      showToast('Đã làm mới mẫu giao việc');
+    });
+
+    document.getElementById('btnPrintTaskTicket').addEventListener('click', () => {
+      window.print();
+    });
+
+    // ==========================================
+    // 8. TAB 4: QUẢN TRỊ TTHC & SỐ HÓA
+    // ==========================================
+    function calculatePerformanceMetrics() {
+      const trucTiep = parseInt(document.getElementById('tiepNhanTrucTiep').value) || 0;
+      const trucTuyen = parseInt(document.getElementById('tiepNhanTrucTuyen').value) || 0;
+      const tongTN = trucTiep + trucTuyen;
+      document.getElementById('tongTiepNhan').value = tongTN;
+
+      const tyLeTT = tongTN > 0 ? ((trucTuyen / tongTN) * 100).toFixed(1) : "0.0";
+      document.getElementById('tyLeTrucTuyen').value = tyLeTT + "%";
+
+      const truocHan = parseInt(document.getElementById('traTruocHan').value) || 0;
+      const dungHan = parseInt(document.getElementById('traDungHan').value) || 0;
+      const quaHan = parseInt(document.getElementById('traQuaHan').value) || 0;
+      const tongGQ = truocHan + dungHan + quaHan;
+      document.getElementById('tongGiaiQuyet').value = tongGQ;
+
+      const tyLeDH = tongGQ > 0 ? (((truocHan + dungHan) / tongGQ) * 100).toFixed(1) : "0.0";
+      document.getElementById('tyLeDungHan').value = tyLeDH + "%";
+
+      const tonTH = parseInt(document.getElementById('tonTrongHan').value) || 0;
+      const tonQH = parseInt(document.getElementById('tonQuaHan').value) || 0;
+      document.getElementById('tongDangGiaiQuyet').value = tonTH + tonQH;
+
+      const hsTC = parseInt(document.getElementById('hsCoNghiaVuTC').value) || 0;
+      const hsTT = parseInt(document.getElementById('hsThanhToanTT').value) || 0;
+      const tyLePay = hsTC > 0 ? ((hsTT / hsTC) * 100).toFixed(1) : "0.0";
+      document.getElementById('tyLeThanhToanTT').value = tyLePay + "%";
+
+      document.getElementById('kpiTotalReceive').textContent = tongTN.toLocaleString('vi-VN');
+      document.getElementById('kpiReceiveDetail').textContent = `Trực tiếp: ${trucTiep} | Trực tuyến: ${trucTuyen}`;
+
+      const numTT = parseFloat(tyLeTT);
+      document.getElementById('kpiOnlineRate').textContent = tyLeTT + "%";
+      const badgeTT = document.getElementById('kpiOnlineBadge');
+      if (numTT >= 50.0) {
+        badgeTT.className = "kpi-badge pass";
+        badgeTT.textContent = "✓ Đạt chỉ tiêu (≥ 50%)";
+      } else {
+        badgeTT.className = "kpi-badge warn";
+        badgeTT.textContent = "Chỉ tiêu: ≥ 50.0%";
+      }
+
+      const numDH = parseFloat(tyLeDH);
+      document.getElementById('kpiOnTimeRate').textContent = tyLeDH + "%";
+      const badgeDH = document.getElementById('kpiOnTimeBadge');
+      if (numDH >= 98.0) {
+        badgeDH.className = "kpi-badge pass";
+        badgeDH.textContent = "✓ Đạt chỉ tiêu (≥ 98%)";
+      } else if (numDH > 0 && numDH < 98.0) {
+        badgeDH.className = "kpi-badge fail";
+        badgeDH.textContent = "Chưa đạt chỉ tiêu (< 98%)";
+      } else {
+        badgeDH.className = "kpi-badge warn";
+        badgeDH.textContent = "Chỉ tiêu: ≥ 98.0%";
+      }
+
+      const numPay = parseFloat(tyLePay);
+      document.getElementById('kpiPayOnlineRate').textContent = tyLePay + "%";
+      const badgePay = document.getElementById('kpiPayOnlineBadge');
+      if (numPay >= 40.0) {
+        badgePay.className = "kpi-badge pass";
+        badgePay.textContent = "✓ Đạt chỉ tiêu (≥ 40%)";
+      } else {
+        badgePay.className = "kpi-badge warn";
+        badgePay.textContent = "Chỉ tiêu: ≥ 40.0%";
+      }
+    }
+
+    document.querySelectorAll('.calc-trigger').forEach(input => {
+      input.addEventListener('input', calculatePerformanceMetrics);
+    });
+
+    function getStoredPerformanceRecords() {
+      const data = localStorage.getItem(STORAGE_KEY_PERFORMANCE);
+      return data ? JSON.parse(data) : [];
+    }
+
+    function saveStoredPerformanceRecords(records) {
+      localStorage.setItem(STORAGE_KEY_PERFORMANCE, JSON.stringify(records));
+    }
+
+    function renderPerformanceHistory() {
+      const records = getStoredPerformanceRecords();
+      const filter = document.getElementById('filterTo').value;
+      const tbody = document.getElementById('historyTableBody');
+      tbody.innerHTML = '';
+
+      const filtered = filter === 'ALL' ? records : records.filter(r => r.toChuyenMon === filter);
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="15" style="text-align: center; color: var(--text-muted); padding: 20px;">Chưa có dữ liệu nào được ghi nhận. Vui lòng nhập dữ liệu ở biểu mẫu phía trên.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach((rec, idx) => {
+        const periodDisplay = rec.tenKyBaoCao || (rec.tuanBaoCao ? rec.tuanBaoCao.split(' ')[0] : 'Kỳ báo cáo');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td><strong>${periodDisplay}</strong></td>
+          <td>${rec.toChuyenMon}</td>
+          <td>${rec.ngayChotSoLieu}</td>
+          <td>${rec.tongTiepNhan}</td>
+          <td><span class="kpi-badge ${parseFloat(rec.tyLeTrucTuyen) >= 50 ? 'pass' : 'warn'}">${rec.tyLeTrucTuyen}</span></td>
+          <td>${rec.tongGiaiQuyet}</td>
+          <td><span class="kpi-badge ${parseFloat(rec.tyLeDungHan) >= 98 ? 'pass' : 'fail'}">${rec.tyLeDungHan}</span></td>
+          <td style="color: ${rec.traQuaHan > 0 ? 'var(--danger)' : 'inherit'}; font-weight: ${rec.traQuaHan > 0 ? '700' : 'normal'}">${rec.traQuaHan}</td>
+          <td>${rec.tongDangGiaiQuyet} (QH: ${rec.tonQuaHan})</td>
+          <td>${rec.tyLeThanhToanTT}</td>
+          <td>${(parseInt(rec.soTienThanhToanTT) || 0).toLocaleString('vi-VN')} đ</td>
+          <td>${rec.soHoaDauVao}</td>
+          <td>${rec.soHoaDauRa}</td>
+          <td>
+            <button class="action-icon-btn" title="Xóa dòng này" onclick="deletePerformanceRecord('${rec.id}')">🗑️</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.deletePerformanceRecord = function(id) {
+      if (!confirm('Bạn có chắc chắn muốn xóa bản ghi số liệu này không?')) return;
+      let records = getStoredPerformanceRecords();
+      records = records.filter(r => r.id !== id);
+      saveStoredPerformanceRecords(records);
+      renderPerformanceHistory();
+      showToast('Đã xóa bản ghi thành công!');
+    };
+
+    document.getElementById('performanceReportForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      calculatePerformanceMetrics();
+
+      const record = {
+        id: 'REC_' + Date.now(),
+        toChuyenMon: document.getElementById('toChuyenMon').value,
+        loaiKyBaoCao: document.getElementById('loaiKyBaoCao').value,
+        tenKyBaoCao: document.getElementById('tenKyBaoCao').value.trim(),
+        ngayChotSoLieu: document.getElementById('ngayChotSoLieu').value,
+        
+        tiepNhanTrucTiep: parseInt(document.getElementById('tiepNhanTrucTiep').value) || 0,
+        tiepNhanTrucTuyen: parseInt(document.getElementById('tiepNhanTrucTuyen').value) || 0,
+        tongTiepNhan: parseInt(document.getElementById('tongTiepNhan').value) || 0,
+        tyLeTrucTuyen: document.getElementById('tyLeTrucTuyen').value,
+
+        traTruocHan: parseInt(document.getElementById('traTruocHan').value) || 0,
+        traDungHan: parseInt(document.getElementById('traDungHan').value) || 0,
+        traQuaHan: parseInt(document.getElementById('traQuaHan').value) || 0,
+        tongGiaiQuyet: parseInt(document.getElementById('tongGiaiQuyet').value) || 0,
+        tyLeDungHan: document.getElementById('tyLeDungHan').value,
+        soThuXinLoi: parseInt(document.getElementById('soThuXinLoi').value) || 0,
+
+        tonTrongHan: parseInt(document.getElementById('tonTrongHan').value) || 0,
+        tonQuaHan: parseInt(document.getElementById('tonQuaHan').value) || 0,
+        tongDangGiaiQuyet: parseInt(document.getElementById('tongDangGiaiQuyet').value) || 0,
+
+        hsCoNghiaVuTC: parseInt(document.getElementById('hsCoNghiaVuTC').value) || 0,
+        hsThanhToanTT: parseInt(document.getElementById('hsThanhToanTT').value) || 0,
+        tyLeThanhToanTT: document.getElementById('tyLeThanhToanTT').value,
+        soTienThanhToanTT: parseInt(document.getElementById('soTienThanhToanTT').value) || 0,
+
+        soHoaDauVao: parseInt(document.getElementById('soHoaDauVao').value) || 0,
+        soHoaDauRa: parseInt(document.getElementById('soHoaDauRa').value) || 0,
+        taiSuDungSoHoa: parseInt(document.getElementById('taiSuDungSoHoa').value) || 0,
+        chungThucBanSaoDT: parseInt(document.getElementById('chungThucBanSaoDT').value) || 0,
+
+        dongBoVBDLis: parseInt(document.getElementById('dongBoVBDLis').value) || 0,
+        loiNghenPhanMem: parseInt(document.getElementById('loiNghenPhanMem').value) || 0,
+        traCuuCSDLDanCu: parseInt(document.getElementById('traCuuCSDLDanCu').value) || 0,
+
+        ghiChuVuongMac: document.getElementById('ghiChuVuongMac').value,
+        createdAt: new Date().toLocaleString('vi-VN')
+      };
+
+      const records = getStoredPerformanceRecords();
+      const existingIdx = records.findIndex(r => r.toChuyenMon === record.toChuyenMon && r.tenKyBaoCao === record.tenKyBaoCao);
+      if (existingIdx !== -1) {
+        if (confirm(`Số liệu của ${record.toChuyenMon} cho ${record.tenKyBaoCao} đã tồn tại. Bạn có muốn CẬP NHẬT đè số liệu mới không?`)) {
+          records[existingIdx] = record;
+        } else {
+          return;
+        }
+      } else {
+        records.unshift(record);
+      }
+
+      saveStoredPerformanceRecords(records);
+      renderPerformanceHistory();
+      showToast(`Đã lưu thành công số liệu báo cáo cho ${record.toChuyenMon}!`);
+    });
+
+    document.getElementById('btnResetForm').addEventListener('click', function() {
+      if (confirm('Làm mới các ô nhập liệu?')) {
+        document.getElementById('performanceReportForm').reset();
+        document.getElementById('ngayChotSoLieu').value = todayStr;
+        calculatePerformanceMetrics();
+        showToast('Đã làm mới biểu mẫu');
+      }
+    });
+
+    document.getElementById('btnPrintForm').addEventListener('click', function() {
+      window.print();
+    });
+
+    document.getElementById('filterTo').addEventListener('change', renderPerformanceHistory);
+
+    document.getElementById('btnClearHistory').addEventListener('click', function() {
+      if (confirm('CẢNH BÁO: Toàn bộ dữ liệu lịch sử các kỳ báo cáo đã lưu sẽ bị xóa vĩnh viễn khỏi trình duyệt. Bạn có chắc chắn không?')) {
+        localStorage.removeItem(STORAGE_KEY_PERFORMANCE);
+        renderPerformanceHistory();
+        showToast('Đã xóa toàn bộ lịch sử lưu trữ');
+      }
+    });
+
+    // Export Performance CSV
+    document.getElementById('btnExportCsv').addEventListener('click', function() {
+      const records = getStoredPerformanceRecords();
+      if (records.length === 0) {
+        showToast('Chưa có dữ liệu nào để xuất!', 'error');
+        return;
+      }
+
+      const headers = [
+        "STT", "Tổ chuyên môn", "Kỳ báo cáo", "Loại kỳ", "Ngày chốt",
+        "Tiếp nhận trực tiếp", "Tiếp nhận trực tuyến", "Tổng tiếp nhận", "Tỷ lệ trực tuyến",
+        "Trả trước hạn", "Trả đúng hạn", "Trả quá hạn", "Tổng giải quyết", "Tỷ lệ đúng hạn", "Thư xin lỗi",
+        "Tồn trong hạn", "Tồn quá hạn", "Tổng đang giải quyết",
+        "Hồ sơ có nghĩa vụ TC", "Thanh toán trực tuyến", "Tỷ lệ thanh toán TT", "Số tiền TT (VNĐ)",
+        "Số hóa đầu vào", "Số hóa đầu ra", "Tái sử dụng số hóa", "Chứng thực bản sao ĐT",
+        "Đồng bộ VBDLis", "Lỗi nghẽn phần mềm", "Tra cứu CSDL dân cư", "Ghi chú vướng mắc", "Thời gian lưu"
+      ];
+
+      const csvRows = [headers.join(",")];
+
+      records.forEach((r, idx) => {
+        const row = [
+          idx + 1,
+          `"${r.toChuyenMon}"`,
+          `"${r.tenKyBaoCao || r.tuanBaoCao || ''}"`,
+          `"${r.loaiKyBaoCao || 'Định kỳ'}"`,
+          `"${r.ngayChotSoLieu}"`,
+          r.tiepNhanTrucTiep,
+          r.tiepNhanTrucTuyen,
+          r.tongTiepNhan,
+          `"${r.tyLeTrucTuyen}"`,
+          r.traTruocHan,
+          r.traDungHan,
+          r.traQuaHan,
+          r.tongGiaiQuyet,
+          `"${r.tyLeDungHan}"`,
+          r.soThuXinLoi,
+          r.tonTrongHan,
+          r.tonQuaHan,
+          r.tongDangGiaiQuyet,
+          r.hsCoNghiaVuTC,
+          r.hsThanhToanTT,
+          `"${r.tyLeThanhToanTT}"`,
+          r.soTienThanhToanTT,
+          r.soHoaDauVao,
+          r.soHoaDauRa,
+          r.taiSuDungSoHoa,
+          r.chungThucBanSaoDT,
+          r.dongBoVBDLis,
+          r.loiNghenPhanMem,
+          r.traCuuCSDLDanCu,
+          `"${(r.ghiChuVuongMac || '').replace(/"/g, '""')}"`,
+          `"${r.createdAt}"`
+        ];
+        csvRows.push(row.join(","));
+      });
+
+      const csvContent = "\uFEFF" + rows.join("\r\n");
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `BC_so_lieu_thuc_hien_CN23_${todayStr}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Đã xuất file dữ liệu thành công!');
+    });
+
+    // ==========================================
+    // 9. COMMON UTILITIES (TOAST & THEME)
+    // ==========================================
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = `toast show ${type}`;
+      setTimeout(() => {
+        toast.className = 'toast';
+      }, 3200);
+    }
+
+    const themeBtn = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const themeText = document.getElementById('themeText');
+
+    themeBtn.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      if (currentTheme === 'dark') {
+        document.documentElement.removeAttribute('data-theme');
+        themeIcon.textContent = '🌙';
+        themeText.textContent = 'Chế độ tối';
+        localStorage.setItem('theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        themeIcon.textContent = '☀️';
+        themeText.textContent = 'Chế độ sáng';
+        localStorage.setItem('theme', 'dark');
+      }
+    });
+
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      themeIcon.textContent = '☀️';
+      themeText.textContent = 'Chế độ sáng';
+    }
+
+    // Default Initialization on Load
+    populateFilterDirectDropdown();
+    renderDailyReportTable();
+    // Apply Role-Based Permissions
+    applyRolePermissions();
+
+    renderDailyHistoryTable();
+    populateStaffDropdown('ALL');
+    calculatePerformanceMetrics();
+    renderPerformanceHistory();
+    updateTaskKPIs();
+    renderTasksTable();
+
+    // Init charts after DOM loaded
+    setTimeout(initCharts, 200);
+  </script>
+</body>
+</html>

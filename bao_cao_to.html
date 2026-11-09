@@ -3,477 +3,525 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Báo Cáo Số Liệu Thực Hiện Cấp Tổ & KPI - Chi Nhánh Số 23</title>
+  <title>Báo Cáo Số Liệu Thực Hiện Cấp Tổ - Chi Nhánh Số 23</title>
+
+  <!-- Modular CSS (Parallel Load - No @import - Pure Vanilla Web) -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/utilities.css">
+  <link rel="stylesheet" href="css/bao_cao_to.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <!-- Rào chắn kiểm soát truy cập (Zero-Trust Route Guard) -->
   <script src="js/auth.js"></script>
   <script>FamilyAuth.requireAuth();</script>
 
-  <!-- Bộ Class Tiện Ích Tĩnh Cục Bộ (Thay thế 100% Tailwind CDN 2.9MB) -->
-  <link rel="stylesheet" href="css/utilities.css">
-
-  <!-- Font Awesome 6.5.1 CDN -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-  <!-- Giao diện đồng bộ hệ sinh thái (Modular CSS) -->
-  <link rel="stylesheet" href="css/bao_cao_to.css">
   <!-- Layout Controller & Logic Phân Hệ Báo Cáo Tổ -->
   <script src="js/layout.js" defer></script>
   <script src="js/bao_cao_to.js" defer></script>
-
-  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body class="bg-[#f8fafc] text-slate-800 font-sans min-h-screen flex flex-col antialiased">
 
   <!-- ==================== TOAST NOTIFICATION CONTAINER ==================== -->
   <div id="toastContainer" class="fixed top-20 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-  <!-- ==================== KHU VỰC NỘI DUNG CHÍNH (ĐỒNG BỘ 1280PX CONTAINER) ==================== -->
+  <!-- ==================== KHU VỰC NỘI DUNG CHÍNH (APP CONTAINER 1280PX) ==================== -->
   <main class="main-content app-container flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
 
-    <!-- Header Tiêu Đề Trang Tối Giản (Thay thế Header to phía trên) -->
+    <!-- Header Tiêu Đề Trang -->
     <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
       <div>
         <h1 class="text-lg sm:text-2xl font-extrabold text-blue-950 flex items-center gap-2.5">
           <i class="fa-solid fa-chart-pie text-amber-500"></i>
-          <span>BÁO CÁO SỐ LIỆU THỰC HIỆN CẤP TỔ & KPI</span>
+          <span>BÁO CÁO CÔNG VIỆC HẰNG NGÀY CẤP TỔ</span>
+          <span class="text-xs font-bold uppercase tracking-wider bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full border border-blue-200">
+            Chi Nhánh Số 23
+          </span>
         </h1>
-        <p class="text-xs text-slate-500 mt-0.5">Thu thập và giám sát 8 nhóm chỉ tiêu chuyên môn Chi nhánh số 23</p>
+        <p class="text-xs text-slate-500 mt-1 flex items-center gap-2">
+          <span>Thu thập và theo dõi khối lượng công việc phát sinh hằng ngày theo từng Tổ chuyên môn</span>
+          <span class="text-slate-300">|</span>
+          <span id="displayReporterInfo" class="text-slate-600 font-medium">
+            <i class="fa-solid fa-user-pen mr-1 text-amber-500"></i> Đang xác thực cán bộ...
+          </span>
+        </p>
+      </div>
+
+      <!-- Trạng thái gửi & Nút thao tác nhanh -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <span id="submissionStatusBadge" class="submit-status-badge pending">
+          <i class="fa-solid fa-clock"></i> Đang kiểm tra trạng thái...
+        </span>
+        <button type="button" id="btnSaveDraftReport" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-3.5 py-2 rounded-xl transition shadow-sm active:scale-95">
+          <i class="fa-regular fa-floppy-disk text-blue-600"></i>
+          <span>Lưu nháp</span>
+        </button>
+        <button type="button" id="btnSubmitDailyReport" class="inline-flex items-center gap-1.5 text-xs font-bold bg-blue-800 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition shadow-md active:scale-95">
+          <i class="fa-solid fa-paper-plane text-amber-400"></i>
+          <span>Gửi Báo Cáo Ngày</span>
+        </button>
       </div>
     </div>
 
-    <!-- KPI Metric Cards Overview -->
-    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-      <!-- KPI 1: Tổng tiếp nhận hồ sơ -->
-      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center gap-3.5">
-        <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center text-xl shrink-0 font-bold border border-blue-100">
+    <!-- KHUNG ĐIỀU HƯỚNG NGÀY & BỘ LỌC TỔ CHUYÊN MÔN -->
+    <section class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+        <!-- Chọn Ngày Báo Cáo & Các Nút Sample Nhanh -->
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <label for="reportDailyDateInput" class="text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1.5">
+            <i class="fa-regular fa-calendar text-blue-700"></i>
+            <span>Ngày Báo Cáo:</span>
+          </label>
+          <input type="date" id="reportDailyDateInput" class="bg-slate-50 border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-extrabold focus:ring-2 focus:ring-blue-500 transition shadow-inner">
+
+          <!-- 3 Nút Chọn Nhanh Data Samples để xem tức thì -->
+          <div class="flex items-center gap-1.5 flex-wrap ml-1">
+            <button type="button" class="btn-micro bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100 font-bold" data-sample-day="0" title="Xem dữ liệu mẫu Hôm Nay">
+              <i class="fa-solid fa-calendar-check mr-1 text-blue-600"></i>Sample 1 (Hôm nay)
+            </button>
+            <button type="button" class="btn-micro bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100 font-bold" data-sample-day="1" title="Xem dữ liệu mẫu Hôm Qua">
+              <i class="fa-solid fa-calendar-day mr-1 text-emerald-600"></i>Sample 2 (Hôm qua)
+            </button>
+            <button type="button" class="btn-micro bg-purple-50 text-purple-800 border-purple-200 hover:bg-purple-100 font-bold" data-sample-day="2" title="Xem dữ liệu mẫu Hôm Kia">
+              <i class="fa-solid fa-calendar-minus mr-1 text-purple-600"></i>Sample 3 (Hôm kia)
+            </button>
+            <button type="button" class="btn-micro bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100 font-bold" id="btnForceRecreateSamples" title="Nạp mới lại toàn bộ 3 bộ dữ liệu mẫu">
+              <i class="fa-solid fa-arrows-rotate mr-1 text-amber-600"></i>Nạp Lại Data Samples
+            </button>
+          </div>
+        </div>
+
+        <!-- Các Nút Chọn Nhanh Tổ (Pills) -->
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <button type="button" class="dept-pill-btn active" data-sec="ALL">
+            <i class="fa-solid fa-layer-group text-blue-600"></i>
+            <span>Toàn Đơn Vị (3 Tổ)</span>
+          </button>
+          <button type="button" class="dept-pill-btn" data-sec="SEC_1">
+            <i class="fa-solid fa-certificate text-emerald-600"></i>
+            <span>Tổ 1: ĐK & Cấp GCN</span>
+          </button>
+          <button type="button" class="dept-pill-btn" data-sec="SEC_2">
+            <i class="fa-solid fa-compass-drafting text-blue-600"></i>
+            <span>Tổ 2: Kỹ Thuật Địa Chính</span>
+          </button>
+          <button type="button" class="dept-pill-btn" data-sec="SEC_3">
+            <i class="fa-solid fa-users-gear text-purple-600"></i>
+            <span>Tổ 3: HCTH & Một Cửa</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- BỘ LỌC DROPDOWN CHỌN TỔ & LỌC TRỰC TIẾP HẠNG MỤC -->
+      <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center pt-1">
+        <!-- Dropdown chọn Tổ -->
+        <div class="sm:col-span-5">
+          <label for="filterDailyDept" class="block text-[11px] font-bold text-slate-600 mb-1">
+            <i class="fa-solid fa-filter text-blue-600 mr-1"></i> Chọn Tổ Chuyên Môn để xem:
+          </label>
+          <select id="filterDailyDept" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-3 py-2 text-xs font-bold focus:ring-2 focus:ring-blue-500 transition">
+            <option value="ALL">-- Tất cả 3 Khối nghiệp vụ (Xem toàn bộ chi nhánh) --</option>
+            <option value="SEC_1">I. Tổ Đăng ký & Cấp GCN (27 Nhân sự)</option>
+            <option value="SEC_2">II. Tổ Kỹ thuật Địa chính & Lưu trữ (30 Nhân sự)</option>
+            <option value="SEC_3">III. Tổ Hành chính - Tổng hợp & Một cửa (22 Nhân sự)</option>
+          </select>
+        </div>
+
+        <!-- Dropdown lọc trực tiếp loại hồ sơ -->
+        <div class="sm:col-span-5">
+          <label for="selectFilterItemDirect" class="block text-[11px] font-bold text-slate-600 mb-1">
+            <i class="fa-solid fa-list-check text-emerald-600 mr-1"></i> Lọc cụ thể loại hồ sơ:
+          </label>
+          <select id="selectFilterItemDirect" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-3 py-2 text-xs font-semibold focus:ring-2 focus:ring-blue-500 transition">
+            <option value="ALL">-- Hiển thị tất cả 21 hạng mục --</option>
+          </select>
+        </div>
+
+        <!-- Nút xóa lọc / xem tất cả -->
+        <div class="sm:col-span-2 flex items-end">
+          <button type="button" id="btnResetFilters" class="w-full text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 px-3 rounded-xl transition border border-slate-300 flex items-center justify-center gap-1.5 active:scale-95">
+            <i class="fa-solid fa-rotate-left text-slate-500"></i>
+            <span>Xem tất cả</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- KHU VỰC DÀNH CHO USER: KHÔNG GIAN NHẬP LIỆU BÁO CÁO CỦA CÁN BỘ TỔ -->
+    <section id="userWorkspaceHub" class="bg-gradient-to-r from-teal-800 to-teal-950 text-white rounded-2xl p-5 shadow-md flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <div class="w-12 h-12 rounded-xl bg-teal-700/60 border border-teal-500/40 flex items-center justify-center text-2xl text-teal-200">
+          <i class="fa-solid fa-file-signature"></i>
+        </div>
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-teal-300">Không Gian Báo Cáo Cán Bộ</span>
+          <h2 id="userWorkspaceTitle" class="text-base sm:text-lg font-extrabold text-white">
+            TỔ KỸ THUẬT ĐỊA CHÍNH VÀ LƯU TRỮ
+          </h2>
+          <p class="text-xs text-teal-200/80 mt-0.5">
+            Đồng chí vui lòng rà soát số liệu thực tế trong ngày của Tổ và bấm <strong class="text-amber-300">"GỬI BÁO CÁO LÊN LÃNH ĐẠO"</strong> khi hoàn tất.
+          </p>
+        </div>
+      </div>
+      <div>
+        <button type="button" id="btnUserSubmitReport" class="px-5 py-2.5 text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-xl shadow-lg transition active:scale-95 flex items-center gap-2">
+          <i class="fa-solid fa-paper-plane text-amber-100 text-sm"></i>
+          <span>GỬI BÁO CÁO LÊN LÃNH ĐẠO</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 3 THẺ GIÁM SÁT TIẾN ĐỘ THEO TỪNG TỔ (MONITORING CARDS - CHỈ ADMIN) -->
+    <section id="adminMonitoringSection" class="dept-monitor-grid">
+      <!-- Tổ 1 -->
+      <div class="dept-monitor-card" id="cardMonitorSec1">
+        <div class="dept-monitor-header">
+          <span class="font-bold text-xs text-blue-950 flex items-center gap-1.5">
+            <i class="fa-solid fa-certificate text-emerald-600"></i>
+            <span>TỔ 1: ĐK & CẤP GCN</span>
+          </span>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200" id="badgeStatusSec1">
+            Đang theo dõi
+          </span>
+        </div>
+        <div class="dept-monitor-stats">
+          <div>
+            <div class="text-[10px] font-bold text-slate-400 uppercase">Tiếp nhận</div>
+            <strong class="dept-monitor-stat-val text-blue-800" id="monNhanSec1">0</strong>
+          </div>
+          <div>
+            <div class="text-[10px] font-bold text-slate-400 uppercase">Đã xử lý</div>
+            <strong class="dept-monitor-stat-val text-emerald-700" id="monGqSec1">0</strong>
+          </div>
+          <div>
+            <div class="text-[10px] font-bold text-slate-400 uppercase">Chưa xong</div>
+            <strong class="dept-monitor-stat-val text-rose-600" id="monChuaSec1">0</strong>
+          </div>
+        </div>
+        <div class="dept-monitor-footer">
+          <span class="text-slate-400" id="monTimeSec1">Chưa cập nhật</span>
+          <button type="button" class="btn-micro" data-focus-dept="SEC_1">
+            <i class="fa-solid fa-eye mr-1"></i>Xem Tổ 1
+          </button>
+        </div>
+      </div>
+
+      <!-- Tổ 2 -->
+      <div class="dept-monitor-card" id="cardMonitorSec2">
+        <div class="dept-monitor-header">
+          <span class="font-bold text-xs text-blue-950 flex items-center gap-1.5">
+            <i class="fa-solid fa-compass-drafting text-blue-600"></i>
+            <span>TỔ 2: KỸ THUẬT ĐỊA CHÍNH</span>
+          </span>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200" id="badgeStatusSec2">
+            Đang theo dõi
+          </span>
+        </div>
+        <div class="dept-monitor-stats">
+          <div>
+            <div class="text-[10px] font-bold text-slate-400 uppercase">Tiếp nhận</div>
+            <strong class="dept-monitor-stat-val text-blue-800" id="monNhanSec2">0</strong>
+          </div>
+          <div>
+            <div class="text-[10px] font-bold text-slate-400 uppercase">Đã xử lý</div>
+            <strong class="dept-monitor-stat-val text-emerald-700" id="monGqSec2">0</strong>
+          </div>
+          <div>
+            <div class="text-[10px] font-bold text-slate-400 uppercase">Chưa xong</div>
+            <strong class="dept-monitor-stat-val text-rose-600" id="monChuaSec2">0</strong>
+          </div>
+        </div>
+        <div class="dept-monitor-footer">
+          <span class="text-slate-400" id="monTimeSec2">Chưa cập nhật</span>
+          <button type="button" class="btn-micro" data-focus-dept="SEC_2">
+            <i class="fa-solid fa-eye mr-1"></i>Xem Tổ 2
+          </button>
+        </div>
+      </div>
+
+      <!-- Tổ 3 -->
+      <div class="dept-monitor-card" id="cardMonitorSec3">
+        <div class="dept-monitor-header">
+          <span class="font-bold text-xs text-blue-950 flex items-center gap-1.5">
+            <i class="fa-solid fa-users-gear text-purple-600"></i>
+            <span>TỔ 3: HCTH & MỘT CỬA</span>
+          </span>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200" id="badgeStatusSec3">
+            Đang theo dõi
+          </span>
+        </div>
+        <div class="dept-monitor-stats">
+          <div>
+            <div class="text-[10px] font-bold text-slate-400 uppercase">Tiếp nhận</div>
+            <strong class="dept-monitor-stat-val text-blue-800" id="monNhanSec3">0</strong>
+          </div>
+          <div>
+            <div class="text-[10px] font-bold text-slate-400 uppercase">Đã xử lý</div>
+            <strong class="dept-monitor-stat-val text-emerald-700" id="monGqSec3">0</strong>
+          </div>
+          <div>
+            <div class="text-[10px] font-bold text-slate-400 uppercase">Chưa xong</div>
+            <strong class="dept-monitor-stat-val text-rose-600" id="monChuaSec3">0</strong>
+          </div>
+        </div>
+        <div class="dept-monitor-footer">
+          <span class="text-slate-400" id="monTimeSec3">Chưa cập nhật</span>
+          <button type="button" class="btn-micro" data-focus-dept="SEC_3">
+            <i class="fa-solid fa-eye mr-1"></i>Xem Tổ 3
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- THẺ THỐNG KÊ KPI MINI (TỔNG KẾT THEO BỘ LỌC NGÀY) -->
+    <section class="daily-kpi-grid">
+      <!-- KPI 1: Tồn trước -->
+      <div class="daily-kpi-card">
+        <div class="daily-kpi-icon bg-slate-100 text-slate-600 border border-slate-200">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+        <div>
+          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tồn kỳ trước</p>
+          <h3 id="kpiDailyTon" class="daily-kpi-val text-slate-700">0</h3>
+          <p class="text-[11px] text-slate-400">Đầu kỳ báo cáo</p>
+        </div>
+      </div>
+
+      <!-- KPI 2: Tiếp nhận mới -->
+      <div class="daily-kpi-card">
+        <div class="daily-kpi-icon bg-blue-50 text-blue-700 border border-blue-100">
           <i class="fa-solid fa-inbox"></i>
         </div>
-        <div class="min-w-0">
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Tổng Tiếp Nhận</p>
-          <h3 id="kpiTotalReceive" class="text-2xl font-extrabold text-blue-900 leading-tight">0</h3>
-          <p id="kpiReceiveDetail" class="text-[11px] text-slate-500 truncate">Trực tiếp: 0 | Trực tuyến: 0</p>
+        <div>
+          <p class="text-[11px] font-bold text-blue-500 uppercase tracking-wider">Tiếp nhận trong ngày</p>
+          <h3 id="kpiDailyNhan" class="daily-kpi-val text-blue-900">0</h3>
+          <p class="text-[11px] text-blue-600 font-semibold">Phát sinh mới</p>
         </div>
       </div>
 
-      <!-- KPI 2: Tỷ lệ nộp trực tuyến -->
-      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center gap-3.5">
-        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0 font-bold border border-emerald-100">
-          <i class="fa-solid fa-globe"></i>
-        </div>
-        <div class="min-w-0">
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Nộp Trực Tuyến</p>
-          <h3 id="kpiOnlineRate" class="text-2xl font-extrabold text-emerald-600 leading-tight">0.0%</h3>
-          <p id="kpiOnlineBadge" class="text-[11px] font-semibold text-emerald-600 truncate">Chỉ tiêu: ≥ 50.0%</p>
-        </div>
-      </div>
-
-      <!-- KPI 3: Tỷ lệ giải quyết đúng hạn -->
-      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center gap-3.5">
-        <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shrink-0 font-bold border border-indigo-100">
+      <!-- KPI 3: Đã giải quyết -->
+      <div class="daily-kpi-card">
+        <div class="daily-kpi-icon bg-emerald-50 text-emerald-600 border border-emerald-100">
           <i class="fa-solid fa-circle-check"></i>
         </div>
-        <div class="min-w-0">
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Đúng Hạn & Sớm Hạn</p>
-          <h3 id="kpiOnTimeRate" class="text-2xl font-extrabold text-indigo-700 leading-tight">0.0%</h3>
-          <p id="kpiOnTimeBadge" class="text-[11px] font-semibold text-indigo-600 truncate">Chỉ tiêu: ≥ 98.0%</p>
-        </div>
-      </div>
-
-      <!-- KPI 4: Tỷ lệ thanh toán trực tuyến -->
-      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center gap-3.5">
-        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0 font-bold border border-amber-100">
-          <i class="fa-solid fa-credit-card"></i>
-        </div>
-        <div class="min-w-0">
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Thanh Toán Trực Tuyến</p>
-          <h3 id="kpiPayOnlineRate" class="text-2xl font-extrabold text-amber-600 leading-tight">0.0%</h3>
-          <p id="kpiPayOnlineBadge" class="text-[11px] font-semibold text-amber-600 truncate">Chỉ tiêu: ≥ 40.0%</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Navigation Tabs: Nhập Số Liệu vs Bảng Lịch Sử -->
-    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
-      <div class="inline-flex p-1 bg-slate-200/70 rounded-2xl">
-        <button id="tabBtnForm" class="tab-button active flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition bg-white text-blue-900 shadow-sm">
-          <i class="fa-solid fa-pen-to-square text-amber-500"></i>
-          <span>1. Nhập Số Liệu Báo Cáo 8 Nhóm Chỉ Tiêu</span>
-        </button>
-        <button id="tabBtnHistory" class="tab-button flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition">
-          <i class="fa-solid fa-clock-rotate-left text-blue-600"></i>
-          <span>2. Lịch Sử & Thống Kê Các Kỳ</span>
-          <span id="tabBadgeHistoryCount" class="ml-1 px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-blue-100 text-blue-800">0</span>
-        </button>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <button id="btnExportPerformanceCsv" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 px-3 py-2 rounded-xl transition shadow-sm">
-          <i class="fa-solid fa-file-excel text-emerald-600"></i>
-          <span>Xuất Báo Cáo Excel</span>
-        </button>
-        <button id="btnPrintReportForm" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-3 py-2 rounded-xl transition shadow-sm">
-          <i class="fa-solid fa-print text-slate-500"></i>
-          <span>In Báo Cáo Chuẩn A4</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- ==================== TAB 1: FORM BÁO CÁO 8 NHÓM CHỈ TIÊU ==================== -->
-    <section id="panelForm" class="tab-panel">
-      <form id="performanceReportForm" class="space-y-5">
-
-        <!-- THÔNG TIN CHUNG KỲ BÁO CÁO -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div class="bg-gradient-to-r from-blue-900 to-blue-800 text-white px-5 py-3.5 flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-              <i class="fa-solid fa-circle-info text-amber-400"></i>
-              <h3 class="font-bold text-sm uppercase tracking-wide">THÔNG TIN CHUNG KỲ BÁO CÁO CỦA TỔ</h3>
-            </div>
-            <span class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded font-semibold">
-              Kỳ báo cáo
-            </span>
-          </div>
-
-          <div class="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <!-- Tổ chuyên môn -->
-            <div>
-              <label for="toChuyenMon" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                Tổ chuyên môn báo cáo <span class="text-rose-500">*</span>
-              </label>
-              <select id="toChuyenMon" required class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2 text-xs font-bold text-blue-900 focus:ring-2 focus:ring-blue-500 transition">
-                <option value="Tổ Kỹ thuật Địa chính và Lưu trữ">Tổ Kỹ thuật Địa chính và Lưu trữ</option>
-                <option value="Tổ Đăng ký cấp GCN">Tổ Đăng ký cấp GCN</option>
-                <option value="Tổ Hành chính Tổng hợp">Tổ Hành chính Tổng hợp</option>
-              </select>
-            </div>
-
-            <!-- Loại kỳ báo cáo -->
-            <div>
-              <label for="loaiKyBaoCao" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                Loại kỳ báo cáo <span class="text-rose-500">*</span>
-              </label>
-              <select id="loaiKyBaoCao" required class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2 text-xs font-semibold focus:ring-2 focus:ring-blue-500 transition">
-                <option value="Tuần">Báo cáo Định kỳ Hằng Tuần</option>
-                <option value="Tháng">Báo cáo Tháng</option>
-                <option value="Quý">Báo cáo Quý</option>
-                <option value="Đột xuất">Báo cáo Chuyên đề / Đột xuất</option>
-              </select>
-            </div>
-
-            <!-- Tên kỳ báo cáo -->
-            <div>
-              <label for="tenKyBaoCao" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                Tên kỳ báo cáo <span class="text-rose-500">*</span>
-              </label>
-              <input type="text" id="tenKyBaoCao" required placeholder="Ví dụ: Tuần 43 (20/10 - 26/10/2026)"
-                class="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 transition">
-            </div>
-
-            <!-- Ngày chốt số liệu -->
-            <div>
-              <label for="ngayChotSoLieu" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                Ngày chốt số liệu <span class="text-rose-500">*</span>
-              </label>
-              <input type="date" id="ngayChotSoLieu" required
-                class="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2 text-xs font-semibold focus:ring-2 focus:ring-blue-500 transition">
-            </div>
-          </div>
-        </div>
-
-        <!-- 8 NHÓM CHỈ TIÊU CHUYÊN MÔN -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-
-          <!-- NHÓM 1: TIẾP NHẬN HỒ SƠ -->
-          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-3.5">
-            <div class="flex items-center gap-2 border-b border-slate-100 pb-2.5">
-              <span class="w-6 h-6 rounded-lg bg-blue-100 text-blue-800 text-xs font-extrabold flex items-center justify-center">1</span>
-              <h4 class="font-bold text-xs uppercase tracking-wider text-slate-800">Tình hình tiếp nhận hồ sơ trong kỳ</h4>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 text-xs">
-              <div>
-                <label class="block font-semibold text-slate-600 mb-1">Tiếp nhận trực tiếp (bộ)</label>
-                <input type="number" min="0" value="0" id="tiepNhanTrucTiep" class="calc-trigger w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800">
-              </div>
-              <div>
-                <label class="block font-semibold text-slate-600 mb-1">Tiếp nhận trực tuyến (bộ)</label>
-                <input type="number" min="0" value="0" id="tiepNhanTrucTuyen" class="calc-trigger w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800">
-              </div>
-              <div>
-                <label class="block font-semibold text-blue-900 mb-1">Tổng tiếp nhận (Tự tính)</label>
-                <input type="text" readonly id="tongTiepNhan" value="0" class="w-full bg-blue-50 border border-blue-200 rounded-xl px-3 py-1.5 text-xs font-extrabold text-blue-900">
-              </div>
-              <div>
-                <label class="block font-semibold text-emerald-700 mb-1">Tỷ lệ trực tuyến (Tự tính)</label>
-                <input type="text" readonly id="tyLeTrucTuyen" value="0.0%" class="w-full bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-1.5 text-xs font-extrabold text-emerald-800">
-              </div>
-            </div>
-          </div>
-
-          <!-- NHÓM 2: KẾT QUẢ GIẢI QUYẾT HỒ SƠ -->
-          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-3.5">
-            <div class="flex items-center gap-2 border-b border-slate-100 pb-2.5">
-              <span class="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-800 text-xs font-extrabold flex items-center justify-center">2</span>
-              <h4 class="font-bold text-xs uppercase tracking-wider text-slate-800">Kết quả giải quyết & Trả hồ sơ</h4>
-            </div>
-
-            <div class="grid grid-cols-3 gap-3 text-xs">
-              <div>
-                <label class="block font-semibold text-slate-600 mb-1">Trả trước hạn</label>
-                <input type="number" min="0" value="0" id="traTruocHan" class="calc-trigger w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800">
-              </div>
-              <div>
-                <label class="block font-semibold text-slate-600 mb-1">Trả đúng hạn</label>
-                <input type="number" min="0" value="0" id="traDungHan" class="calc-trigger w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800">
-              </div>
-              <div>
-                <label class="block font-semibold text-rose-600 mb-1">Trả quá hạn</label>
-                <input type="number" min="0" value="0" id="traQuaHan" class="calc-trigger w-full bg-rose-50 border border-rose-300 rounded-xl px-3 py-1.5 text-xs font-extrabold text-rose-700">
-              </div>
-              <div>
-                <label class="block font-semibold text-blue-900 mb-1">Tổng giải quyết (Tự tính)</label>
-                <input type="text" readonly id="tongGiaiQuyet" value="0" class="w-full bg-blue-50 border border-blue-200 rounded-xl px-3 py-1.5 text-xs font-extrabold text-blue-900">
-              </div>
-              <div>
-                <label class="block font-semibold text-indigo-700 mb-1">Tỷ lệ đúng hạn (Tự tính)</label>
-                <input type="text" readonly id="tyLeDungHan" value="0.0%" class="w-full bg-indigo-50 border border-indigo-200 rounded-xl px-3 py-1.5 text-xs font-extrabold text-indigo-800">
-              </div>
-              <div>
-                <label class="block font-semibold text-slate-600 mb-1">Số thư xin lỗi</label>
-                <input type="number" min="0" value="0" id="soThuXinLoi" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800">
-              </div>
-            </div>
-          </div>
-
-          <!-- NHÓM 3: HỒ SƠ ĐANG XỬ LÝ (TỒN ĐỌNG) -->
-          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-3.5">
-            <div class="flex items-center gap-2 border-b border-slate-100 pb-2.5">
-              <span class="w-6 h-6 rounded-lg bg-amber-100 text-amber-800 text-xs font-extrabold flex items-center justify-center">3</span>
-              <h4 class="font-bold text-xs uppercase tracking-wider text-slate-800">Hồ sơ đang thụ lý & Tồn đọng</h4>
-            </div>
-
-            <div class="grid grid-cols-3 gap-3 text-xs">
-              <div>
-                <label class="block font-semibold text-slate-600 mb-1">Tồn trong hạn</label>
-                <input type="number" min="0" value="0" id="tonTrongHan" class="calc-trigger w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800">
-              </div>
-              <div>
-                <label class="block font-semibold text-rose-600 mb-1">Tồn quá hạn</label>
-                <input type="number" min="0" value="0" id="tonQuaHan" class="calc-trigger w-full bg-rose-50 border border-rose-300 rounded-xl px-3 py-1.5 text-xs font-extrabold text-rose-700">
-              </div>
-              <div>
-                <label class="block font-semibold text-slate-800 mb-1">Tổng đang giải quyết</label>
-                <input type="text" readonly id="tongDangGiaiQuyet" value="0" class="w-full bg-slate-100 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800">
-              </div>
-            </div>
-          </div>
-
-          <!-- NHÓM 4: NGHĨA VỤ TÀI CHÍNH & THANH TOÁN TRỰC TUYẾN -->
-          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-3.5">
-            <div class="flex items-center gap-2 border-b border-slate-100 pb-2.5">
-              <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-800 text-xs font-extrabold flex items-center justify-center">4</span>
-              <h4 class="font-bold text-xs uppercase tracking-wider text-slate-800">Nghĩa vụ tài chính & Thanh toán TT</h4>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 text-xs">
-              <div>
-                <label class="block font-semibold text-slate-600 mb-1">Hồ sơ có NV tài chính</label>
-                <input type="number" min="0" value="0" id="hsCoNghiaVuTC" class="calc-trigger w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800">
-              </div>
-              <div>
-                <label class="block font-semibold text-slate-600 mb-1">Đã thanh toán trực tuyến</label>
-                <input type="number" min="0" value="0" id="hsThanhToanTT" class="calc-trigger w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800">
-              </div>
-              <div>
-                <label class="block font-semibold text-amber-700 mb-1">Tỷ lệ thanh toán TT</label>
-                <input type="text" readonly id="tyLeThanhToanTT" value="0.0%" class="w-full bg-amber-50 border border-amber-200 rounded-xl px-3 py-1.5 text-xs font-extrabold text-amber-800">
-              </div>
-              <div>
-                <label class="block font-semibold text-slate-600 mb-1">Tổng tiền thanh toán (VNĐ)</label>
-                <input type="number" min="0" value="0" id="soTienThanhToanTT" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800">
-              </div>
-            </div>
-          </div>
-
-          <!-- NHÓM 5: CÔNG TÁC SỐ HÓA HỒ SƠ -->
-          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-3.5">
-            <div class="flex items-center gap-2 border-b border-slate-100 pb-2.5">
-              <span class="w-6 h-6 rounded-lg bg-cyan-100 text-cyan-800 text-xs font-extrabold flex items-center justify-center">5</span>
-              <h4 class="font-bold text-xs uppercase tracking-wider text-slate-800">Công tác số hóa hồ sơ địa chính</h4>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 text-xs">
-              <div>
-                <label class="block font-semibold text-slate-600 mb-1">Số hóa đầu vào (hồ sơ)</label>
-                <input type="number" min="0" value="0" id="soHoaDauVao" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800">
-              </div>
-              <div>
-                <label class="block font-semibold text-slate-600 mb-1">Số hóa đầu ra (GCN/trang)</label>
-                <input type="number" min="0" value="0" id="soHoaDauRa" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800">
-              </div>
-              <div>
-                <label class="block font-semibold text-slate-600 mb-1">Tái sử dụng số hóa (hồ sơ)</label>
-                <input type="number" min="0" value="0" id="taiSuDungSoHoa" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800">
-              </div>
-              <div>
-                <label class="block font-semibold text-slate-600 mb-1">Chứng thực bản sao ĐT</label>
-                <input type="number" min="0" value="0" id="chungThucBanSaoDT" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800">
-              </div>
-            </div>
-          </div>
-
-          <!-- NHÓM 6: VẬN HÀNH HỆ THỐNG VBDLIS & CSDL DÂN CƯ -->
-          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-3.5">
-            <div class="flex items-center gap-2 border-b border-slate-100 pb-2.5">
-              <span class="w-6 h-6 rounded-lg bg-purple-100 text-purple-800 text-xs font-extrabold flex items-center justify-center">6</span>
-              <h4 class="font-bold text-xs uppercase tracking-wider text-slate-800">Hệ thống VBDLIS & CSDL Quốc Gia</h4>
-            </div>
-
-            <div class="grid grid-cols-3 gap-3 text-xs">
-              <div>
-                <label class="block font-semibold text-slate-600 mb-1">Đồng bộ VBDLIS</label>
-                <input type="number" min="0" value="0" id="dongBoVBDLis" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800">
-              </div>
-              <div>
-                <label class="block font-semibold text-rose-600 mb-1">Lỗi nghẽn mạng/PM</label>
-                <input type="number" min="0" value="0" id="loiNghenPhanMem" class="w-full bg-rose-50 border border-rose-300 rounded-xl px-3 py-1.5 text-xs font-bold text-rose-700">
-              </div>
-              <div>
-                <label class="block font-semibold text-slate-600 mb-1">Tra cứu CSDL dân cư</label>
-                <input type="number" min="0" value="0" id="traCuuCSDLDanCu" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800">
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- NHÓM 7 & 8: KHÓ KHĂN VƯỚNG MẮC & ĐỀ XUẤT KIẾN NGHỊ -->
-        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
-          <div class="flex items-center gap-2 border-b border-slate-100 pb-2.5">
-            <span class="w-6 h-6 rounded-lg bg-amber-100 text-amber-800 text-xs font-extrabold flex items-center justify-center">7</span>
-            <h4 class="font-bold text-xs uppercase tracking-wider text-slate-800">Khó khăn, vướng mắc & Đề xuất kiến nghị với Ban Giám đốc</h4>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label for="ghiChuVuongMac" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                Khó khăn, vướng mắc trong kỳ báo cáo
-              </label>
-              <textarea id="ghiChuVuongMac" rows="3" placeholder="Ghi rõ vướng mắc về cơ chế pháp lý, hồ sơ trễ hạn do cơ quan thuế hoặc phối hợp địa phương..."
-                class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-3 text-xs focus:ring-2 focus:ring-blue-500 transition leading-relaxed"></textarea>
-            </div>
-
-            <div>
-              <label for="deXuatKienNghi" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                Đề xuất, kiến nghị với Ban Giám đốc Chi nhánh
-              </label>
-              <textarea id="deXuatKienNghi" rows="3" placeholder="Đề xuất bổ sung trang thiết bị máy scan, hỗ trợ kỹ thuật mạng, phân bổ nhân sự..."
-                class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-3 text-xs focus:ring-2 focus:ring-blue-500 transition leading-relaxed"></textarea>
-            </div>
-          </div>
-        </div>
-
-        <!-- HÀNH ĐỘNG NỘP BÁO CÁO -->
-        <div class="flex flex-wrap items-center justify-end gap-3 pt-3">
-          <button type="button" id="btnResetReportForm" class="px-4 py-2.5 text-xs font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
-            <i class="fa-solid fa-rotate-left mr-1"></i> Làm mới biểu mẫu
-          </button>
-          <button type="submit" id="btnSubmitPerformance" class="px-6 py-2.5 text-sm font-bold text-white bg-blue-800 hover:bg-blue-700 active:scale-95 rounded-xl shadow-md transition flex items-center gap-2">
-            <i class="fa-solid fa-cloud-arrow-up text-amber-400"></i>
-            <span>LƯU SỐ LIỆU BÁO CÁO CẤP TỔ</span>
-          </button>
-        </div>
-      </form>
-    </section>
-
-    <!-- ==================== TAB 2: LỊCH SỬ & THỐNG KÊ ==================== -->
-    <section id="panelHistory" class="tab-panel hidden space-y-4">
-      <!-- Bộ lọc lịch sử -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center gap-3">
-          <div class="w-64">
-            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Lọc theo Tổ chuyên môn</label>
-            <select id="filterHistoryDept" class="w-full bg-slate-50 border border-slate-300 text-slate-800 rounded-xl px-3 py-1.5 text-xs font-bold focus:ring-2 focus:ring-blue-500 transition">
-              <option value="ALL">-- Tất cả các tổ chuyên môn --</option>
-              <option value="Tổ Kỹ thuật Địa chính và Lưu trữ">Tổ Kỹ thuật Địa chính & Lưu trữ</option>
-              <option value="Tổ Đăng ký cấp GCN">Tổ Đăng ký cấp GCN</option>
-              <option value="Tổ Hành chính Tổng hợp">Tổ Hành chính Tổng hợp</option>
-            </select>
-          </div>
-        </div>
-
         <div>
-          <button id="btnClearAllHistory" class="text-xs text-rose-600 hover:text-rose-800 font-semibold px-3 py-2 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-200 transition">
-            <i class="fa-solid fa-trash-can mr-1"></i> Xóa lịch sử số liệu
+          <p class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">Đã giải quyết</p>
+          <h3 id="kpiDailyGQ" class="daily-kpi-val text-emerald-700">0</h3>
+          <p id="kpiDailySolveRate" class="text-[11px] text-emerald-600 font-semibold truncate">Tỉ lệ: 0.0%</p>
+        </div>
+      </div>
+
+      <!-- KPI 4: Chưa giải quyết -->
+      <div class="daily-kpi-card">
+        <div class="daily-kpi-icon bg-rose-50 text-rose-600 border border-rose-100">
+          <i class="fa-solid fa-hourglass-half"></i>
+        </div>
+        <div>
+          <p class="text-[11px] font-bold text-rose-500 uppercase tracking-wider">Chưa giải quyết</p>
+          <h3 id="kpiDailyChua" class="daily-kpi-val text-rose-700">0</h3>
+          <p class="text-[11px] text-rose-500 font-semibold">Tồn đọng chuyển tiếp</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- BỘ NHẬP NHANH TỪNG MỤC (QUICK ENTRY TOOLBAR) -->
+    <section class="quick-entry-box space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+          <i class="fa-solid fa-bolt text-amber-500"></i>
+          <span>Cập nhật nhanh từng hạng mục công việc</span>
+        </h3>
+        <span class="text-[11px] text-slate-500 hidden sm:inline">
+          Chọn mục để điền số liệu nhanh hoặc gõ trực tiếp vào từng ô bảng bên dưới
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
+        <!-- Dropdown chọn hạng mục -->
+        <div class="sm:col-span-4">
+          <label for="quickItemSelect" class="block text-[11px] font-bold text-slate-600 mb-1">Hạng mục công việc:</label>
+          <select id="quickItemSelect" class="w-full bg-white border border-slate-300 text-slate-800 rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:ring-2 focus:ring-blue-500 transition">
+            <option value="">-- Chọn loại hồ sơ / công việc --</option>
+          </select>
+        </div>
+
+        <!-- Tồn trước -->
+        <div class="sm:col-span-2">
+          <label for="quickInTon" class="block text-[11px] font-bold text-slate-600 mb-1">Tồn kỳ trước:</label>
+          <input type="number" min="0" id="quickInTon" value="0" class="w-full bg-white border border-slate-300 text-slate-800 rounded-xl px-2.5 py-1.5 text-xs font-bold text-right focus:ring-2 focus:ring-blue-500 transition">
+        </div>
+
+        <!-- Tiếp nhận -->
+        <div class="sm:col-span-2">
+          <label for="quickInNhan" class="block text-[11px] font-bold text-blue-700 mb-1">Tiếp nhận:</label>
+          <input type="number" min="0" id="quickInNhan" value="0" class="w-full bg-white border border-slate-300 text-blue-800 rounded-xl px-2.5 py-1.5 text-xs font-bold text-right focus:ring-2 focus:ring-blue-500 transition">
+        </div>
+
+        <!-- Đã giải quyết -->
+        <div class="sm:col-span-2">
+          <label for="quickInGQ" class="block text-[11px] font-bold text-emerald-700 mb-1">Đã giải quyết:</label>
+          <input type="number" min="0" id="quickInGQ" value="0" class="w-full bg-white border border-slate-300 text-emerald-800 rounded-xl px-2.5 py-1.5 text-xs font-bold text-right focus:ring-2 focus:ring-blue-500 transition">
+        </div>
+
+        <!-- Nút áp dụng -->
+        <div class="sm:col-span-2 flex gap-1.5">
+          <button type="button" id="btnApplyQuickEntry" class="w-full text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white py-1.5 px-3 rounded-xl transition shadow active:scale-95 flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-check"></i>
+            <span>Cập nhật</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- KHU VỰC BẢNG NHẬP LIỆU BIỂU MẪU CHÍNH -->
+    <section class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 id="displayCurrentDeptTitle" class="text-sm sm:text-base font-extrabold text-blue-950 flex items-center gap-2">
+            TỔ 1: ĐĂNG KÝ & CẤP GCN
+          </h2>
+          <p class="text-xs text-slate-500">
+            Các ô màu trắng có thể chỉnh sửa trực tiếp. Ô xám nhạt tự động tính toán tổng số và tồn đọng.
+          </p>
+        </div>
+
+        <!-- Nhóm nút hỗ trợ kiểm thử và quản lý biểu mẫu -->
+        <div class="flex items-center gap-2 flex-wrap">
+          <button type="button" id="btnLoadExcelBaseline" class="inline-flex items-center gap-1 text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 px-3 py-1.5 rounded-xl transition" title="Nạp số liệu đối soát từ file Excel mẫu">
+            <i class="fa-solid fa-file-excel text-emerald-600"></i>
+            <span>Nạp mẫu Excel</span>
+          </button>
+          <button type="button" id="btnResetDailyInputs" class="inline-flex items-center gap-1 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl transition" title="Đưa tất cả các ô về 0">
+            <i class="fa-solid fa-rotate-left"></i>
+            <span>Về 0</span>
           </button>
         </div>
       </div>
 
-      <!-- Bảng Desktop-First Lịch Sử Báo Cáo -->
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="report-data-table w-full text-left text-xs border-collapse">
-            <thead>
-              <tr class="bg-gradient-to-r from-blue-900 to-blue-800 text-white font-bold text-[11px] uppercase tracking-wider">
-                <th class="py-3 px-3 w-14 text-center">STT</th>
-                <th class="py-3 px-3 w-48">Kỳ báo cáo</th>
-                <th class="py-3 px-3 w-52">Tổ chuyên môn</th>
-                <th class="py-3 px-3 w-28 text-center">Ngày chốt</th>
-                <th class="py-3 px-3 w-24 text-center">Tổng nhận</th>
-                <th class="py-3 px-3 w-28 text-center">Tỷ lệ Trực tuyến</th>
-                <th class="py-3 px-3 w-24 text-center">Tổng GQ</th>
-                <th class="py-3 px-3 w-28 text-center">Tỷ lệ Đúng hạn</th>
-                <th class="py-3 px-3 w-24 text-center">Quá hạn</th>
-                <th class="py-3 px-3 w-32 text-center">Đang thụ lý</th>
-                <th class="py-3 px-3 w-28 text-center">Thanh toán TT</th>
-                <th class="py-3 px-3 w-28 text-center">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody id="historyTableBody" class="divide-y divide-slate-200">
-              <!-- Render động bằng JavaScript -->
-            </tbody>
-          </table>
+      <!-- Bảng dữ liệu nhập liệu -->
+      <div class="daily-table-container">
+        <table class="daily-data-table">
+          <thead>
+            <tr>
+              <th class="col-id">Mã</th>
+              <th class="col-name">Loại hồ sơ / Hạng mục công việc hằng ngày</th>
+              <th class="col-num">Số tồn trước</th>
+              <th class="col-num">Tiếp nhận</th>
+              <th class="col-num">Tổng cần xử lý</th>
+              <th class="col-num">Đã giải quyết</th>
+              <th class="col-num">Chưa xử lý</th>
+              <th class="col-rate">Tiến độ (%)</th>
+              <th class="col-note">Ghi chú / Căn cứ</th>
+            </tr>
+          </thead>
+          <tbody id="dailyTableBody">
+            <!-- Được render tự động từ JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Hướng dẫn nhanh cho cán bộ -->
+      <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-start gap-2.5 text-xs text-blue-900">
+        <i class="fa-solid fa-circle-question text-blue-600 mt-0.5 shrink-0 text-sm"></i>
+        <div>
+          <span class="font-bold">Ghi chú cho cán bộ điền biểu mẫu:</span>
+          Dữ liệu bạn gõ sẽ được tự động lưu nháp tức thì vào máy tính văn phòng. Sau khi rà soát chính xác số liệu trong ngày của Tổ, vui lòng bấm nút <strong class="text-blue-950 font-bold">"Gửi Báo Cáo Ngày"</strong> ở góc trên bên phải để hoàn tất báo cáo lên Ban Giám đốc và Tổ Hành chính - Tổng hợp.
         </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- BẢNG THEO DÕI & LỊCH SỬ BÁO CÁO CÔNG VIỆC CÁC NGÀY (CHỈ DÀNH CHO ADMIN) -->
+    <!-- Phân quyền: Chỉ Đỗ Trọng Minh Quân (quandtm) & Nguyễn Thị Bích Tuyền (tuyenntb) -->
+    <!-- ========================================================================= -->
+    <section id="historyTrackingSection" class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200">
+        <div>
+          <h2 class="text-sm sm:text-base font-extrabold text-blue-950 flex items-center gap-2">
+            <i class="fa-solid fa-clock-rotate-left text-amber-500"></i>
+            <span>BẢNG THEO DÕI & LỊCH SỬ BÁO CÁO (DÀNH CHO LÃNH ĐẠO & ADMIN)</span>
+          </h2>
+          <p class="text-xs text-slate-500">
+            Theo dõi tiến độ, đối soát khối lượng công việc hằng ngày của các Tổ và lọc theo khoảng thời gian
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button type="button" id="btnClearDailyHistory" class="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-3 py-1.5 rounded-xl transition">
+            <i class="fa-solid fa-trash-can"></i>
+            <span>Xóa lịch sử</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- BỘ LỌC TỪ NGÀY ĐẾN NGÀY & LỌC TỔ TRONG LỊCH SỬ -->
+      <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl grid grid-cols-1 sm:grid-cols-12 gap-3 items-end text-xs">
+        <!-- Từ ngày -->
+        <div class="sm:col-span-3">
+          <label for="filterHistoryFromDate" class="block font-bold text-slate-700 mb-1">
+            <i class="fa-regular fa-calendar-minus text-blue-600 mr-1"></i> Từ ngày:
+          </label>
+          <input type="date" id="filterHistoryFromDate" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-semibold text-slate-800">
+        </div>
+
+        <!-- Đến ngày -->
+        <div class="sm:col-span-3">
+          <label for="filterHistoryToDate" class="block font-bold text-slate-700 mb-1">
+            <i class="fa-regular fa-calendar-plus text-blue-600 mr-1"></i> Đến ngày:
+          </label>
+          <input type="date" id="filterHistoryToDate" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-semibold text-slate-800">
+        </div>
+
+        <!-- Lọc Tổ -->
+        <div class="sm:col-span-4">
+          <label for="filterHistoryDept" class="block font-bold text-slate-700 mb-1">
+            <i class="fa-solid fa-building-user text-purple-600 mr-1"></i> Tổ chuyên môn:
+          </label>
+          <select id="filterHistoryDept" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 font-bold text-slate-800">
+            <option value="ALL">-- Tất cả các Tổ (Toàn đơn vị) --</option>
+            <option value="SEC_1">Tổ 1: ĐK & Cấp GCN</option>
+            <option value="SEC_2">Tổ 2: Kỹ thuật địa chính & Lưu trữ</option>
+            <option value="SEC_3">Tổ 3: HCTH & Một cửa</option>
+          </select>
+        </div>
+
+        <!-- Nút áp dụng bộ lọc -->
+        <div class="sm:col-span-2 flex gap-1.5">
+          <button type="button" id="btnApplyHistoryFilter" class="w-full font-bold bg-blue-800 hover:bg-blue-700 text-white py-2 px-3 rounded-lg shadow-sm transition active:scale-95 flex items-center justify-center gap-1">
+            <i class="fa-solid fa-filter"></i>
+            <span>Lọc</span>
+          </button>
+          <button type="button" id="btnResetHistoryFilter" class="font-bold bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 py-2 px-2.5 rounded-lg transition" title="Đặt lại bộ lọc">
+            <i class="fa-solid fa-rotate"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bảng danh sách các ngày báo cáo đã lưu -->
+      <div class="daily-table-container">
+        <table class="daily-data-table">
+          <thead>
+            <tr>
+              <th style="width: 45px; text-align: center;">STT</th>
+              <th style="width: 110px;">Ngày báo cáo</th>
+              <th>Đơn vị / Tổ chuyên môn</th>
+              <th class="col-num">Số tồn trước</th>
+              <th class="col-num">Tiếp nhận</th>
+              <th class="col-num">Đã xử lý</th>
+              <th class="col-num">Chưa xử lý</th>
+              <th class="col-rate">Tỉ lệ (%)</th>
+              <th style="width: 160px;">Người gửi / Giờ gửi</th>
+              <th style="width: 90px; text-align: center;">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="dailyHistoryTableBody">
+            <!-- Được render tự động từ JS -->
+          </tbody>
+        </table>
       </div>
     </section>
 
   </main>
 
-  <!-- ==================== MODAL XEM CHI TIẾT BÁO CÁO TỔ ==================== -->
-  <div id="reportDetailModal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-3xl w-full border border-slate-200 shadow-2xl overflow-hidden transform transition-all">
-      <div class="bg-gradient-to-r from-blue-900 to-blue-800 text-white px-6 py-4 flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
-          <i class="fa-solid fa-file-waveform text-amber-400 text-lg"></i>
-          <h3 class="font-bold text-base text-white">CHI TIẾT SỐ LIỆU BÁO CÁO CẤP TỔ</h3>
-        </div>
-        <button onclick="closeReportModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition">
-          ✕
-        </button>
-      </div>
-
-      <div id="modalReportContent" class="p-6 space-y-4 max-h-[75vh] overflow-y-auto text-xs">
-        <!-- Render động qua JavaScript -->
-      </div>
-
-      <div class="bg-slate-50 px-6 py-3.5 border-t border-slate-200 flex items-center justify-between">
-        <button id="modalBtnPrintReport" class="text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 px-3.5 py-2 rounded-xl transition shadow-sm">
-          <i class="fa-solid fa-print mr-1"></i> In Bản Báo Cáo Này
-        </button>
-        <button onclick="closeReportModal()" class="text-xs font-semibold text-slate-600 hover:text-slate-800 px-3.5 py-2 rounded-xl transition">
-          Đóng
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ==================== KHUNG IN ẨN PHỤC VỤ IN BÁO CÁO A4 ==================== -->
-  <div id="printableReportArea" class="hidden"></div>
-
-  <!-- Module Controller js/bao_cao_to.js đã được nạp trong thẻ <head> với thuộc tính defer -->
 </body>
 </html>

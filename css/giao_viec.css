@@ -5,8 +5,6 @@
    Kiến trúc: 2 Tab (1. Bảng theo dõi tiến độ 100% width & 2. Giao việc mới)
    ========================================================================= */
 
-@import url("base.css");
-
 /* ==================== 1. KHUNG LÀM VIỆC CHÍNH ==================== */
 .giao-viec-workspace {
   width: 100%;
@@ -292,4 +290,150 @@
   .task-data-table {
     min-width: 100% !important;
   }
+}
+
+/* =========================================================================
+   10. PHÂN HỆ THÔNG CÁO & CHỈ THỊ PDF (CHUẨN DOCUMENT VIEWER 2 CỘT TỶ LỆ CHUẨN)
+   ========================================================================= */
+.directive-viewer-layout {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 20px !important;
+  width: 100% !important;
+  align-items: stretch;
+}
+
+@media (min-width: 900px) {
+  .directive-viewer-layout {
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    gap: 24px !important;
+  }
+}
+
+.directive-sidebar-col {
+  width: 100% !important;
+  flex-shrink: 0 !important;
+}
+
+@media (min-width: 900px) {
+  .directive-sidebar-col {
+    width: 340px !important;
+  }
+}
+
+@media (min-width: 1200px) {
+  .directive-sidebar-col {
+    width: 380px !important;
+  }
+}
+
+.directive-sidebar-box {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 76px;
+}
+
+.directive-main-col {
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+.directive-view-panel {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 20px 24px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.directive-scroll-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: calc(100vh - 270px);
+  min-height: 520px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.directive-scroll-list::-webkit-scrollbar {
+  width: 5px;
+}
+.directive-scroll-list::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+.directive-scroll-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.directive-scroll-list::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Thẻ văn bản trong danh sách bên trái */
+.doc-nav-item {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  transition: all 0.15s ease-in-out;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  background-color: transparent;
+  color: #334155;
+}
+
+.doc-nav-item:hover:not(.active-doc) {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+.doc-nav-item.active-doc,
+.doc-nav-item.border-sky-500 {
+  border-color: #0284c7 !important;
+  background-color: #f0f9ff !important;
+  color: #082f49 !important;
+  font-weight: 600;
+  box-shadow: 0 1px 2px 0 rgba(2, 132, 199, 0.15);
+  outline: 1px solid rgba(56, 189, 248, 0.5);
+}
+
+/* Khung đọc PDF bên phải */
+.directive-iframe-wrapper {
+  width: 100%;
+  height: calc(100vh - 175px);
+  min-height: 720px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+@media (min-width: 1200px) {
+  .directive-iframe-wrapper {
+    height: calc(100vh - 165px);
+    min-height: 800px;
+  }
+}
+
+.directive-pdf-iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
 }

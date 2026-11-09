@@ -1,9 +1,22 @@
+
+/* Khởi tạo trạng thái ẩn ban đầu cho Modal & Form (thay thế inline style, tương thích 100% app.js) */
+#btnAdminServerConfig,
+#loginSection,
+#syncWarningBanner,
+#appWorkspace,
+#formSection,
+#exportWordModal,
+#exportDateRangeBox,
+#scheduleDetailModal,
+#forgotPasswordModal,
+#configModal {
+  display: none;
+}
+
 /* =========================================================================
    LICH_TUAN.CSS: GIAO DIỆN CHUYÊN BIỆT CHO PHÂN HỆ ĐĂNG KÝ LỊCH TUẦN
    Hệ Thống Web Portal - Văn Phòng Đăng Ký Đất Đai Chi Nhánh Số 23
    ========================================================================= */
-
-@import url("base.css");
 
 /* ==================== 1. THANH CHUYỂN TAB (BẢNG LỊCH vs FORM ĐĂNG KÝ) ==================== */
 .schedule-tab-nav {
@@ -17,7 +30,7 @@
 
 .schedule-tab-group {
   display: inline-flex;
-  background: #e2e8f0;
+  background: var(--color-border-subtle);
   padding: 4px;
   border-radius: var(--radius-md);
   gap: 4px;
@@ -132,12 +145,12 @@
 .btn-refresh {
   background-color: #f1f5f9;
   color: #334155;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border);
 }
 
 .btn-refresh:hover {
-  background-color: #e2e8f0;
-  color: #0f172a;
+  background-color: var(--color-border-subtle);
+  color: var(--color-brand-navy-dark);
 }
 
 .btn-svg {
@@ -161,11 +174,11 @@
 }
 
 .schedule-table th {
-  background-color: #f8fafc;
+  background-color: var(--color-bg-app);
   color: #334155;
   font-weight: 700;
   padding: 12px 14px;
-  border-bottom: 2px solid #cbd5e1;
+  border-bottom: 2px solid var(--color-border);
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -193,15 +206,15 @@
 }
 
 .schedule-row-clickable:hover td {
-  background-color: #f8fafc;
+  background-color: var(--color-bg-app);
 }
 
 /* Cột 1: Thứ / Ngày */
 .day-badge {
   display: inline-block;
   padding: 2px 8px;
-  background: #e2e8f0;
-  color: #1e3a8a;
+  background: var(--color-border-subtle);
+  color: var(--color-brand-navy);
   border-radius: var(--radius-sm);
   font-weight: 700;
   font-size: 0.76rem;
@@ -265,7 +278,7 @@
 /* 2. Đang diễn ra (có chấm xanh nhấp nháy pulse) */
 .status-ongoing {
   background-color: #dcfce7;
-  color: #15803d;
+  color: var(--color-success);
   border: 1px solid #86efac;
 }
 
@@ -289,7 +302,7 @@
 .status-past {
   background-color: #f1f5f9;
   color: #64748b;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border);
 }
 
 /* Hàng cuộc họp đã qua: mờ nhẹ và gạch ngang giờ */
@@ -338,7 +351,7 @@
 .btn-detail-link {
   background: none;
   border: none;
-  color: #2563eb;
+  color: var(--color-brand-navy-light);
   font-size: 0.76rem;
   font-weight: 700;
   padding: 2px 0;
@@ -362,7 +375,7 @@
   font-weight: 600;
   color: #334155;
   background-color: #f1f5f9;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border-subtle);
   padding: 3px 8px;
   border-radius: var(--radius-sm);
   display: inline-block;
@@ -379,7 +392,7 @@
   align-items: center;
   padding: 12px 16px;
   border-top: 1px solid var(--color-border-subtle);
-  background-color: #f8fafc;
+  background-color: var(--color-bg-app);
   flex-wrap: wrap;
   gap: 12px;
 }
@@ -403,7 +416,7 @@
   min-width: 32px;
   height: 32px;
   padding: 0 8px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border);
   background-color: #ffffff;
   color: #334155;
   border-radius: var(--radius-sm);
@@ -418,12 +431,12 @@
 
 .page-btn:hover:not(:disabled) {
   background-color: #eff6ff;
-  border-color: #2563eb;
-  color: #2563eb;
+  border-color: var(--color-brand-navy-light);
+  color: var(--color-brand-navy-light);
 }
 
 .page-btn.active {
-  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #1d4ed8 0%, var(--color-brand-navy-light) 100%);
   border-color: #1d4ed8;
   color: #ffffff !important;
   box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
@@ -481,7 +494,7 @@
 
 .badge-auto {
   font-size: 0.7rem;
-  background: #e2e8f0;
+  background: var(--color-border-subtle);
   color: #475569;
   padding: 1px 6px;
   border-radius: 4px;
@@ -489,7 +502,7 @@
 }
 
 .auto-filled {
-  background-color: #f8fafc !important;
+  background-color: var(--color-bg-app) !important;
   color: #475569;
   cursor: not-allowed;
 }
@@ -499,7 +512,7 @@
   cursor: pointer;
   background-color: #ffffff !important;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--color-brand-navy-dark);
   letter-spacing: 0.5px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -533,25 +546,25 @@
 .btn-reset {
   background-color: #f1f5f9;
   color: #475569;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border);
 }
 
 .btn-reset:hover {
-  background-color: #e2e8f0;
-  color: #0f172a;
+  background-color: var(--color-border-subtle);
+  color: var(--color-brand-navy-dark);
 }
 
 /* Tùy biến popup Flatpickr Calendar */
 .flatpickr-calendar {
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
   border-radius: 12px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border);
   font-family: inherit;
   z-index: 9999;
 }
 
 .flatpickr-months .flatpickr-month {
-  background: #1e3a8a;
+  background: var(--color-brand-navy);
   color: #ffffff;
   fill: #ffffff;
   border-top-left-radius: 11px;
@@ -584,7 +597,7 @@
 }
 
 span.flatpickr-weekday {
-  color: #1e3a8a;
+  color: var(--color-brand-navy);
   font-weight: 700;
 }
 
@@ -595,8 +608,8 @@ span.flatpickr-weekday {
 .flatpickr-day.selected:focus, 
 .flatpickr-day.selected:hover, 
 .flatpickr-day.selected:active {
-  background: #1e3a8a !important;
-  border-color: #1e3a8a !important;
+  background: var(--color-brand-navy) !important;
+  border-color: var(--color-brand-navy) !important;
   font-weight: 700;
   color: #ffffff !important;
 }
@@ -617,7 +630,7 @@ span.flatpickr-weekday {
 .flatpickr-time input {
   font-weight: 700;
   font-size: 1.15rem;
-  color: #1e3a8a !important;
+  color: var(--color-brand-navy) !important;
 }
 
 /* ==================== 7. HỆ THỐNG POPUP MODAL (CHI TIẾT & XUẤT WORD) ==================== */
@@ -672,7 +685,7 @@ span.flatpickr-weekday {
 
 .modal-footer {
   padding: 14px 20px;
-  background-color: #f8fafc;
+  background-color: var(--color-bg-app);
   border-top: 1px solid var(--color-border-subtle);
   display: flex;
   justify-content: flex-end;
@@ -713,10 +726,10 @@ span.flatpickr-weekday {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  background-color: #f8fafc;
+  background-color: var(--color-bg-app);
   padding: 12px 16px;
   border-radius: var(--radius-md);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border-subtle);
 }
 
 .detail-meta-item.full-width {
@@ -756,7 +769,7 @@ span.flatpickr-weekday {
   line-height: 1.6;
   white-space: pre-wrap;
   word-break: break-word;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border-subtle);
   background-color: #ffffff;
 }
 
@@ -767,7 +780,7 @@ span.flatpickr-weekday {
 }
 
 .attendees-box {
-  background-color: #f8fafc;
+  background-color: var(--color-bg-app);
   color: #334155;
 }
 
@@ -784,7 +797,7 @@ span.flatpickr-weekday {
 
 .badge-word-export {
   background-color: #dcfce7;
-  color: #15803d;
+  color: var(--color-success);
 }
 
 .modal-forgot-card {
@@ -793,7 +806,7 @@ span.flatpickr-weekday {
 
 .forgot-modal-title {
   margin: 10px 0 6px;
-  color: #0f172a;
+  color: var(--color-brand-navy-dark);
   font-size: 1.1rem;
 }
 
@@ -823,7 +836,7 @@ span.flatpickr-weekday {
   align-items: flex-start;
   gap: 12px;
   padding: 14px 16px;
-  border: 1.5px solid #cbd5e1;
+  border: 1.5px solid var(--color-border);
   border-radius: var(--radius-md);
   background-color: #ffffff;
   cursor: pointer;
@@ -833,7 +846,7 @@ span.flatpickr-weekday {
 
 .export-radio-card:hover {
   border-color: #60a5fa;
-  background-color: #f8fafc;
+  background-color: var(--color-bg-app);
 }
 
 .export-radio-card input[type="radio"] {
@@ -845,9 +858,9 @@ span.flatpickr-weekday {
 }
 
 .export-radio-card.active {
-  border-color: #2563eb;
+  border-color: var(--color-brand-navy-light);
   background-color: #eff6ff;
-  box-shadow: 0 0 0 1px #2563eb;
+  box-shadow: 0 0 0 1px var(--color-brand-navy-light);
 }
 
 .radio-card-content {
@@ -867,8 +880,8 @@ span.flatpickr-weekday {
 }
 
 .export-range-box {
-  background-color: #f8fafc;
-  border: 1.5px dashed #cbd5e1;
+  background-color: var(--color-bg-app);
+  border: 1.5px dashed var(--color-border);
   border-radius: var(--radius-md);
   padding: 14px 16px;
   margin-bottom: 16px;
@@ -886,7 +899,7 @@ span.flatpickr-weekday {
   font-size: 0.8rem;
   font-weight: 600;
   border-radius: 6px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border);
   background-color: #ffffff;
   color: #334155;
   cursor: pointer;
@@ -924,7 +937,7 @@ span.flatpickr-weekday {
 }
 
 .btn-warning-contrast {
-  background-color: #b45309;
+  background-color: var(--color-accent-hover);
   color: #ffffff;
   border-color: #92400e;
 }

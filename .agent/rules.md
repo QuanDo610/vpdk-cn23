@@ -131,12 +131,10 @@ FAMILY_CN23/
 ├── templates/                  # Khung mẫu phân hệ chuẩn phục vụ mở rộng app sau này
 │   └── base_app_template.html  # Khung trang mẫu tích hợp sẵn Header, Footer, Route Guard
 │
-├── docs/                       # Toàn bộ tài liệu hỗ trợ kỹ thuật (Tham khảo nghiệp vụ)
-│   ├── HANDOFF.md              # Nhật ký bàn giao kỹ thuật & tiến trình dự án
+├── docs/                       # Tài liệu hỗ trợ kỹ thuật và kiểm thử
 │   ├── HUONG_DAN_TRIEN_KHAI.md # Hướng dẫn triển khai Google Sheets & Apps Script
-│   ├── BAO_CAO_AN_NINH.md      # Báo cáo đánh giá an ninh bảo mật và lỗ hổng đã fix
-│   ├── SPEC_WORKFLOW_TESTING.md# Đặc tả kịch bản test luồng phục vụ model khác nếu cần
-│   └── task.md                 # Bảng theo dõi tiến độ công việc chi tiết
+│   ├── SPEC_WORKFLOW_TESTING.md# Đặc tả kịch bản test luồng phục vụ kiểm thử tự động
+│   └── task.md                 # BẢNG THEO DÕI TIẾN ĐỘ & DANH MỤC CÔNG VIỆC DUY NHẤT
 │
 └── README.md                   # Trang bìa giới thiệu tổng quan hệ thống
 ```

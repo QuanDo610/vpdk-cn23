@@ -1,46 +1,367 @@
 /* =========================================================================
-   BAO_CAO_TO.CSS: GIAO DIỆN PHÂN HỆ BÁO CÁO SỐ LIỆU CẤP TỔ & KPI
-   Hệ Thống Web Portal - Văn Phòng Đăng Ký Đất Đai Chi Nhánh Số 23
+   BAO_CAO_TO.CSS: PHÂN HỆ BÁO CÁO SỐ LIỆU CÔNG VIỆC HẰNG NGÀY CẤP TỔ
+   Hệ Thống Cổng Dịch Vụ Cán Bộ - Văn Phòng Đăng Ký Đất Đai Chi Nhánh Số 23
+   Quy chuẩn: Royal Navy & Gold (60-30-10)
    ========================================================================= */
 
-@import url("base.css");
-
-/* ==================== 1. NHÓM CHỈ TIÊU CHUYÊN MÔN ==================== */
-.report-group-card {
-  background-color: var(--color-bg-surface);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-xl);
-  padding: 20px;
-  box-shadow: var(--shadow-card);
-  margin-bottom: 20px;
+/* KPI Summary Cards */
+.daily-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1rem;
 }
 
-.report-group-title {
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--color-text-main);
+.daily-kpi-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 14px;
+  padding: 1.1rem 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--color-border-subtle);
-  margin-bottom: 16px;
+  gap: 1rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* ==================== 2. BẢNG LỊCH SỬ BÁO CÁO ==================== */
-.history-row-clickable {
-  cursor: pointer;
-  transition: background-color var(--transition-fast);
+.daily-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.history-row-clickable:hover {
+.daily-kpi-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.daily-kpi-val {
+  font-size: 1.65rem;
+  font-weight: 800;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Quick Entry Toolbar Box */
+.quick-entry-box {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  padding: 1.1rem 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+/* Table Style */
+.daily-table-container {
+  overflow-x: auto;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  background: var(--color-bg-surface);
+}
+
+.daily-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.825rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.daily-data-table th {
+  background: linear-gradient(180deg, #1e3a8a 0%, #172554 100%);
+  color: #ffffff;
+  padding: 10px 8px;
+  font-weight: 700;
+  border: 1px solid #1e3a8a;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.025em;
+  vertical-align: middle;
+}
+
+.daily-data-table td {
+  padding: 7px 8px;
+  border: 1px solid #e2e8f0;
+  vertical-align: middle;
+}
+
+.daily-data-table tr:hover {
   background-color: #f8fafc;
 }
 
-/* ==================== 3. BẢNG DỮ LIỆU BÁO CÁO ==================== */
-.report-data-table {
-  table-layout: fixed;
-  min-width: 1200px;
+/* Section Header Rows */
+.tr-section-header {
+  background: #f1f5f9 !important;
+  color: var(--color-brand-navy);
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.tr-section-header td {
+  padding: 9px 12px !important;
+  border-top: 2px solid #cbd5e1 !important;
+  border-bottom: 2px solid #cbd5e1 !important;
+}
+
+.tr-subgroup-header {
+  background: #f8fafc !important;
+  color: #475569;
+  font-weight: 700;
+  font-size: 0.78rem;
+  font-style: italic;
+}
+
+.tr-subgroup-header td {
+  padding: 6px 12px !important;
+  border-top: 1px solid #e2e8f0 !important;
+}
+
+/* Grand Total Row */
+.tr-grand-total {
+  background: #eef2ff !important;
+  color: #1e3a8a;
+  font-weight: 800;
+  font-size: 0.875rem;
+  border-top: 2px solid #1e3a8a !important;
+  border-bottom: 2px solid #1e3a8a !important;
+}
+
+.tr-grand-total td {
+  padding: 10px 8px !important;
+}
+
+/* Numeric Cell Input */
+.daily-cell-input {
+  width: 82px;
+  text-align: right;
+  font-weight: 700;
+  font-size: 0.825rem;
+  padding: 5px 6px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background-color: #ffffff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.daily-cell-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+  background-color: #eff6ff;
+}
+
+.daily-cell-readonly {
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+  color: #334155;
+  cursor: default;
+}
+
+.daily-cell-readonly.has-backlog {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  font-weight: 800;
+}
+
+.daily-cell-readonly.no-backlog {
+  color: #15803d;
+}
+
+/* 3 Department Monitor Cards */
+.dept-monitor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.dept-monitor-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 14px;
+  padding: 1.1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  position: relative;
+}
+
+.dept-monitor-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #93c5fd;
+}
+
+.dept-monitor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.dept-monitor-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  text-align: center;
+  margin-bottom: 0.75rem;
+}
+
+.dept-monitor-stat-val {
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.dept-monitor-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--color-border-subtle);
+}
+
+.btn-micro {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #1e3a8a;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-micro:hover {
+  background: #1e3a8a;
+  color: #ffffff;
+  border-color: #1e3a8a;
+}
+
+.cell-progress-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cell-progress-track {
+  flex: 1;
+  height: 6px;
+  background-color: #e2e8f0;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.cell-progress-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+/* Row Flash Highlight */
+@keyframes rowHighlightFlash {
+  0% { background-color: #fef08a; }
+  100% { background-color: transparent; }
+}
+
+.flash-highlight {
+  animation: rowHighlightFlash 2.5s ease-out forwards;
+}
+
+/* Department Tab Selector Pill */
+.dept-pill-btn {
+  padding: 7px 16px;
+  border-radius: 10px;
+  font-size: 0.825rem;
+  font-weight: 700;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dept-pill-btn:hover {
+  background: #f1f5f9;
+  color: #1e3a8a;
+  border-color: #94a3b8;
+}
+
+.dept-pill-btn.active {
+  background: #1e3a8a;
+  color: #ffffff;
+  border-color: #1e3a8a;
+  box-shadow: 0 2px 6px rgba(30, 58, 138, 0.25);
+}
+
+/* Submission Status Badge */
+.submit-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.submit-status-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.submit-status-badge.submitted {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+/* Column Sizing and Alignment Classes */
+.col-id { width: 50px; text-align: center; }
+.col-name { min-width: 220px; text-align: left; }
+.col-num { width: 105px; text-align: right; }
+.col-rate { width: 115px; text-align: center; }
+.col-note { width: 150px; }
+
+.cell-center { text-align: center; }
+.cell-right { text-align: right; }
+.cell-left { text-align: left; }
+
+.item-code-cell {
+  text-align: center;
+  font-weight: 700;
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+.cell-val-total {
+  font-size: 0.95rem;
+  text-align: right;
+  font-weight: 800;
+}
+
+.cell-val-navy { color: #1e3a8a; }
+.cell-val-green { color: #15803d; }
+.cell-val-red { color: #b91c1c; }
+
+.rate-percent-text {
+  font-size: 0.72rem;
+  font-weight: 700;
+  width: 40px;
+  text-align: right;
+  display: inline-block;
+}
+
+.child-row-bg {
+  background-color: #f8fafc;
 }

@@ -20,97 +20,10 @@ function escapeHtml(str) {
 // ========================================================
 // 1. DANH SÁCH 82 NHÂN SỰ CHÍNH THỨC CHI NHÁNH SỐ 23
 // ========================================================
-const STAFF_CN23 = [
-  // Ban Giám đốc (3)
-  { id: "BGD_01", name: "Nguyễn Chiến Thắng", role: "Giám đốc", dept: "Ban Giám đốc", note: "" },
-  { id: "BGD_02", name: "Đặng Huy Cường", role: "Phó Giám đốc", dept: "Ban Giám đốc", note: "" },
-  { id: "BGD_03", name: "Nguyễn Thị Lệ Hằng", role: "Phó Giám đốc", dept: "Ban Giám đốc", note: "" },
-
-  // Tổ Kỹ thuật Địa chính và Lưu trữ (30)
-  { id: "KTDC_01", name: "Trần Thanh Triết", role: "Tổ trưởng", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_02", name: "Đặng Thị Tuyết Trinh", role: "Tổ phó", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_03", name: "Đỗ Văn Đông", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_04", name: "Nguyễn Văn Tiến", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_05", name: "Nguyễn Thanh Sang", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_06", name: "Lưu Văn Tuấn", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_07", name: "Đoàn Văn Sang", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_08", name: "Ân Văn Tuấn", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_09", name: "Phạm Minh Trí", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_10", name: "Phạm Thành Vũ", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_11", name: "Nguyễn Quốc Danh", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_12", name: "Lê Quang Khoa", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_13", name: "Đoàn Thanh Phong", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_14", name: "Ngô Thị Cẩm Thúy", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_15", name: "Phạm Trần Hồng Như", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_16", name: "Phạm Hoàng Oanh", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_17", name: "Lê Thị Thùy Duyên", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_18", name: "Nguyễn Thanh Điền", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_19", name: "Huỳnh Thành Duy", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_20", name: "Vương Ánh Xuân", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_21", name: "Nguyễn Tuấn Anh", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_22", name: "Nguyễn Hoàng Xuân", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_23", name: "Lê Thị Phương Mai", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_24", name: "Lê Ngọc Bảo Ngân", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_25", name: "Hồ Lê Thanh Vũ", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_26", name: "Huỳnh Quốc Nam", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_27", name: "Phạm Minh Hoàng", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_28", name: "Nguyễn Tuấn Kiệt", role: "Chuyên viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_29", name: "Trần Thị Hoàng Yến", role: "Nhân viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-  { id: "KTDC_30", name: "Nguyễn Hoài Bảo Phúc", role: "Nhân viên", dept: "Tổ Kỹ thuật Địa chính và Lưu trữ", note: "" },
-
-  // Tổ Đăng ký cấp GCN (27)
-  { id: "DKGCN_01", name: "Nguyễn Thị Thùy Trang", role: "Tổ trưởng", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_02", name: "Nguyễn Thị Thu Minh", role: "Tổ phó", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_03", name: "Huỳnh Tấn Nguyên", role: "Tổ phó", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_04", name: "Nguyễn Thành Như Bảo", role: "Tổ phó", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_05", name: "Nguyễn Tiến Thịnh", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_06", name: "Hoàng Minh Tú", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_07", name: "Huỳnh Thị Ái Nhi", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_08", name: "Trần Nguyễn Hoài Lam", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_09", name: "Nguyễn Thị Huỳnh Mai", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_10", name: "Nguyễn Văn Khánh", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_11", name: "Trần Thị Thùy Trang", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_12", name: "Tạ Nguyễn Bích Trang", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_13", name: "Nguyễn Thị Lệ Thu", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_14", name: "Phạm Nguyễn Lan Anh", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_15", name: "Nguyễn Trần Thảo Vy", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_16", name: "Lê Sơn Thanh", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_17", name: "Nguyễn Bích Ngọc", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_18", name: "Nguyễn Trung Thành", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_19", name: "Nguyễn Thị Dáng", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_20", name: "Phạm Thị Yến Nhi", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_21", name: "Phan Trọng Hiệp", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_22", name: "Nguyễn Thị Ngọc Thảo", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_23", name: "Nguyễn Nhật Quyền Trinh", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_24", name: "Đỗ Thị Yến", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_25", name: "Võ Tường Lam", role: "Nhân viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_26", name: "Nguyễn Ngọc Quế Trân", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
-  { id: "DKGCN_27", name: "Trần Đình Siêu", role: "Chuyên viên", dept: "Tổ Đăng ký cấp GCN", note: "" },
-
-  // Tổ Hành chính Tổng hợp (22)
-  { id: "HCTH_01", name: "Nguyễn Thị Bích Tuyền", role: "Tổ trưởng", dept: "Tổ Hành chính Tổng hợp", note: "" },
-  { id: "HCTH_02", name: "Bùi Thị Minh Nguyệt", role: "Tổ phó", dept: "Tổ Hành chính Tổng hợp", note: "" },
-  { id: "HCTH_03", name: "Hồ Thị Hồng Linh", role: "Tổ phó", dept: "Tổ Hành chính Tổng hợp", note: "" },
-  { id: "HCTH_04", name: "Nguyễn Thị Mai", role: "Tổ phó", dept: "Tổ Hành chính Tổng hợp", note: "" },
-  { id: "HCTH_05", name: "Võ Phi Trúc", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
-  { id: "HCTH_06", name: "Trương Ngô Hồng Duyên", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
-  { id: "HCTH_07", name: "Nguyễn Anh Khôi", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
-  { id: "HCTH_08", name: "Quản Nguyễn Thảo Nguyên", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
-  { id: "HCTH_09", name: "Nguyễn Hoàng Duy", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
-  { id: "HCTH_10", name: "Nguyễn Thị Trúc Phương", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
-  { id: "HCTH_11", name: "Trần Quốc Hưng", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
-  { id: "HCTH_12", name: "Đoàn Thị Hoàng An", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
-  { id: "HCTH_13", name: "Nguyễn Thị Ngọc Trản", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
-  { id: "HCTH_14", name: "Nguyễn Khánh Duy", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
-  { id: "HCTH_15", name: "Nguyễn Duy Tấn", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
-  { id: "HCTH_16", name: "Nguyễn Thảo Tuyết Nhi", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
-  { id: "HCTH_17", name: "Lê Hồng Phong", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
-  { id: "HCTH_18", name: "Nguyễn Thanh Phú", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
-  { id: "HCTH_19", name: "Hồ Lê Thanh Vũ", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
-  { id: "HCTH_20", name: "Nguyễn Hoàng Tiến", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
-  { id: "HCTH_21", name: "Lê Thị Thúy Hằng", role: "Chuyên viên", dept: "Tổ Hành chính Tổng hợp", note: "" },
-  { id: "HCTH_22", name: "Đỗ Trọng Minh Quân", role: "Nhân viên", dept: "Tổ Hành chính Tổng hợp", note: "" }
-];
+// 1. DANH SÁCH NHÂN SỰ CHI NHÁNH SỐ 23
+// Tự động nạp động 100% từ Google Sheet TaiKhoan thông qua syncStaffFromCloud()
+// Đảm bảo nguyên tắc bảo vệ dữ liệu cá nhân Zero-PII trên Git công khai.
+const STAFF_CN23 = [];
 
 // Biến lưu danh sách nhân sự hiện hành (Khởi tạo từ danh sách mặc định, tự động đồng bộ từ Sheet TaiKhoan)
 let activeStaffList = [...STAFF_CN23];
@@ -154,11 +67,126 @@ async function syncStaffFromCloud() {
 }
 
 const STORAGE_KEY_TASKS = "CN23_TASK_ASSIGNMENTS_V1";
+const STORAGE_KEY_DIRECTIVES = "CN23_DIRECTIVES_V2";
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLjARkYWp2TegCCdMcfVc3W6qQm6PmhFz71-y8zB_xFXxXbRXpsUhk6aPbJtqVqUHE/exec";
 let currentViewingTaskId = null;
+let currentSelectedDirectiveId = null;
 let attachedFileInfo = null;
+let attachedDirectivePdf = null;
 let taskCurrentPage = 1;
 let taskPageSize = 10;
+
+// Kho tài liệu mẫu ban đầu của Giám đốc Chi nhánh 23
+const DEFAULT_DIRECTIVES = [
+  {
+    id: "VB-2026-005",
+    soHieu: "39266/SNN-VPĐK",
+    title: "Thông báo số 39266: Kết luận cuộc họp lãnh đạo Sở NN&PTNT và VPĐKĐĐ (14g30 ngày 10/11)",
+    category: "Thông báo",
+    sender: "Nguyễn Chiến Thắng — Giám đốc",
+    createdAt: "09/11/2026 14:30",
+    timestamp: 1794200000000,
+    fileName: "39266-SNN-KV1 VPĐK 14g30 ngay 10.11 (2).signed.signed.signed.signed.pdf",
+    fileSize: "3.9 MB",
+    pages: "Văn bản gốc",
+    previewUrl: "data/sample_documents/39266-SNN-KV1%20VP%C4%90K%2014g30%20ngay%2010.11%20(2).signed.signed.signed.signed.pdf",
+    downloadUrl: "data/sample_documents/39266-SNN-KV1%20VP%C4%90K%2014g30%20ngay%2010.11%20(2).signed.signed.signed.signed.pdf",
+    viewUrl: "data/sample_documents/39266-SNN-KV1%20VP%C4%90K%2014g30%20ngay%2010.11%20(2).signed.signed.signed.signed.pdf",
+    notes: "Đề nghị toàn thể Ban Giám đốc, các Tổ trưởng, Tổ phó và chuyên viên khẩn trương rà soát toàn bộ đầu việc theo kết luận chỉ đạo tại cuộc họp ngày 10/11."
+  },
+  {
+    id: "VB-2026-004",
+    soHieu: "3987/VPĐKĐĐ",
+    title: "Công văn số 3987/VPĐKĐĐ: Hướng dẫn giải quyết hồ sơ người nước ngoài cùng đứng tên quyền sử dụng đất",
+    category: "Công văn",
+    sender: "Nguyễn Chiến Thắng — Giám đốc",
+    createdAt: "09/11/2026 10:15",
+    timestamp: 1794150000000,
+    fileName: "Cong van so 3987 Người Nước ngoài cùng đứng tên.pdf",
+    fileSize: "1.0 MB",
+    pages: "Văn bản gốc",
+    previewUrl: "data/sample_documents/Cong%20van%20so%203987%20Ng%C6%B0%E1%BB%9Di%20N%C6%B0%E1%BB%9Bc%20ngo%C3%A0i%20c%C3%B9ng%20%C4%91%E1%BB%A9ng%20t%C3%AAn.pdf",
+    downloadUrl: "data/sample_documents/Cong%20van%20so%203987%20Ng%C6%B0%E1%BB%9Di%20N%C6%B0%E1%BB%9Bc%20ngo%C3%A0i%20c%C3%B9ng%20%C4%91%E1%BB%A9ng%20t%C3%AAn.pdf",
+    viewUrl: "data/sample_documents/Cong%20van%20so%203987%20Ng%C6%B0%E1%BB%9Di%20N%C6%B0%E1%BB%9Bc%20ngo%C3%A0i%20c%C3%B9ng%20%C4%91%E1%BB%A9ng%20t%C3%AAn.pdf",
+    notes: "Tổ Đăng ký & Cấp GCN phối hợp chặt chẽ với Tổ Kỹ thuật Địa chính kiểm tra kỹ điều kiện pháp lý đối với hồ sơ có người nước ngoài cùng đứng tên theo đúng tinh thần Công văn 3987."
+  },
+  {
+    id: "VB-2026-003",
+    soHieu: "2637/QĐ-SNNMT",
+    title: "Quyết định 2637/QĐ-SNNMT: Quy định chức năng, nhiệm vụ, quyền hạn và cơ cấu tổ chức Chi nhánh 23",
+    category: "Quyết định",
+    sender: "Nguyễn Chiến Thắng — Giám đốc",
+    createdAt: "09/11/2026 08:00",
+    timestamp: 1794100000000,
+    fileName: "2637-Q-SNN-Quy dinh chuc nang_Chi nhanh 23.pdf",
+    fileSize: "6.4 MB",
+    pages: "10 trang",
+    previewUrl: "https://drive.google.com/file/d/1Mv76Y49TASsdbAukya_aNDml_bmmdGan/preview",
+    downloadUrl: "https://drive.google.com/uc?export=download&id=1Mv76Y49TASsdbAukya_aNDml_bmmdGan",
+    viewUrl: "https://drive.google.com/file/d/1Mv76Y49TASsdbAukya_aNDml_bmmdGan/view",
+    notes: "Yêu cầu Lãnh đạo các Tổ chuyên môn phổ biến sâu rộng đến 100% cán bộ, viên chức và người lao động nghiêm túc thực hiện theo đúng chức năng nhiệm vụ 3 Tổ nghiệp vụ mới."
+  },
+  {
+    id: "VB-2026-002",
+    soHieu: "2162/CN23-HCTH",
+    title: "Công văn số 2162/CN23-HCTH: Đề nghị hỗ trợ đường truyền mạng & an toàn thông tin CSDL đất đai",
+    category: "Công văn",
+    sender: "Nguyễn Chiến Thắng — Giám đốc",
+    createdAt: "06/11/2026 14:15",
+    timestamp: 1793970900000,
+    fileName: "2162_0001.signed.pdf",
+    fileSize: "1.8 MB",
+    pages: "4 trang",
+    previewUrl: "https://drive.google.com/file/d/1Mv76Y49TASsdbAukya_aNDml_bmmdGan/preview",
+    downloadUrl: "https://drive.google.com/uc?export=download&id=1Mv76Y49TASsdbAukya_aNDml_bmmdGan",
+    viewUrl: "https://drive.google.com/file/d/1Mv76Y49TASsdbAukya_aNDml_bmmdGan/view",
+    notes: "Bộ phận CNTT & Mạng phối hợp chặt chẽ với Sở TT&TT triển khai cấu hình tường lửa và cấp phát dải IP tĩnh cho máy trạm phục vụ tra cứu VBDLIS."
+  },
+  {
+    id: "VB-2026-001",
+    soHieu: "15/CT-UBND",
+    title: "Chỉ thị 15/CT-UBND: Tăng cường kỷ luật, kỷ cương hành chính và nâng cao hiệu quả giải quyết TTHC",
+    category: "Chỉ thị",
+    sender: "Nguyễn Chiến Thắng — Giám đốc",
+    createdAt: "02/11/2026 08:30",
+    timestamp: 1793608200000,
+    fileName: "15_CT_UBND_Tang_cuong_ky_luat.pdf",
+    fileSize: "1.2 MB",
+    pages: "3 trang",
+    previewUrl: "https://drive.google.com/file/d/1Mv76Y49TASsdbAukya_aNDml_bmmdGan/preview",
+    downloadUrl: "https://drive.google.com/uc?export=download&id=1Mv76Y49TASsdbAukya_aNDml_bmmdGan",
+    viewUrl: "https://drive.google.com/file/d/1Mv76Y49TASsdbAukya_aNDml_bmmdGan/view",
+    notes: "Tuyệt đối không để hồ sơ trễ hạn không có văn bản xin lỗi người dân; nghiêm cấm tự ý tiếp xúc công dân ngoài trụ sở tiếp nhận Một cửa."
+  }
+];
+
+function getStoredDirectives() {
+  const data = localStorage.getItem(STORAGE_KEY_DIRECTIVES);
+  if (!data) {
+    const oldData = localStorage.getItem("CN23_DIRECTIVES_V1");
+    let initialList = [...DEFAULT_DIRECTIVES];
+    if (oldData) {
+      try {
+        const parsedOld = JSON.parse(oldData);
+        const customUploads = parsedOld.filter(d => d.id && !d.id.startsWith("VB-2026-00"));
+        if (customUploads.length > 0) {
+          initialList = [...customUploads, ...DEFAULT_DIRECTIVES];
+        }
+      } catch (err) {}
+    }
+    localStorage.setItem(STORAGE_KEY_DIRECTIVES, JSON.stringify(initialList));
+    return initialList;
+  }
+  try {
+    return JSON.parse(data);
+  } catch (e) {
+    return DEFAULT_DIRECTIVES;
+  }
+}
+
+function saveStoredDirectives(list) {
+  localStorage.setItem(STORAGE_KEY_DIRECTIVES, JSON.stringify(list));
+}
 
 // Đồng bộ Cloud Google Apps Script & Xóa cache dữ liệu cũ
 async function syncTasksFromCloud(forceRefresh = false) {
@@ -377,6 +405,30 @@ function canAssignTaskTo(assigner, targetStaff) {
 }
 
 /**
+ * QUY TẮC BẢO MẬT: ĐĂNG TẢI THÔNG CÁO & CHỈ THỊ PDF TOÀN CƠ QUAN
+ * - CHỈ DUY NHẤT Giám đốc Nguyễn Chiến Thắng (và Quản trị IT Đỗ Trọng Minh Quân) mới có thẩm quyền upload.
+ * - Toàn bộ các tài khoản khác (Phó Giám đốc, Tổ trưởng, Tổ phó, Chuyên viên, Nhân viên...) chỉ có quyền XEM và TẢI VỀ.
+ */
+function canUploadDirectives(user) {
+  if (!user) return false;
+  const myRank = getUserRank(user);
+  const myName = removeVietnameseTones(user.fullname || user.name || "");
+  const myUsername = (user.username || "").toLowerCase().trim();
+  const myPhone = normalizePhone(user.phone || "");
+
+  // 1. Quản trị viên IT Đỗ Trọng Minh Quân (quandtm / 0973807027)
+  if (myRank === 0 || myPhone === "973807027" || myPhone === "0973807027" || myUsername === "quandtm" || myName.includes("do trong minh quan")) {
+    return true;
+  }
+  // 2. Giám đốc Nguyễn Chiến Thắng (Rank 1 hoặc họ tên chứa Nguyễn Chiến Thắng)
+  if (myRank === 1 || myName.includes("nguyen chien thang")) {
+    return true;
+  }
+  // Các tài khoản khác: Phó Giám đốc, Tổ trưởng, Tổ phó, Chuyên viên, Nhân viên... KHÔNG CÓ QUYỀN
+  return false;
+}
+
+/**
  * Hiển thị Huy hiệu phạm vi vai trò (Role Scope Badge) và kiểm soát nút nguy hiểm
  */
 function updateTaskRoleScopeBadge(user) {
@@ -459,11 +511,25 @@ function initUserSession() {
         }
       }
 
+      // Quyền Đăng tải Thông cáo / Chỉ thị PDF toàn cơ quan:
+      // ĐẶC QUYỀN DUY NHẤT: Giám đốc Nguyễn Chiến Thắng & IT Admin Đỗ Trọng Minh Quân
+      // Toàn bộ cán bộ khác (Chuyên viên, Trần Văn Tuấn, Lãnh đạo cấp tổ...) bị ẨN HOÀN TOÀN
+      const canUploadDoc = canUploadDirectives(user);
+      const btnQuickOpenUploadDirective = document.getElementById("btnQuickOpenUploadDirective");
+      if (btnQuickOpenUploadDirective) {
+        if (canUploadDoc) {
+          btnQuickOpenUploadDirective.classList.remove("hidden");
+          btnQuickOpenUploadDirective.style.display = "";
+        } else {
+          btnQuickOpenUploadDirective.classList.add("hidden");
+          btnQuickOpenUploadDirective.style.display = "none";
+        }
+      }
+
       if (!isLeader) {
         if (tabBtnAssign) tabBtnAssign.style.display = "none";
         if (btnQuickOpenAssign) btnQuickOpenAssign.style.display = "none";
         if (panelAssign) panelAssign.classList.add("hidden");
-        if (panelTracking) panelTracking.classList.remove("hidden");
       } else {
         if (tabBtnAssign) tabBtnAssign.style.display = "";
         if (btnQuickOpenAssign) btnQuickOpenAssign.style.display = "";
@@ -1178,15 +1244,335 @@ function closeTaskModal() {
 }
 
 // ========================================================
+// 4B. QUẢN LÝ THÔNG CÁO & CHỈ THỊ PDF TOÀN CƠ QUAN
+// (CHỈ GIÁM ĐỐC NGUYỄN CHIẾN THẮNG & IT ADMIN ĐƯỢC PHÉP ĐĂNG)
+// ========================================================
+function renderDirectives() {
+  const listContainer = document.getElementById("directiveListContainer");
+  const countBadge = document.getElementById("directiveCountBadge");
+  const searchInput = document.getElementById("searchDirectiveInput");
+  if (!listContainer) return;
+
+  const rawList = getStoredDirectives();
+  // QUY TẮC BẮT BUỘC: SẮP XẾP TỪ MỚI TỚI CŨ (Timestamp giảm dần)
+  rawList.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+  const keyword = (searchInput?.value || "").toLowerCase().trim();
+  const filtered = keyword ? rawList.filter(d => 
+    (d.title && d.title.toLowerCase().includes(keyword)) ||
+    (d.soHieu && d.soHieu.toLowerCase().includes(keyword)) ||
+    (d.sender && d.sender.toLowerCase().includes(keyword)) ||
+    (d.notes && d.notes.toLowerCase().includes(keyword))
+  ) : rawList;
+
+  if (countBadge) {
+    countBadge.textContent = `${filtered.length} văn bản`;
+  }
+
+  if (filtered.length === 0) {
+    listContainer.innerHTML = `
+      <div class="p-6 text-center text-slate-400">
+        <i class="fa-solid fa-folder-open text-3xl mb-2 text-slate-300 block"></i>
+        <span class="text-xs">Không tìm thấy thông cáo/văn bản nào phù hợp.</span>
+      </div>`;
+    return;
+  }
+
+  listContainer.innerHTML = "";
+  filtered.forEach((d, index) => {
+    const isNewest = (index === 0 && !keyword);
+    const isSelected = (d.id === currentSelectedDirectiveId) || (!currentSelectedDirectiveId && index === 0);
+    if (!currentSelectedDirectiveId && index === 0) {
+      currentSelectedDirectiveId = d.id;
+    }
+
+    const item = document.createElement("button");
+    item.type = "button";
+    item.setAttribute("data-directive-id", d.id);
+    item.className = `doc-nav-item w-full text-left p-2.5 rounded-lg border text-xs transition flex items-start space-x-2.5 ${
+      isSelected 
+        ? "border-sky-500 bg-sky-50 text-sky-950 font-semibold shadow-xs ring-1 ring-sky-400/40" 
+        : "border-transparent text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+    }`;
+    item.onclick = () => selectDirective(d.id);
+
+    item.innerHTML = `
+      <i class="fa-regular fa-file-pdf ${isSelected ? "text-rose-600" : "text-rose-700"} font-semibold text-sm mt-0.5 shrink-0"></i>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center justify-between gap-1 mb-0.5">
+          <p class="font-bold truncate ${isSelected ? "text-sky-950" : "text-slate-900"} text-[11px]">
+            ${escapeHtml(d.soHieu || "CHỈ ĐẠO CHUNG")}
+          </p>
+          <div class="flex items-center gap-1 shrink-0">
+            ${isNewest ? '<span class="px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-rose-600 text-white animate-pulse uppercase">MỚI</span>' : ""}
+            <span class="text-[10px] text-slate-400 font-mono">${escapeHtml(d.createdAt ? d.createdAt.split(" ")[0] : "")}</span>
+          </div>
+        </div>
+        <p class="font-medium ${isSelected ? "text-slate-900" : "text-slate-700"} truncate text-xs leading-snug">${escapeHtml(d.title)}</p>
+        <p class="text-[10px] text-slate-500 font-mono truncate mt-0.5">
+          ${escapeHtml(d.fileName || "Tệp PDF")} ${d.fileSize ? `(${escapeHtml(d.fileSize)})` : ""}
+        </p>
+      </div>
+    `;
+    listContainer.appendChild(item);
+  });
+
+  // Hiển thị nội dung chi tiết của văn bản đang chọn sang khung đọc bên phải
+  if (currentSelectedDirectiveId) {
+    const activeDoc = rawList.find(d => d.id === currentSelectedDirectiveId) || filtered[0];
+    if (activeDoc) renderDirectiveDetail(activeDoc);
+  }
+}
+
+function selectDirective(id) {
+  currentSelectedDirectiveId = id;
+  renderDirectives();
+}
+
+function renderDirectiveDetail(d) {
+  const titleEl = document.getElementById("viewingDirectiveTitle");
+  const dateEl = document.getElementById("viewingDirectiveDate");
+  const metaEl = document.getElementById("viewingDirectiveMeta");
+  const badgeEl = document.getElementById("viewingDirectiveBadge");
+  const notesContainer = document.getElementById("directiveNotesContainer");
+  const notesEl = document.getElementById("viewingDirectiveNotes");
+  const fileLabelEl = document.getElementById("viewingDirectiveFileLabel");
+  const btnOpenTab = document.getElementById("btnDirectiveOpenTab");
+  const btnOpenTabInline = document.getElementById("btnDirectiveOpenTabInline");
+  const btnDownload = document.getElementById("btnDirectiveDownload");
+  const iframe = document.getElementById("directivePdfIframe");
+  const placeholder = document.getElementById("directiveEmptyPlaceholder");
+
+  if (titleEl) titleEl.textContent = d.title;
+  if (dateEl) dateEl.textContent = `Ban hành: ${d.createdAt || "--"}`;
+  if (metaEl) {
+    metaEl.innerHTML = `<span class="inline-flex items-center gap-1.5 font-semibold text-slate-700"><i class="fa-solid fa-signature text-blue-600"></i> ${escapeHtml(d.sender)}</span> • <span class="font-mono text-slate-500">${escapeHtml(d.fileName || "Tệp PDF")} (${escapeHtml(d.fileSize || "PDF")})</span>`;
+  }
+  if (badgeEl) {
+    badgeEl.textContent = d.soHieu || "CHỈ ĐẠO CHUNG";
+  }
+
+  if (fileLabelEl) {
+    fileLabelEl.textContent = `${d.fileName || "Van_ban_chi_dao.pdf"} (${d.fileSize || "PDF"})`;
+  }
+
+  if (d.notes) {
+    if (notesContainer) notesContainer.classList.remove("hidden");
+    if (notesEl) notesEl.textContent = d.notes;
+  } else {
+    if (notesContainer) notesContainer.classList.add("hidden");
+  }
+
+  const pdfUrl = d.previewUrl || d.fileUrl || d.downloadUrl || "";
+  const directDownload = d.downloadUrl || d.fileUrl || "";
+  const openUrl = d.viewUrl || pdfUrl || directDownload;
+
+  if (btnOpenTab) {
+    btnOpenTab.href = openUrl;
+  }
+  if (btnOpenTabInline) {
+    btnOpenTabInline.href = openUrl;
+  }
+  if (btnDownload) {
+    btnDownload.href = directDownload;
+    btnDownload.download = d.fileName || "Van_ban_chi_dao.pdf";
+  }
+
+  if (iframe) {
+    if (pdfUrl) {
+      iframe.src = pdfUrl;
+      iframe.classList.remove("hidden");
+      if (placeholder) placeholder.classList.add("hidden");
+    } else {
+      iframe.src = "";
+      iframe.classList.add("hidden");
+      if (placeholder) placeholder.classList.remove("hidden");
+    }
+  }
+}
+
+function openUploadDirectiveModal() {
+  const currentUser = (typeof FamilyAuth !== "undefined" && FamilyAuth.getUser()) || 
+                      JSON.parse(sessionStorage.getItem("currentUser") || sessionStorage.getItem("family_user") || "null");
+
+  if (!canUploadDirectives(currentUser)) {
+    showToast("Đặc quyền từ chối: Chỉ có Giám đốc Nguyễn Chiến Thắng mới có thẩm quyền ban hành/đăng tải văn bản chỉ đạo toàn cơ quan!", "error");
+    return;
+  }
+
+  // Reset form trước khi điền dữ liệu
+  const form = document.getElementById("directiveUploadForm");
+  if (form) form.reset();
+  removeAttachedDirectivePdf();
+
+  const senderInput = document.getElementById("directiveSender");
+  if (senderInput) {
+    senderInput.value = "Nguyễn Chiến Thắng — Giám đốc Chi nhánh 23";
+  }
+
+  const modal = document.getElementById("uploadDirectiveModal");
+  if (modal) modal.classList.remove("hidden");
+}
+
+function closeUploadDirectiveModal() {
+  const modal = document.getElementById("uploadDirectiveModal");
+  if (modal) modal.classList.add("hidden");
+}
+
+function removeAttachedDirectivePdf() {
+  const dirFileInput = document.getElementById("directiveFileInput");
+  if (dirFileInput) dirFileInput.value = "";
+  attachedDirectivePdf = null;
+  window.attachedDirectivePdf = null;
+  const filePreview = document.getElementById("directiveFilePreview");
+  if (filePreview) filePreview.classList.add("hidden");
+  const fileLabel = document.getElementById("directiveFileLabel");
+  if (fileLabel) fileLabel.textContent = "Bấm để chọn tệp PDF từ máy tính hoặc kéo thả vào đây";
+}
+
+/**
+ * Tải lên tệp PDF trực tiếp & không yêu cầu điền form rườm rà (Zero-friction upload)
+ * Dành riêng cho Giám đốc Nguyễn Chiến Thắng & IT Admin
+ */
+function triggerDirectPdfUpload() {
+  const currentUser = (typeof FamilyAuth !== "undefined" && FamilyAuth.getUser()) || 
+                      JSON.parse(sessionStorage.getItem("currentUser") || sessionStorage.getItem("family_user") || "null");
+
+  if (!canUploadDirectives(currentUser)) {
+    showToast("Đặc quyền từ chối: Chỉ có Giám đốc Nguyễn Chiến Thắng mới có thẩm quyền ban hành/đăng tải văn bản chỉ đạo toàn cơ quan!", "error");
+    return;
+  }
+  const input = document.getElementById("quickDirectiveFileInput");
+  if (input) {
+    input.click();
+  }
+}
+
+function handleDirectPdfUpload(file) {
+  if (!file) return;
+
+  const currentUser = (typeof FamilyAuth !== "undefined" && FamilyAuth.getUser()) || 
+                      JSON.parse(sessionStorage.getItem("currentUser") || sessionStorage.getItem("family_user") || "null");
+
+  if (!canUploadDirectives(currentUser)) {
+    showToast("Đặc quyền từ chối: Chỉ có Giám đốc Nguyễn Chiến Thắng mới có thẩm quyền ban hành/đăng tải văn bản chỉ đạo toàn cơ quan!", "error");
+    return;
+  }
+
+  const fileNameLower = file.name.toLowerCase();
+  if (!fileNameLower.endsWith(".pdf") && file.type !== "application/pdf") {
+    showToast("Lỗi định dạng: Chỉ chấp nhận duy nhất tệp văn bản chuẩn PDF (*.pdf)! Vui lòng không chọn file Word hay Excel.", "error");
+    return;
+  }
+
+  if (file.size > 25 * 1024 * 1024) {
+    showToast("Dung lượng tệp PDF vượt quá 25MB! Vui lòng chọn tệp nhỏ hơn.", "error");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    const base64Data = evt.target.result;
+    const now = new Date();
+    const dateStr = now.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }) + " " + 
+                    now.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+
+    // Tự động làm sạch tên file làm trích yếu văn bản
+    const baseName = file.name.replace(/\.[^/.]+$/, "");
+    let cleanTitle = baseName.replace(/[_-]+/g, " ").trim();
+    if (cleanTitle.length > 0) {
+      cleanTitle = cleanTitle.charAt(0).toUpperCase() + cleanTitle.slice(1);
+    }
+
+    // Nhận diện số hiệu nếu tên tệp bắt đầu bằng số/ký tự văn bản (vd: 2637_QD_SNNMT, 9999-TB-CN23...)
+    let detectedSoHieu = "CHỈ ĐẠO CHUNG";
+    const soHieuMatch = baseName.match(/^([0-9]+[\/_-][A-Za-z0-9đĐ_-]+)/);
+    if (soHieuMatch) {
+      detectedSoHieu = soHieuMatch[1].replace(/[_-]/g, "/").toUpperCase();
+    }
+
+    const sizeStr = file.size > 1024 * 1024 
+      ? (file.size / (1024 * 1024)).toFixed(2) + " MB" 
+      : (file.size / 1024).toFixed(1) + " KB";
+
+    const newDirective = {
+      id: "VB-" + now.getFullYear() + "-" + Math.floor(1000 + Math.random() * 9000),
+      soHieu: detectedSoHieu,
+      title: cleanTitle || file.name,
+      sender: "Nguyễn Chiến Thắng — Giám đốc",
+      createdAt: dateStr,
+      timestamp: now.getTime(), // BẮT BUỘC timestamp mới nhất để luôn hiển thị trên đầu
+      fileName: file.name,
+      fileSize: sizeStr,
+      previewUrl: base64Data,
+      downloadUrl: base64Data,
+      viewUrl: base64Data,
+      notes: "Văn bản ban hành trực tiếp từ Ban Giám đốc"
+    };
+
+    const directives = getStoredDirectives();
+    directives.unshift(newDirective); // Đưa lên vị trí đầu tiên (MỚI NHẤT)
+    saveStoredDirectives(directives);
+
+    currentSelectedDirectiveId = newDirective.id;
+    renderDirectives();
+
+    // Đồng bộ cloud trong nền (nếu có mạng)
+    syncDirectiveToCloud(newDirective);
+
+    showToast(`Đã tải lên văn bản "${file.name}" thành công!`, "success");
+  };
+
+  reader.readAsDataURL(file);
+}
+
+async function syncDirectiveToCloud(directive) {
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        action: "createDirective",
+        ...directive,
+        fileBase64: directive.previewUrl?.startsWith("data:") ? directive.previewUrl : ""
+      })
+    });
+    const result = await res.json();
+    if (result && result.fileUrl) {
+      directive.previewUrl = result.previewUrl || result.fileUrl;
+      directive.downloadUrl = result.downloadUrl || result.fileUrl;
+      directive.viewUrl = result.fileUrl;
+      const list = getStoredDirectives();
+      const idx = list.findIndex(d => d.id === directive.id);
+      if (idx !== -1) {
+        list[idx] = directive;
+        saveStoredDirectives(list);
+        if (currentSelectedDirectiveId === directive.id) {
+          renderDirectiveDetail(directive);
+        }
+      }
+    }
+  } catch (err) {
+    console.log("Cloud directive sync local mode");
+  }
+}
+
+// ========================================================
 // 5. KHỞI CHẠY & EVENT DELEGATION
 // ========================================================
 window.addEventListener("DOMContentLoaded", () => {
-  initUserSession();
-  populateStaffDropdown();
-  syncStaffFromCloud();
-  updateTaskKPIs();
-  renderTasksTable();
-  syncTasksFromCloud();
+  try {
+    initUserSession();
+    populateStaffDropdown();
+    syncStaffFromCloud();
+    updateTaskKPIs();
+    renderTasksTable();
+    renderDirectives();
+    syncTasksFromCloud();
+  } catch (err) {
+    console.error("LỖI KHỞI ĐỘNG GIAO VIỆC:", err);
+    window.__dom_error = err.stack || String(err);
+  }
 
   // Nút Làm mới dữ liệu từ Google Sheet (xóa sạch bộ nhớ đệm, cập nhật mới nhất)
   const btnRefresh = document.getElementById("btnRefreshTasks");
@@ -1358,12 +1744,18 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Tab switching đồng bộ hệ sinh thái (Tracking vs Assign)
-  function switchTaskTab(tabName) {
+  // Tab switching đồng bộ hệ sinh thái (1. Thông cáo & Chỉ thị PDF vs 2. Giao việc & Chỉ đạo vs 3. Bảng tiến độ)
+  function switchTaskTab(tabName = "directives") {
     const tabBtnAssign = document.getElementById("tabBtnAssign");
     const tabBtnTracking = document.getElementById("tabBtnTracking");
+    const tabBtnDirectives = document.getElementById("tabBtnDirectives");
+
     const panelAssign = document.getElementById("panelAssign");
     const panelTracking = document.getElementById("panelTracking");
+    const panelDirectives = document.getElementById("panelDirectives");
+
+    const btnQuickOpenAssign = document.getElementById("btnQuickOpenAssign");
+    const btnQuickOpenUploadDirective = document.getElementById("btnQuickOpenUploadDirective");
 
     const currentUser = (typeof FamilyAuth !== "undefined" && FamilyAuth.getUser()) || 
                         JSON.parse(sessionStorage.getItem("currentUser") || sessionStorage.getItem("family_user") || "null");
@@ -1372,29 +1764,198 @@ window.addEventListener("DOMContentLoaded", () => {
       const myRank = getUserRank(currentUser);
       if (myRank >= 5) {
         showToast("Đồng chí không có quyền giao việc! Chức năng này chỉ dành cho Ban Giám đốc và Lãnh đạo các Tổ chuyên môn.", "error");
-        tabName = "tracking";
+        tabName = "directives";
       }
     }
 
+    // Xóa active toàn bộ tabs & ẩn toàn bộ panels
+    [tabBtnDirectives, tabBtnAssign, tabBtnTracking].forEach(btn => btn?.classList.remove("active"));
+    [panelDirectives, panelAssign, panelTracking].forEach(p => p?.classList.add("hidden"));
+    if (btnQuickOpenAssign) btnQuickOpenAssign.style.display = "none";
+    if (btnQuickOpenUploadDirective) btnQuickOpenUploadDirective.classList.add("hidden");
+
     if (tabName === "assign") {
-      if (tabBtnAssign) tabBtnAssign.classList.add("active");
-      if (tabBtnTracking) tabBtnTracking.classList.remove("active");
-      if (panelAssign) panelAssign.classList.remove("hidden");
-      if (panelTracking) panelTracking.classList.add("hidden");
-    } else {
-      if (tabBtnTracking) tabBtnTracking.classList.add("active");
-      if (tabBtnAssign) tabBtnAssign.classList.remove("active");
-      if (panelTracking) panelTracking.classList.remove("hidden");
-      if (panelAssign) panelAssign.classList.add("hidden");
+      tabBtnAssign?.classList.add("active");
+      panelAssign?.classList.remove("hidden");
+    } else if (tabName === "tracking") {
+      tabBtnTracking?.classList.add("active");
+      panelTracking?.classList.remove("hidden");
+      const isLeader = (getUserRank(currentUser) <= 4);
+      if (isLeader && btnQuickOpenAssign) {
+        btnQuickOpenAssign.style.display = "";
+      }
       renderTasksTable();
+    } else {
+      // MẶC ĐỊNH: TAB 1 - THÔNG CÁO & CHỈ THỊ PDF (DOCUMENT VIEWER)
+      tabBtnDirectives?.classList.add("active");
+      panelDirectives?.classList.remove("hidden");
+      // CHỈ hiển thị nút Đăng văn bản nhanh nếu là Giám đốc Nguyễn Chiến Thắng hoặc IT Admin Đỗ Trọng Minh Quân
+      const canUploadDoc = canUploadDirectives(currentUser);
+      if (btnQuickOpenUploadDirective) {
+        if (canUploadDoc) {
+          btnQuickOpenUploadDirective.classList.remove("hidden");
+          btnQuickOpenUploadDirective.style.display = "";
+        } else {
+          btnQuickOpenUploadDirective.classList.add("hidden");
+          btnQuickOpenUploadDirective.style.display = "none";
+        }
+      }
+      renderDirectives();
     }
   }
   window.switchTaskTab = switchTaskTab;
 
   document.getElementById("tabBtnTracking")?.addEventListener("click", () => switchTaskTab("tracking"));
   document.getElementById("tabBtnAssign")?.addEventListener("click", () => switchTaskTab("assign"));
+  document.getElementById("tabBtnDirectives")?.addEventListener("click", () => switchTaskTab("directives"));
   document.getElementById("btnQuickOpenAssign")?.addEventListener("click", () => switchTaskTab("assign"));
   document.getElementById("btnBackToTracking")?.addEventListener("click", () => switchTaskTab("tracking"));
+  document.getElementById("searchDirectiveInput")?.addEventListener("input", renderDirectives);
+
+  // Kéo thả & Tải lên nhanh PDF không cần điền form (Zero-friction Directive PDF upload)
+  const quickDirectiveFileInput = document.getElementById("quickDirectiveFileInput");
+  if (quickDirectiveFileInput) {
+    quickDirectiveFileInput.addEventListener("change", (e) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        handleDirectPdfUpload(file);
+      }
+      e.target.value = "";
+    });
+  }
+
+  const dropDirectiveArea = document.getElementById("dropDirectiveArea");
+  if (dropDirectiveArea) {
+    dropDirectiveArea.addEventListener("click", () => {
+      triggerDirectPdfUpload();
+    });
+    dropDirectiveArea.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropDirectiveArea.classList.add("border-sky-600", "bg-sky-100");
+    });
+    dropDirectiveArea.addEventListener("dragleave", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropDirectiveArea.classList.remove("border-sky-600", "bg-sky-100");
+    });
+    dropDirectiveArea.addEventListener("drop", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropDirectiveArea.classList.remove("border-sky-600", "bg-sky-100");
+      const dt = e.dataTransfer;
+      const file = dt?.files?.[0];
+      if (file) {
+        handleDirectPdfUpload(file);
+      }
+    });
+  }
+
+  // File Upload cho Thông cáo PDF (Bắt buộc *.pdf)
+  const dirFileInput = document.getElementById("directiveFileInput");
+  if (dirFileInput) {
+    dirFileInput.addEventListener("change", (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const fileNameLower = file.name.toLowerCase();
+      if (!fileNameLower.endsWith(".pdf") && file.type !== "application/pdf") {
+        showToast("Lỗi định dạng: Chỉ chấp nhận duy nhất tệp văn bản chuẩn PDF (*.pdf)! Vui lòng không chọn file Word hay Excel.", "error");
+        dirFileInput.value = "";
+        return;
+      }
+
+      if (file.size > 25 * 1024 * 1024) {
+        showToast("Dung lượng tệp PDF vượt quá 25MB! Vui lòng nén tệp trước khi tải lên.", "error");
+        dirFileInput.value = "";
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        attachedDirectivePdf = {
+          name: file.name,
+          size: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+          base64: evt.target.result
+        };
+      };
+      reader.readAsDataURL(file);
+
+      const fileLabel = document.getElementById("directiveFileLabel");
+      if (fileLabel) fileLabel.textContent = file.name;
+
+      const filePreview = document.getElementById("directiveFilePreview");
+      if (filePreview) {
+        filePreview.classList.remove("hidden");
+        filePreview.innerHTML = `
+          <div class="flex items-center gap-2 font-bold truncate">
+            <i class="fa-solid fa-file-pdf text-rose-600 text-base"></i>
+            <span class="truncate">${escapeHtml(file.name)}</span>
+            <span class="text-[11px] text-slate-500 font-mono">(${(file.size / (1024 * 1024)).toFixed(2)} MB)</span>
+          </div>
+          <button type="button" class="text-rose-600 hover:text-rose-800 font-bold ml-2 shrink-0" onclick="removeAttachedDirectivePdf()">✕ Hủy</button>
+        `;
+      }
+    });
+  }
+
+  // Submit Form Đăng Văn Bản Chỉ Đạo PDF
+  const dirForm = document.getElementById("directiveUploadForm");
+  if (dirForm) {
+    dirForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const currentUser = (typeof FamilyAuth !== "undefined" && FamilyAuth.getUser()) || 
+                          JSON.parse(sessionStorage.getItem("currentUser") || sessionStorage.getItem("family_user") || "null");
+
+      if (!canUploadDirectives(currentUser)) {
+        showToast("Đặc quyền từ chối: Chỉ có Giám đốc Nguyễn Chiến Thắng mới có thẩm quyền đăng tải văn bản chỉ đạo!", "error");
+        return;
+      }
+
+      const effectivePdf = attachedDirectivePdf || window.attachedDirectivePdf;
+      if (!effectivePdf || !effectivePdf.base64) {
+        showToast("Vui lòng chọn tệp văn bản PDF trước khi đăng tải!", "error");
+        return;
+      }
+
+      const docRef = document.getElementById("directiveDocRef")?.value.trim() || "";
+      const title = document.getElementById("directiveTitle")?.value.trim() || "";
+      const notes = document.getElementById("directiveNotes")?.value.trim() || "";
+
+      const now = new Date();
+      const dateStr = now.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }) + " " + 
+                      now.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+
+      const newDirective = {
+        id: "VB-" + now.getFullYear() + "-" + Math.floor(100 + Math.random() * 900),
+        soHieu: docRef || "CHỈ ĐẠO CHUNG",
+        title: title,
+        sender: "Nguyễn Chiến Thắng — Giám đốc",
+        createdAt: dateStr,
+        timestamp: now.getTime(), // BẮT BUỘC timestamp mới nhất để luôn hiển thị trên đầu
+        fileName: effectivePdf.name,
+        fileSize: effectivePdf.size,
+        previewUrl: effectivePdf.base64,
+        downloadUrl: effectivePdf.base64,
+        viewUrl: effectivePdf.base64,
+        notes: notes
+      };
+
+      const directives = getStoredDirectives();
+      directives.unshift(newDirective); // Đưa lên vị trí đầu tiên (MỚI NHẤT)
+      saveStoredDirectives(directives);
+
+      currentSelectedDirectiveId = newDirective.id;
+      renderDirectives();
+
+      // Đồng bộ cloud trong nền (nếu có mạng)
+      syncDirectiveToCloud(newDirective);
+
+      showToast(`Đã ban hành văn bản chỉ đạo "${title.slice(0, 30)}..." thành công!`, "success");
+      closeUploadDirectiveModal();
+    });
+  }
 
   // Xuất CSV
   const btnExport = document.getElementById("btnExportTaskCsv");
@@ -1466,3 +2027,9 @@ window.deleteTask = deleteTask;
 window.openTaskModal = openTaskModal;
 window.closeTaskModal = closeTaskModal;
 window.removeAttachedFile = removeAttachedFile;
+window.openUploadDirectiveModal = openUploadDirectiveModal;
+window.closeUploadDirectiveModal = closeUploadDirectiveModal;
+window.selectDirective = selectDirective;
+window.removeAttachedDirectivePdf = removeAttachedDirectivePdf;
+window.triggerDirectPdfUpload = triggerDirectPdfUpload;
+window.handleDirectPdfUpload = handleDirectPdfUpload;

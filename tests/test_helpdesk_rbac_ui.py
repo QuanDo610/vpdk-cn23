@@ -141,7 +141,21 @@ def run_tests():
     time.sleep(1)
 
     # 2. Start Headless Chrome
-    chrome_bin = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    chrome_bin = None
+    for candidate in [
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        os.path.expanduser(r"~\AppData\Local\Google\Chrome\Application\chrome.exe"),
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "/usr/bin/google-chrome",
+        "/usr/bin/chromium-browser"
+    ]:
+        if os.path.exists(candidate):
+            chrome_bin = candidate
+            break
+    if not chrome_bin:
+        chrome_bin = "chrome"
+
     chrome_proc = subprocess.Popen([
         chrome_bin,
         "--headless=new",
@@ -195,6 +209,10 @@ def run_tests():
             loaded = client.eval_js("currentTickets && currentTickets.length > 0")
             if loaded:
                 break
+
+        # Switch to list tab to inspect desktop table
+        client.eval_js("switchHelpdeskTab('list')")
+        time.sleep(0.3)
 
         # Check desktop table container visibility
         table_style = client.eval_js("""

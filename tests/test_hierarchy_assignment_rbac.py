@@ -187,6 +187,12 @@ def run_tests():
         client.send_cmd("Page.navigate", {"url": f"{BASE_URL}/giao_viec.html"})
         time.sleep(2)
 
+        # Chờ danh sách nhân sự được nạp đầy đủ từ Sheet Cloud
+        for _ in range(12):
+            if client.eval_js("typeof activeStaffList !== 'undefined' && activeStaffList.length >= 10"):
+                break
+            time.sleep(0.5)
+
         tab_assign_display = client.eval_js("document.getElementById('tabBtnAssign')?.style.display")
         quick_assign_display = client.eval_js("document.getElementById('btnQuickOpenAssign')?.style.display")
         panel_assign_hidden = client.eval_js("document.getElementById('panelAssign')?.classList.contains('hidden')")

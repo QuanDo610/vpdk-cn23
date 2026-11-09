@@ -38,13 +38,8 @@ let googleScriptUrl = (savedScriptUrl && savedScriptUrl.startsWith("https://scri
 const ADMIN_EMAIL = "quan.vpdk@gmail.com";
 
 // Danh mục định danh người dùng: nạp động từ sheet TaiKhoan và bộ nhớ đệm
-const KNOWN_USERS_MAP = {
-  "quan.vpdk@gmail.com": "Đỗ Trọng Minh Quân",
-  "tuyen.vpdk@gmail.com": "Nguyễn Thị Bích Tuyền",
-  "trangntt.vpdk@gmail.com": "Nguyễn Thị Thùy Trang",
-  "thangnc.vpdk@gmail.com": "Nguyễn Chiến Thắng",
-  "thang.vpdk@gmail.com": "Nguyễn Chiến Thắng"
-};
+// Danh mục định danh người dùng: nạp động 100% từ Sheet TaiKhoan qua cache
+const KNOWN_USERS_MAP = {};
 
 // Nạp thêm danh mục người dùng đã được đồng bộ từ Sheet TaiKhoan lưu trong localStorage
 try {

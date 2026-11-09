@@ -1083,6 +1083,13 @@ document.addEventListener("DOMContentLoaded", () => {
   setupPasteEventListener();
   setupDragAndDrop();
 
+  const viewerImg = document.getElementById("viewerImage");
+  if (viewerImg) {
+    viewerImg.addEventListener("load", onModalImgLoaded);
+    viewerImg.addEventListener("error", onModalImgError);
+  }
+
+
   try {
     const cached = localStorage.getItem("IT_HELPDESK_LOCAL_TICKETS");
     if (cached) {
@@ -1169,3 +1176,41 @@ window.openImageViewer = openImageViewer;
 window.onModalImgLoaded = onModalImgLoaded;
 window.onModalImgError = onModalImgError;
 window.closeImageViewer = closeImageViewer;
+
+
+// EVENT DELEGATION TẬP TRUNG (THAY THẾ TOÀN BỘ INLINE EVENT HANDLERS)
+document.addEventListener("click", (e) => {
+  // Chống nổi bọt cho các modal box
+  if (e.target.closest('[data-stop-propagation="true"]')) {
+    e.stopPropagation();
+  }
+
+  // Backdrop click đóng modal
+  if (e.target.dataset.action === "backdrop-close-detail") {
+    closeTicketDetail();
+    return;
+  }
+
+  const btn = e.target.closest("[data-action]");
+  if (!btn) return;
+
+  const action = btn.dataset.action;
+  if (action === "switch-tab") {
+    switchHelpdeskTab(btn.dataset.tab);
+  } else if (action === "trigger-file") {
+    triggerFileInput();
+  } else if (action === "remove-image") {
+    removeSelectedImage(e);
+  } else if (action === "refresh-tickets") {
+    fetchTickets(true);
+  } else if (action === "close-detail") {
+    closeTicketDetail();
+  } else if (action === "close-image") {
+    closeImageViewer();
+  } else if (action === "open-image-from-detail") {
+    openImageViewerFromDetail();
+  } else if (action === "dismiss-success") {
+    const modal = document.getElementById("modalSuccess");
+    if (modal) modal.classList.add("hidden");
+  }
+});

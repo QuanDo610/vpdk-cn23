@@ -17,9 +17,11 @@ const SHEET_USERS_NAME = "TaiKhoan";
 const SHEET_SUPPORT_NAME = "Tickets";
 const SHEET_TASKS_NAME = "GiaoViec";
 const SHEET_PERFORMANCE_NAME = "BaoCaoSoLieu";
+const SHEET_DIRECTIVES_NAME = "ThongCaoChiThi";
 const ROOT_FOLDER_NAME = "VPDK_CN23_SYSTEM";
 const FOLDER_HELPDESK  = "it-helpdesk";
 const FOLDER_GIAOVIEC  = "giao-viec";
+const FOLDER_DIRECTIVES = "van-ban-chi-dao";
 const DRIVE_FOLDER_NAME = "VPDK_CN23_SYSTEM";
 
 /**
@@ -29,14 +31,15 @@ function onOpen() {
   try {
     SpreadsheetApp.getUi()
       .createMenu("⭐ BINHDUONG23")
-      .addItem("▶️ 1-Click: Cấu hình chuẩn toàn bộ 5 Phân hệ BINHDUONG23", "setupBinhDuong23")
-      .addItem("📂 Cấp quyền Google Drive (Lưu tệp đính kèm Giao việc & IT)", "authorizeDrivePermissions")
+      .addItem("▶️ 1-Click: Cấu hình chuẩn toàn bộ 6 Phân hệ BINHDUONG23", "setupBinhDuong23")
+      .addItem("📂 Cấp quyền Google Drive (Lưu tệp đính kèm Giao việc & Văn bản)", "authorizeDrivePermissions")
       .addSeparator()
       .addItem("🔤 Tự động tạo & điền Username (quandtm)", "autoFillUsernames")
       .addItem("👥 Định dạng tab TaiKhoan (Tài khoản cán bộ)", "seedAccountsOnly")
       .addItem("🎫 Định dạng tab Tickets (Sự cố IT Helpdesk)", "seedTicketsOnly")
       .addItem("📋 Định dạng tab GiaoViec (Lãnh đạo giao việc & Bảng tiến độ)", "seedTasksOnly")
       .addItem("📊 Định dạng tab BaoCaoSoLieu (Báo cáo số liệu thực hiện cấp tổ)", "seedPerformanceOnly")
+      .addItem("📜 Định dạng tab ThongCaoChiThi (Văn bản & Chỉ thị PDF Ban Giám đốc)", "seedDirectivesOnly")
       .addToUi();
   } catch (e) {}
 }
@@ -49,12 +52,13 @@ function onOpen() {
  */
 function authorizeDrivePermissions() {
   const root = DriveApp.getRootFolder();
-  const folder = getStorageFolder(FOLDER_GIAOVIEC);
-  Logger.log("✅ Đã cấp quyền Google Drive thành công! Thư mục giao việc: " + folder.getName() + " (ID: " + folder.getId() + ")");
+  const folderTasks = getStorageFolder(FOLDER_GIAOVIEC);
+  const folderDirectives = getStorageFolder(FOLDER_DIRECTIVES);
+  Logger.log("✅ Đã cấp quyền Google Drive thành công! Thư mục giao việc: " + folderTasks.getName() + ", Thư mục văn bản: " + folderDirectives.getName());
   try {
-    SpreadsheetApp.getUi().alert("✅ ĐÃ CẤP QUYỀN DRIVE THÀNH CÔNG!\n\nThư mục lưu trữ: " + ROOT_FOLDER_NAME + "/" + FOLDER_GIAOVIEC + "\nCác tệp đính kèm (Word, Excel, PDF, ảnh) từ nay sẽ tự động lưu lên Google Drive của đồng chí.");
+    SpreadsheetApp.getUi().alert("✅ ĐÃ CẤP QUYỀN DRIVE THÀNH CÔNG!\n\nThư mục lưu trữ:\n- " + ROOT_FOLDER_NAME + "/" + FOLDER_GIAOVIEC + "\n- " + ROOT_FOLDER_NAME + "/" + FOLDER_DIRECTIVES + "\n\nCác tệp đính kèm (Word, Excel, PDF chỉ đạo, ảnh) từ nay sẽ tự động lưu an toàn lên Google Drive.");
   } catch (e) {}
-  return "✅ Đã cấp quyền Google Drive thành công cho thư mục: " + folder.getName();
+  return "✅ Đã cấp quyền Google Drive thành công cho các thư mục hệ thống!";
 }
 
 /**
@@ -81,13 +85,17 @@ function setupBinhDuong23() {
   // 5. Khởi tạo tab BaoCaoSoLieu
   seedPerformanceOnly();
 
+  // 6. Khởi tạo tab ThongCaoChiThi (Văn bản & Chỉ thị PDF Ban Giám đốc)
+  seedDirectivesOnly();
+
   SpreadsheetApp.getUi().alert(
-    "✅ HỆ THỐNG BINHDUONG23 ĐÃ SẴN SÀNG TOÀN BỘ 5 PHÂN HỆ!\n\n" +
+    "✅ HỆ THỐNG BINHDUONG23 ĐÃ SẴN SÀNG TOÀN BỘ 6 PHÂN HỆ!\n\n" +
     "1. Sheet 'LichTuan': Giữ nguyên toàn bộ dữ liệu lịch tuần.\n" +
     "2. Sheet 'TaiKhoan': Đã định dạng chuẩn nhân sự CN23 & cột Username (quandtm).\n" +
     "3. Sheet 'Tickets': Đã định dạng chuẩn IT Helpdesk.\n" +
     "4. Sheet 'GiaoViec': Đã định dạng chuẩn Lãnh đạo giao việc.\n" +
-    "5. Sheet 'BaoCaoSoLieu': Đã định dạng chuẩn 8 nhóm chỉ tiêu chuyên môn.\n\n" +
+    "5. Sheet 'BaoCaoSoLieu': Đã định dạng chuẩn 8 nhóm chỉ tiêu chuyên môn.\n" +
+    "6. Sheet 'ThongCaoChiThi': Đã định dạng chuẩn Văn bản & Chỉ thị PDF kèm liên kết Google Drive.\n\n" +
     "Hệ thống đã sẵn sàng 100%!"
   );
 }
@@ -471,6 +479,69 @@ function seedPerformanceOnly() {
       .setFontColor("#ffffff")
       .setFontWeight("bold")
       .setHorizontalAlignment("center");
+    sheet.setFrozenRows(1);
+  }
+  return sheet;
+}
+
+/**
+ * Lấy sheet Thông Cáo & Chỉ Thị PDF
+ */
+function getDirectivesSheet(ss) {
+  ss = ss || SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SHEET_DIRECTIVES_NAME);
+  if (!sheet) {
+    sheet = seedDirectivesOnly();
+  }
+  return sheet;
+}
+
+/**
+ * Khởi tạo tab ThongCaoChiThi và cấu hình các cột lưu trữ dữ liệu văn bản chỉ đạo PDF (Giao diện siêu tinh gọn 4 cột)
+ */
+function seedDirectivesOnly() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SHEET_DIRECTIVES_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_DIRECTIVES_NAME);
+  }
+  if (sheet.getLastRow() === 0) {
+    const headers = [
+      "Thời gian tải lên",
+      "Tên tệp tin PDF",
+      "Link xem trực tiếp (Drive Preview)",
+      "Link tải về (Download)"
+    ];
+    sheet.appendRow(headers);
+    sheet.getRange(1, 1, 1, headers.length)
+      .setBackground("#1e3a8a")
+      .setFontColor("#ffffff")
+      .setFontWeight("bold")
+      .setHorizontalAlignment("center");
+    
+    // Nạp sẵn 2 văn bản mẫu tinh gọn ban đầu
+    const sampleDirectives = [
+      [
+        "09/11/2026 14:30",
+        "39266-SNN-KV1 VPĐK 14g30 ngay 10.11 (2).signed.signed.signed.signed.pdf",
+        "",
+        ""
+      ],
+      [
+        "06/11/2026 09:15",
+        "Cong van so 3987 Người Nước ngoài cùng đứng tên.pdf",
+        "",
+        ""
+      ]
+    ];
+    sampleDirectives.forEach(function(row) {
+      sheet.appendRow(row);
+    });
+
+    sheet.setColumnWidth(1, 170); // Thời gian tải lên
+    sheet.setColumnWidth(2, 480); // Tên tệp tin PDF
+    sheet.setColumnWidth(3, 350); // Link xem trực tiếp
+    sheet.setColumnWidth(4, 350); // Link tải về
     sheet.setFrozenRows(1);
   }
   return sheet;
@@ -886,7 +957,12 @@ function doGet(e) {
       return jsonResponse(getPerformanceReportsList(ss));
     }
 
-    // 6. FALLBACK GET
+    // 6. LẤY DANH SÁCH THÔNG CÁO & CHỈ THỊ PDF BAN GIÁM ĐỐC
+    if (action === "getDirectives") {
+      return jsonResponse(handleGetDirectives(ss));
+    }
+
+    // 7. FALLBACK GET
     if (action === "createTicket") {
       let ticketData = params;
       if (params.data) {
@@ -1062,6 +1138,11 @@ function doPost(e) {
     }
     if (action === "deletePerformanceRecord") {
       return jsonResponse(handleDeletePerformanceRecord(body, ss));
+    }
+
+    // 7. THÔNG CÁO & CHỈ THỊ PDF TOÀN CƠ QUAN (BAN GIÁM ĐỐC)
+    if (action === "createDirective" || action === "uploadDirective") {
+      return jsonResponse(handleCreateDirective(body, ss));
     }
 
     return jsonResponse({ success: false, message: "Hành động (action) không hợp lệ!" });
@@ -1772,6 +1853,150 @@ function getPerformanceReportsList(ss) {
     });
   }
   return { success: true, total: reports.length, data: reports };
+}
+
+/**
+ * =========================================================================
+ * PHÂN HỆ 6: THÔNG CÁO & CHỈ THỊ VĂN BẢN PDF TOÀN CƠ QUAN (BAN GIÁM ĐỐC)
+ * =========================================================================
+ */
+
+/**
+ * Lưu tệp PDF thông cáo/chỉ thị vào Google Drive:
+ * Thư mục: VPDK_CN23_SYSTEM/van-ban-chi-dao/
+ * Cấp quyền: Anyone with link can view (để nhúng iframe xem trực tiếp)
+ */
+function saveDirectivePdfToDrive(base64Data, filename) {
+  if (!base64Data || base64Data.trim() === "") return { viewUrl: "", downloadUrl: "" };
+  try {
+    const targetFolder = getStorageFolder(FOLDER_DIRECTIVES);
+
+    let contentType = "application/pdf";
+    let base64String = base64Data;
+    if (base64Data.indexOf("data:") === 0) {
+      const parts = base64Data.split(",");
+      const mimeMatch = parts[0].match(/:(.*?);/);
+      if (mimeMatch && mimeMatch[1]) {
+        contentType = mimeMatch[1];
+      }
+      base64String = parts[1];
+    }
+
+    const decodedBlob = Utilities.newBlob(
+      Utilities.base64Decode(base64String),
+      contentType,
+      filename || ("ChiThi_" + new Date().getTime() + ".pdf")
+    );
+
+    const file = targetFolder.createFile(decodedBlob);
+    try {
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    } catch (e) {}
+
+    const fileId = file.getId();
+    return {
+      fileId: fileId,
+      viewUrl: "https://drive.google.com/file/d/" + fileId + "/preview",
+      downloadUrl: "https://drive.google.com/uc?export=download&id=" + fileId
+    };
+  } catch (err) {
+    Logger.log("Lỗi upload PDF chỉ đạo: " + err.toString());
+    return { error: err.toString(), viewUrl: "", downloadUrl: "" };
+  }
+}
+
+/**
+ * Lấy danh sách văn bản chỉ đạo từ tab ThongCaoChiThi (4 cột siêu tinh gọn)
+ * Sắp xếp: Mới nhất lên đầu (Newest on top)
+ */
+function handleGetDirectives(ss) {
+  const sheet = getDirectivesSheet(ss);
+  const data = sheet.getDataRange().getDisplayValues();
+  if (data.length <= 1) {
+    return { success: true, directives: [], total: 0 };
+  }
+  const directives = [];
+  for (let i = 1; i < data.length; i++) {
+    const r = data[i];
+    const uploadTime = r[0] || "";
+    const fileName = r[1] || "";
+    if (!uploadTime && !fileName) continue;
+    const viewUrl = r[2] || "";
+    const downloadUrl = r[3] || "";
+
+    directives.push({
+      id: "VB_" + i,
+      timestamp: uploadTime,
+      createdAt: uploadTime.split(" ")[0] || uploadTime,
+      fileName: fileName,
+      previewUrl: viewUrl,
+      viewUrl: viewUrl,
+      downloadUrl: downloadUrl,
+      fileUrl: viewUrl || downloadUrl
+    });
+  }
+  // Sắp xếp văn bản mới nhất lên đầu
+  directives.reverse();
+  return { success: true, directives: directives, total: directives.length };
+}
+
+/**
+ * Đăng tải văn bản chỉ đạo PDF (Ghi 4 cột siêu tinh gọn vào Google Sheet)
+ * Cột: [Thời gian tải lên, Tên tệp tin PDF, Link xem trực tiếp, Link tải về]
+ */
+function handleCreateDirective(data, ss) {
+  const sheet = getDirectivesSheet(ss);
+  const now = new Date();
+  const timeStr = Utilities.formatDate(now, "Asia/Ho_Chi_Minh", "dd/MM/yyyy HH:mm");
+  const rawFileName = data.fileName || "Van_ban_chi_dao.pdf";
+
+  // Tải lên Google Drive
+  let viewUrl = data.viewUrl || data.previewUrl || "";
+  let downloadUrl = data.downloadUrl || "";
+  const fileBase64 = data.fileBase64 || (data.previewUrl && data.previewUrl.startsWith("data:") ? data.previewUrl : "");
+
+  if (fileBase64) {
+    const safeName = rawFileName.replace(/[^a-zA-Z0-9._\-]/g, "_");
+    const driveUpload = saveDirectivePdfToDrive(fileBase64, safeName);
+    if (driveUpload.viewUrl) {
+      viewUrl = driveUpload.viewUrl;
+      downloadUrl = driveUpload.downloadUrl;
+    }
+  }
+
+  // Ghi đúng 4 cột tối giản vào Sheet
+  sheet.appendRow([
+    timeStr,
+    sanitizeForSheet(rawFileName),
+    viewUrl,
+    downloadUrl
+  ]);
+
+  const newRow = sheet.getLastRow();
+  sheet.getRange(newRow, 1).setHorizontalAlignment("center");
+  if (viewUrl && viewUrl.indexOf("http") === 0) {
+    sheet.getRange(newRow, 3).setValue(viewUrl).setFontColor("#1d4ed8").setFontLine("underline");
+  }
+  if (downloadUrl && downloadUrl.indexOf("http") === 0) {
+    sheet.getRange(newRow, 4).setValue(downloadUrl).setFontColor("#1d4ed8").setFontLine("underline");
+  }
+
+  return {
+    success: true,
+    message: "Đã lưu văn bản PDF lên Google Drive và Google Sheet thành công!",
+    fileUrl: viewUrl,
+    previewUrl: viewUrl,
+    downloadUrl: downloadUrl,
+    directive: {
+      id: "VB_" + newRow,
+      timestamp: timeStr,
+      createdAt: timeStr.split(" ")[0],
+      fileName: rawFileName,
+      viewUrl: viewUrl,
+      previewUrl: viewUrl,
+      downloadUrl: downloadUrl
+    }
+  };
 }
 
 /**

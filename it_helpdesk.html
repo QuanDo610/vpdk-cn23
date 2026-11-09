@@ -4,24 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IT Helpdesk - Tiếp Nhận & Xử Lý Sự Cố Máy Tính</title>
+  <!-- Modular CSS (Parallel Load - No @import - System Fonts) -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/utilities.css">
+  <link rel="stylesheet" href="css/it_helpdesk.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <!-- Rào chắn kiểm soát truy cập (Zero-Trust Route Guard) -->
   <script src="js/auth.js"></script>
   <script>FamilyAuth.requireAuth();</script>
 
   <!-- Bộ Class Tiện Ích Tĩnh Cục Bộ (Thay thế 100% Tailwind CDN 2.9MB) -->
-  <link rel="stylesheet" href="css/utilities.css">
   <!-- Font Awesome 6 CDN -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Giao diện đồng bộ hệ sinh thái (Modular CSS) -->
-  <link rel="stylesheet" href="css/it_helpdesk.css">
   <!-- Layout Controller & Logic Phân Hệ IT Helpdesk -->
   <script src="js/layout.js" defer></script>
   <script src="js/it_helpdesk.js" defer></script>
   <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
 
@@ -48,11 +47,11 @@
     <!-- ================= THANH CHUYỂN ĐỔI TAB: 1. BẢNG THEO DÕI (100% WIDTH) | 2. BÁO SỰ CỐ MỚI ================= -->
     <div class="schedule-tab-nav flex flex-wrap items-center justify-between gap-3 mb-5">
       <div class="schedule-tab-group inline-flex bg-slate-200/90 p-1 rounded-2xl gap-1">
-        <button type="button" id="tabBtnHelpdeskRegister" class="schedule-tab-btn active" onclick="switchHelpdeskTab('form')">
+        <button type="button" id="tabBtnHelpdeskRegister" class="schedule-tab-btn active"  data-action="switch-tab" data-tab="form">
           <i class="fa-solid fa-triangle-exclamation mr-1.5 text-amber-500"></i>
           <span>1. Báo Sự Cố Mới (Tạo Ticket)</span>
         </button>
-        <button type="button" id="tabBtnHelpdeskList" class="schedule-tab-btn" onclick="switchHelpdeskTab('list')">
+        <button type="button" id="tabBtnHelpdeskList" class="schedule-tab-btn"  data-action="switch-tab" data-tab="list">
           <i class="fa-solid fa-table-list mr-1.5 text-blue-600"></i>
           <span>2. Bảng Theo Dõi Sự Cố (Monitoring)</span>
         </button>
@@ -73,7 +72,7 @@
           </h2>
           <p class="text-xs text-slate-500 mt-1">Điền thông tin sự cố để Tổ CNTT tiếp nhận và hỗ trợ tại chỗ nhanh chóng</p>
         </div>
-        <button type="button" onclick="switchHelpdeskTab('list')" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition border border-slate-200 shadow-2xs">
+        <button type="button"  data-action="switch-tab" data-tab="list" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition border border-slate-200 shadow-2xs">
           <i class="fa-solid fa-arrow-left"></i>
           <span>Quay lại bảng sự cố</span>
         </button>
@@ -99,7 +98,7 @@
         </span>
       </a>
 
-      <form id="ticketForm" onsubmit="handleSubmitTicket(event)" class="space-y-5">
+      <form id="ticketForm"  class="space-y-5">
 
         <!-- Thông tin Cán bộ gửi yêu cầu (Đã xác thực, responsive hoàn hảo) -->
         <div class="p-4 rounded-2xl bg-gradient-to-br from-blue-50/90 via-indigo-50/50 to-slate-50 border border-blue-200/80 shadow-2xs">
@@ -181,32 +180,32 @@
           <label class="block text-xs font-bold text-slate-700 mb-1.5">Loại sự cố gặp phải <span class="text-rose-500">*</span></label>
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             <label class="flex items-center p-2.5 rounded-xl border border-slate-200 cursor-pointer text-xs font-semibold hover:bg-slate-50 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50/60 has-[:checked]:text-blue-900 transition">
-              <input type="radio" name="category" value="Máy tính / Cây PC" checked class="sr-only">
+              <input type="radio" id="cat_pc" name="category" value="Máy tính / Cây PC" checked class="sr-only">
               <i class="fa-solid fa-computer text-blue-600 mr-2 text-sm"></i> Máy tính / PC
             </label>
 
             <label class="flex items-center p-2.5 rounded-xl border border-slate-200 cursor-pointer text-xs font-semibold hover:bg-slate-50 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50/60 has-[:checked]:text-blue-900 transition">
-              <input type="radio" name="category" value="Máy in / Scan" class="sr-only">
+              <input type="radio" id="cat_printer" name="category" value="Máy in / Scan" class="sr-only">
               <i class="fa-solid fa-print text-sky-600 mr-2 text-sm"></i> Máy in / Scan
             </label>
 
             <label class="flex items-center p-2.5 rounded-xl border border-slate-200 cursor-pointer text-xs font-semibold hover:bg-slate-50 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50/60 has-[:checked]:text-blue-900 transition">
-              <input type="radio" name="category" value="Mạng Internet / Wifi" class="sr-only">
+              <input type="radio" id="cat_network" name="category" value="Mạng Internet / Wifi" class="sr-only">
               <i class="fa-solid fa-wifi text-indigo-600 mr-2 text-sm"></i> Mạng / Internet
             </label>
 
             <label class="flex items-center p-2.5 rounded-xl border border-slate-200 cursor-pointer text-xs font-semibold hover:bg-slate-50 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50/60 has-[:checked]:text-blue-900 transition">
-              <input type="radio" name="category" value="Phần mềm / Office" class="sr-only">
+              <input type="radio" id="cat_software" name="category" value="Phần mềm / Office" class="sr-only">
               <i class="fa-solid fa-file-word text-emerald-600 mr-2 text-sm"></i> Phần mềm / Win
             </label>
 
             <label class="flex items-center p-2.5 rounded-xl border border-slate-200 cursor-pointer text-xs font-semibold hover:bg-slate-50 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50/60 has-[:checked]:text-blue-900 transition">
-              <input type="radio" name="category" value="Chữ ký số / Cổng DVC" class="sr-only">
+              <input type="radio" id="cat_token" name="category" value="Chữ ký số / Cổng DVC" class="sr-only">
               <i class="fa-solid fa-key text-amber-600 mr-2 text-sm"></i> Chữ ký số
             </label>
 
             <label class="flex items-center p-2.5 rounded-xl border border-slate-200 cursor-pointer text-xs font-semibold hover:bg-slate-50 has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50/60 has-[:checked]:text-blue-900 transition">
-              <input type="radio" name="category" value="Khác / Cần hỗ trợ" class="sr-only">
+              <input type="radio" id="cat_other" name="category" value="Khác / Cần hỗ trợ" class="sr-only">
               <i class="fa-solid fa-screwdriver text-purple-600 mr-2 text-sm"></i> Khác / Hỗ trợ
             </label>
           </div>
@@ -252,9 +251,9 @@
           </div>
 
           <!-- Drag & Drop Box -->
-          <div id="dropZone" onclick="triggerFileInput()"
+          <div id="dropZone" data-action="trigger-file"
             class="drop-zone relative rounded-2xl p-4 text-center cursor-pointer bg-slate-50 hover:bg-slate-100 transition">
-            <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)" class="hidden">
+            <input type="file" id="fileInput" accept="image/*"  class="hidden">
             
             <div id="dropZonePrompt" class="py-3">
               <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center mx-auto mb-2 text-base">
@@ -267,7 +266,7 @@
             <!-- Image Preview Box -->
             <div id="imagePreviewContainer" class="hidden relative inline-block text-left">
               <img id="imagePreview" src="" alt="Ảnh chụp lỗi" class="h-32 rounded-xl object-contain border border-slate-200 shadow-sm mx-auto">
-              <button type="button" onclick="removeSelectedImage(event)"
+              <button type="button" data-action="remove-image"
                 class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs shadow-md hover:bg-rose-700"
                 title="Xoá ảnh này">
                 <i class="fa-solid fa-xmark"></i>
@@ -286,7 +285,7 @@
             <i class="fa-solid fa-paper-plane text-xs"></i>
             <span>GỬI YÊU CẦU HỖ TRỢ</span>
           </button>
-          <button type="button" onclick="switchHelpdeskTab('list')"
+          <button type="button"  data-action="switch-tab" data-tab="list"
             class="px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition border border-slate-200">
             Hủy bỏ
           </button>
@@ -314,7 +313,7 @@
         </div>
 
         <div class="flex items-center gap-2 self-start sm:self-auto">
-          <button onclick="fetchTickets(true)" id="btnRefresh"
+          <button type="button" data-action="refresh-tickets" id="btnRefresh"
             class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center space-x-1.5 transition">
             <i class="fa-solid fa-arrows-rotate" id="refreshIcon"></i>
             <span>Làm mới dữ liệu</span>
@@ -371,11 +370,11 @@
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
             <i class="fa-solid fa-magnifying-glass text-xs"></i>
           </div>
-          <input type="text" id="filterSearch" oninput="renderTickets()" placeholder="Tìm theo tên người gửi, số ĐT, phòng ban, thông báo lỗi..."
+          <input type="text" id="filterSearch"  placeholder="Tìm theo tên người gửi, số ĐT, phòng ban, thông báo lỗi..."
             class="w-full pl-8 pr-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600">
         </div>
 
-        <select id="filterStatus" onchange="renderTickets()"
+        <select id="filterStatus" 
           class="px-3 py-2 rounded-xl border border-slate-200 text-xs bg-white text-slate-700 font-medium">
           <option value="ALL">Tất cả trạng thái</option>
           <option value="Chờ xử lý">Chỉ xem: Chờ xử lý</option>
@@ -425,7 +424,7 @@
         <div class="text-xs font-bold text-slate-700" id="emptyStateTitle">Chưa có ticket nào phù hợp</div>
         <p class="text-[11px] text-slate-400 mt-0.5" id="emptyStateDesc">Không tìm thấy yêu cầu sự cố nào trong bộ lọc này.</p>
         <div id="emptyStateAction" class="mt-3.5 hidden">
-          <button type="button" onclick="switchHelpdeskTab('form')" class="px-4 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-sm transition active:scale-95">
+          <button type="button"  data-action="switch-tab" data-tab="form" class="px-4 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-sm transition active:scale-95">
             <i class="fa-solid fa-plus text-amber-400"></i> Báo sự cố mới ngay
           </button>
         </div>
@@ -435,8 +434,8 @@
   </main>
 
   <!-- ================= POPUP XEM CHI TIẾT TICKET (DETAIL MODAL) ================= -->
-  <div id="modalTicketDetail" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-xs hidden" onclick="if(event.target === this) closeTicketDetail()">
-    <div class="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-scale-in" onclick="event.stopPropagation()">
+  <div id="modalTicketDetail" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-xs hidden" data-action="backdrop-close-detail">
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-scale-in" data-stop-propagation="true">
       <!-- Modal Header -->
       <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
         <div class="flex items-center space-x-2.5">
@@ -451,7 +450,7 @@
             <p class="text-[11px] text-slate-400 mt-0.5" id="detailTicketTime">Gửi lúc: ...</p>
           </div>
         </div>
-        <button type="button" onclick="closeTicketDetail()" class="w-8 h-8 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition">
+        <button type="button" data-action="close-detail" class="w-8 h-8 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition">
           <i class="fa-solid fa-xmark text-sm"></i>
         </button>
       </div>
@@ -505,7 +504,7 @@
             <span class="text-blue-600 text-[10px] font-normal">Bấm vào ảnh để phóng to</span>
           </div>
           <div class="text-center">
-            <img id="detailImagePreview" src="" alt="Ảnh lỗi" class="max-h-48 rounded-xl object-contain mx-auto cursor-pointer border border-slate-200 hover:opacity-90 shadow-2xs" onclick="openImageViewerFromDetail()">
+            <img id="detailImagePreview" src="" alt="Ảnh lỗi" class="max-h-48 rounded-xl object-contain mx-auto cursor-pointer border border-slate-200 hover:opacity-90 shadow-2xs" data-action="open-image-from-detail">
           </div>
         </div>
 
@@ -514,7 +513,7 @@
 
       <!-- Modal Footer -->
       <div class="p-3 sm:p-4 border-t border-slate-100 flex justify-end bg-slate-50/50">
-        <button type="button" onclick="closeTicketDetail()" class="px-5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs transition">
+        <button type="button" data-action="close-detail" class="px-5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs transition">
           Đóng
         </button>
       </div>
@@ -522,8 +521,8 @@
   </div>
 
   <!-- ================= POPUP XEM ẢNH PHÓNG TO (IMAGE VIEWER MODAL) ================= -->
-  <div id="modalImageViewer" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm hidden" onclick="closeImageViewer()">
-    <div class="relative max-w-4xl w-full max-h-[92vh] bg-white rounded-3xl p-4 shadow-2xl overflow-hidden flex flex-col" onclick="event.stopPropagation()">
+  <div id="modalImageViewer" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm hidden" data-action="close-image">
+    <div class="relative max-w-4xl w-full max-h-[92vh] bg-white rounded-3xl p-4 shadow-2xl overflow-hidden flex flex-col" data-stop-propagation="true">
       <div class="flex items-center justify-between pb-3 px-1 border-b border-slate-100">
         <div class="flex items-center space-x-2">
           <span class="w-7 h-7 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center text-xs font-bold">
@@ -533,10 +532,10 @@
         </div>
         <div class="flex items-center space-x-2">
           <a id="modalDriveLink" target="_blank" href="#" title="Mở ảnh gốc trong tab mới trên Google Drive"
-            class="hidden px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-bold border border-blue-200 transition items-center gap-1.5">
+            class="hidden px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-bold border border-blue-200 transition items-center gap-1.5" rel="noopener noreferrer">
             <i class="fa-brands fa-google-drive"></i> Mở trên Drive <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
           </a>
-          <button onclick="closeImageViewer()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition">
+          <button type="button" data-action="close-image" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
@@ -552,7 +551,7 @@
 
         <!-- Ảnh chính -->
         <img id="modalFullImg" src="" alt="" class="max-h-[75vh] w-auto rounded-xl object-contain shadow-sm hidden"
-          onload="onModalImgLoaded()" onerror="onModalImgError()">
+           >
 
         <!-- Thông báo nếu ảnh không stream được trong trình duyệt -->
         <div id="modalImgError" class="hidden p-6 text-center max-w-md mx-auto">
@@ -564,7 +563,7 @@
             Do Google Drive chặn nhúng ảnh trực tiếp vào trang web từ bên ngoài hoặc cookie trình duyệt đang tắt. Bạn có thể mở xem ảnh gốc trực tiếp trên Google Drive bằng nút dưới đây:
           </p>
           <a id="btnOpenDriveDirect" target="_blank" href="#"
-            class="inline-flex items-center px-5 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-md shadow-blue-700/20 gap-2 transition">
+            class="inline-flex items-center px-5 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow-md shadow-blue-700/20 gap-2 transition" rel="noopener noreferrer">
             <i class="fa-brands fa-google-drive text-sm"></i>
             <span>Mở Xem Ảnh Gốc Trên Google Drive</span>
             <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
@@ -594,7 +593,7 @@
         </div>
       </div>
 
-      <button id="btnDismissSuccessModal" onclick="document.getElementById('modalSuccess').classList.add('hidden'); switchHelpdeskTab('list');"
+      <button type="button" id="btnDismissSuccessModal" data-action="dismiss-success"
         class="w-full py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-xs shadow-md transition">
         Đã hiểu, theo dõi bảng sự cố
       </button>

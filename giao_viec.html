@@ -4,22 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lãnh Đạo Giao Việc & Bảng Tiến Độ - Chi Nhánh Số 23</title>
+  <!-- Modular CSS (Parallel Load - No @import - System Fonts) -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/utilities.css">
+  <link rel="stylesheet" href="css/flatpickr.min.css">
+  <link rel="stylesheet" href="css/giao_viec.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <!-- Rào chắn kiểm soát truy cập (Zero-Trust Route Guard) -->
   <script src="js/auth.js"></script>
   <script>FamilyAuth.requireAuth();</script>
 
   <!-- Bộ Class Tiện Ích Tĩnh Cục Bộ (Thay thế 100% Tailwind CDN 2.9MB) -->
-  <link rel="stylesheet" href="css/utilities.css">
 
   <!-- Font Awesome 6.5.1 CDN -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <!-- Thư viện chọn ngày Flatpickr -->
-  <link rel="stylesheet" href="css/flatpickr.min.css">
-
-  <!-- Giao diện đồng bộ hệ sinh thái (Modular CSS) -->
-  <link rel="stylesheet" href="css/giao_viec.css">
   
   <!-- Layout Controller & Logic Phân Hệ Giao Việc -->
   <script src="js/layout.js" defer></script>
@@ -27,9 +28,6 @@
   <script src="js/giao_viec.js" defer></script>
 
   <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body class="bg-[#f8fafc] text-slate-800 font-sans min-h-screen flex flex-col antialiased">
 
@@ -49,103 +47,353 @@
         <p class="page-subtitle">Phân công nhiệm vụ, chỉ đạo xử lý văn bản, giám sát tiến độ cán bộ Chi nhánh số 23</p>
       </div>
       <div class="flex items-center gap-2">
-        <button id="btnExportTaskCsv" class="btn btn-success btn-sm" title="Xuất danh sách công việc ra file Excel">
+        <button type="button" id="btnExportTaskCsv" class="btn btn-success btn-sm" title="Xuất danh sách công việc ra file Excel">
           <i class="fa-solid fa-file-excel"></i>
           <span>Xuất Bảng Excel</span>
         </button>
-        <button id="btnPrintTable" class="btn btn-secondary btn-sm" title="In báo cáo tiến độ công việc">
+        <button type="button" id="btnPrintTable" class="btn btn-secondary btn-sm" title="In báo cáo tiến độ công việc">
           <i class="fa-solid fa-print"></i>
           <span>In Báo Cáo</span>
         </button>
       </div>
     </div>
 
-    <!-- 5 Thẻ KPI Thống Kê Tổng Quan -->
-    <section class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-      <!-- KPI 1: Tổng số việc -->
-      <div class="kpi-metric-card">
-        <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center text-xl shrink-0 font-bold border border-blue-100">
-          <i class="fa-solid fa-folder-open"></i>
-        </div>
-        <div class="min-w-0">
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Tổng công việc</p>
-          <h3 id="kpiTotalTasks" class="text-2xl font-extrabold text-slate-900 leading-tight">0</h3>
-          <p class="text-[11px] text-slate-500 truncate">Nhiệm vụ đã phát lệnh</p>
-        </div>
-      </div>
-
-      <!-- KPI 2: Đang thực hiện -->
-      <div class="kpi-metric-card">
-        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0 font-bold border border-amber-100">
-          <i class="fa-solid fa-clock-rotate-left"></i>
-        </div>
-        <div class="min-w-0">
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Đang thực hiện</p>
-          <h3 id="kpiInProgressTasks" class="text-2xl font-extrabold text-amber-600 leading-tight">0</h3>
-          <p class="text-[11px] text-amber-600 font-medium">Chuyên viên đang xử lý</p>
-        </div>
-      </div>
-
-      <!-- KPI 3: Quá hạn (Deadline Alert) -->
-      <div class="kpi-metric-card">
-        <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl shrink-0 font-bold border border-rose-100">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-        </div>
-        <div class="min-w-0">
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Quá hạn Deadline</p>
-          <h3 id="kpiOverdueTasks" class="text-2xl font-extrabold text-rose-600 leading-tight">0</h3>
-          <p id="kpiOverdueBadge" class="text-[11px] font-semibold text-rose-600 truncate">Cần đôn đốc gấp</p>
-        </div>
-      </div>
-
-      <!-- KPI 4: Hoàn thành -->
-      <div class="kpi-metric-card">
-        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0 font-bold border border-emerald-100">
-          <i class="fa-solid fa-circle-check"></i>
-        </div>
-        <div class="min-w-0">
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Đã hoàn thành</p>
-          <h3 id="kpiCompletedTasks" class="text-2xl font-extrabold text-emerald-600 leading-tight">0</h3>
-          <p class="text-[11px] text-emerald-600 font-medium">Đạt kết quả yêu cầu</p>
-        </div>
-      </div>
-
-      <!-- KPI 5: Tỷ lệ hoàn thành -->
-      <div class="col-span-2 lg:col-span-1 bg-gradient-to-br from-blue-900 to-blue-800 rounded-2xl p-4 text-white shadow-sm flex items-center gap-3.5 border border-blue-700">
-        <div class="w-12 h-12 rounded-xl bg-white/10 text-amber-400 flex items-center justify-center text-xl shrink-0 font-bold border border-white/20">
-          <i class="fa-solid fa-chart-line"></i>
-        </div>
-        <div class="min-w-0">
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-300">Tỷ lệ hoàn thành</p>
-          <h3 id="kpiCompletionRate" class="text-2xl font-extrabold text-white leading-tight">0.0%</h3>
-          <p class="text-[11px] text-amber-300 font-medium">Hiệu suất chỉ đạo</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== THANH ĐIỀU HƯỚNG TAB: 1. BẢNG TIẾN ĐỘ | 2. GIAO VIỆC MỚI ==================== -->
+    <!-- ==================== THANH ĐIỀU HƯỚNG TAB: 1. THÔNG CÁO & CHỈ THỊ PDF | 2. GIAO VIỆC & CHỈ ĐẠO | 3. BẢNG TIẾN ĐỘ NHIỆM VỤ ==================== -->
     <div class="schedule-tab-nav">
       <div class="schedule-tab-group">
-        <button type="button" id="tabBtnTracking" class="schedule-tab-btn active" data-tab-action="tracking">
-          <i class="fa-solid fa-table-list mr-1 text-blue-600"></i>
-          <span>1. Bảng Theo Dõi Tiến Độ</span>
-          <span id="tabBadgeCount" class="tab-badge">0</span>
+        <button type="button" id="tabBtnDirectives" class="schedule-tab-btn active" data-tab-action="directives">
+          <i class="fa-solid fa-bullhorn mr-1 text-rose-500"></i>
+          <span>1. Thông Cáo & Chỉ Thị PDF</span>
+          <span id="directiveBadgeCount" class="tab-badge bg-rose-500 text-white font-bold">Mới</span>
         </button>
         <button type="button" id="tabBtnAssign" class="schedule-tab-btn" data-tab-action="assign">
           <i class="fa-solid fa-paper-plane mr-1 text-amber-500"></i>
-          <span>2. Giao Việc & Chỉ Đạo Mới</span>
+          <span>2. Giao Việc & Chỉ Đạo</span>
+        </button>
+        <button type="button" id="tabBtnTracking" class="schedule-tab-btn" data-tab-action="tracking">
+          <i class="fa-solid fa-table-list mr-1 text-blue-600"></i>
+          <span>3. Bảng Tiến Độ Nhiệm VỤ</span>
+          <span id="tabBadgeCount" class="tab-badge">0</span>
         </button>
       </div>
 
-      <!-- Nút hành động nhanh: Mở Form giao việc mới -->
-      <button type="button" id="btnQuickOpenAssign" class="btn btn-primary inline-flex items-center gap-2" data-tab-action="assign">
-        <i class="fa-solid fa-plus text-amber-300"></i>
-        <span><strong>Giao Việc Mới</strong></span>
-      </button>
+      <div class="flex items-center gap-2">
+        <!-- Nút hành động nhanh: Đăng văn bản PDF mới (Chỉ dành riêng Giám đốc Nguyễn Chiến Thắng & IT Admin) -->
+        <button type="button" id="btnQuickOpenUploadDirective" class="btn btn-danger inline-flex items-center gap-2 hidden" onclick="triggerDirectPdfUpload()">
+          <i class="fa-solid fa-cloud-arrow-up text-white"></i>
+          <span><strong>Đăng Văn Bản PDF Mới</strong></span>
+        </button>
+        <!-- Nút hành động nhanh: Mở Form giao việc mới -->
+        <button type="button" id="btnQuickOpenAssign" class="btn btn-primary inline-flex items-center gap-2 hidden" data-tab-action="assign">
+          <i class="fa-solid fa-plus text-amber-300"></i>
+          <span><strong>Giao Việc Mới</strong></span>
+        </button>
+      </div>
     </div>
 
-    <!-- ==================== TAB 1: BẢNG THEO DÕI TIẾN ĐỘ (MẶC ĐỊNH RỘNG 100% - CHỐNG BỂ CHỮ) ==================== -->
-    <section id="panelTracking" class="tab-panel space-y-4">
+    <!-- ==================== TAB 1: THÔNG CÁO & CHỈ THỊ PDF (CHUẨN DOCUMENT VIEWER 2 CỘT) ==================== -->
+    <section id="panelDirectives" class="tab-panel space-y-4">
+
+      <!-- Main Layout Document Viewer: Left Sidebar Selector + Right Main Viewer Area (2 Cột Chuẩn Tỷ Lệ) -->
+      <div class="directive-viewer-layout">
+        
+        <!-- CỘT TRÁI: DOCUMENT SELECTOR (SIDEBAR) - Chuẩn phong cách Document Viewer -->
+        <aside class="directive-sidebar-col">
+          <div class="directive-sidebar-box">
+            
+            <!-- Input file ẩn để tiếp nhận tệp khi bấm Đăng Văn Bản PDF Mới -->
+            <input type="file" id="quickDirectiveFileInput" accept=".pdf,application/pdf" class="hidden">
+
+            <!-- Ô tìm kiếm văn bản -->
+            <div class="relative mb-3">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs pointer-events-none"></i>
+              <input type="text" id="searchDirectiveInput" placeholder="Tìm tên tệp, công văn, số hiệu..."
+                     class="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:bg-white focus:border-sky-500 transition">
+            </div>
+
+            <!-- Header danh mục + đếm số lượng -->
+            <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2.5 flex justify-between items-center pb-2 border-b border-slate-100">
+              <span class="flex items-center gap-1.5"><i class="fa-solid fa-folder-tree text-rose-600"></i> Danh Sách Văn Bản Gốc</span>
+              <span id="directiveCountBadge" class="px-1.5 py-0.5 rounded bg-slate-100 text-[10px] text-sky-700 font-bold border border-slate-200 font-mono">0 files</span>
+            </div>
+
+            <!-- Danh sách cuộn văn bản (Sắp xếp từ mới nhất tới cũ nhất) -->
+            <nav id="directiveListContainer" class="directive-scroll-list">
+              <!-- Render động bằng JavaScript từ mới tới cũ -->
+            </nav>
+          </div>
+        </aside>
+
+        <!-- CỘT PHẢI: TRÌNH ĐỌC PDF TRỰC TIẾP (DOCUMENT VIEWER) -->
+        <main class="directive-main-col">
+          <article class="directive-view-panel p-0 overflow-hidden border border-slate-200 rounded-xl bg-white shadow-xs">
+            
+            <!-- Khung nhúng PDF trực tiếp (Iframe) Chiếm Trọn Toàn Bộ Không Gian -->
+            <div id="directiveIframeWrapper" class="directive-iframe-wrapper">
+              <iframe id="directivePdfIframe" src="" class="directive-pdf-iframe" title="Trình xem tài liệu PDF"></iframe>
+              <div id="directiveEmptyPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-slate-50">
+                <div class="w-16 h-16 rounded-2xl bg-rose-50 text-rose-500 border border-rose-200 flex items-center justify-center text-3xl mb-3 shadow-xs">
+                  <i class="fa-solid fa-file-pdf"></i>
+                </div>
+                <h4 class="font-bold text-slate-800 text-sm sm:text-base">Chưa chọn văn bản để xem</h4>
+                <p class="text-xs text-slate-500 max-w-sm mt-1">Đồng chí vui lòng nhấp vào một văn bản trong danh sách bên trái để đọc trực tiếp toàn văn nội dung tệp PDF.</p>
+              </div>
+            </div>
+
+          </article>
+        </main>
+
+      </div>
+
+    </section>
+
+    <!-- ==================== TAB 2: FORM GIAO VIỆC & CHỈ ĐẠO ==================== -->
+    <section id="panelAssign" class="tab-panel hidden space-y-4">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        
+        <!-- Header Phiếu Giao Việc có Nút Quay Lại -->
+        <div class="bg-gradient-to-r from-blue-900 to-blue-800 text-white px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+              <i class="fa-solid fa-feather-pointed"></i>
+            </div>
+            <div>
+              <h2 class="text-base font-bold text-white">PHIẾU PHÁT LỆNH GIAO VIỆC & ĐÔN ĐỐC TIẾN ĐỘ</h2>
+              <p class="text-xs text-slate-300">Phân công nhiệm vụ cụ thể theo đúng thẩm quyền và tổ chuyên môn (75 nhân sự)</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <button type="button" id="btnBackToTracking" class="btn btn-secondary btn-sm bg-white/10 hover:bg-white/20 text-white border-white/20">
+              <i class="fa-solid fa-arrow-left"></i>
+              <span>Quay lại bảng tiến độ</span>
+            </button>
+            <span class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-lg font-mono font-semibold">
+              Chi nhánh 23
+            </span>
+          </div>
+        </div>
+
+        <form id="taskAssignmentForm" class="p-6 space-y-6">
+          <!-- Hàng 1: Người giao việc & Tổ nhận việc -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <!-- 1. Người giao việc (Tự động cố định theo tài khoản đang đăng nhập) -->
+            <div>
+              <label for="assignLeader" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Lãnh đạo giao việc / Người chỉ đạo <span class="text-rose-500">*</span>
+              </label>
+              <div class="relative">
+                <input type="text" id="assignLeader" name="assignLeader" readonly required
+                  class="w-full bg-slate-100 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm font-bold focus:outline-hidden cursor-not-allowed select-none transition"
+                  placeholder="Đang nhận diện tài khoản đăng nhập...">
+                <span class="absolute right-3.5 top-3 text-slate-400 text-xs">
+                  <i class="fa-solid fa-lock"></i>
+                </span>
+              </div>
+              <p id="assignLeaderDeptNote" class="text-[11px] text-blue-700 font-medium mt-1 truncate">Tự động nhận diện theo tài khoản đăng nhập</p>
+            </div>
+
+            <!-- 2. Tổ chuyên môn nhận việc -->
+            <div>
+              <label for="filterStaffDept" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Tổ chuyên môn nhận việc
+              </label>
+              <div class="relative">
+                <select id="filterStaffDept" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                  <option value="ALL">-- Tất cả cán bộ trong cơ quan (75 nhân sự) --</option>
+                  <option value="Tổ Kỹ thuật Địa chính và Lưu trữ">Tổ Kỹ thuật Địa chính và Lưu trữ (27)</option>
+                  <option value="Tổ Đăng ký cấp GCN">Tổ Đăng ký cấp GCN (27)</option>
+                  <option value="Tổ Hành chính Tổng hợp">Tổ Hành chính Tổng hợp (18)</option>
+                  <option value="Ban Giám đốc">Ban Giám đốc (3)</option>
+                </select>
+                <span id="lockStaffDeptIcon" class="absolute right-8 top-3 text-amber-500 text-xs hidden">
+                  <i class="fa-solid fa-lock"></i>
+                </span>
+              </div>
+              <p id="filterStaffDeptHint" class="text-[11px] text-slate-500 mt-1">Chọn tổ để thu hẹp danh sách cán bộ bên cạnh (hoặc để Tất cả)</p>
+            </div>
+
+            <!-- 3. Cán bộ nhận nhiệm vụ -->
+            <div>
+              <label for="assignStaff" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Cán bộ tiếp nhận nhiệm vụ <span class="text-rose-500">*</span>
+              </label>
+              <div class="relative">
+                <select id="assignStaff" name="assignStaff" required class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                  <option value="" disabled selected>-- Chọn cán bộ nhận việc --</option>
+                </select>
+              </div>
+              <p id="assignStaffDetail" class="text-[11px] text-slate-500 mt-1 truncate">Chức vụ và thông tin cán bộ</p>
+            </div>
+          </div>
+
+          <!-- Hàng 2: Tên nhiệm vụ & Độ khẩn cấp -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+            <div class="md:col-span-3">
+              <label for="taskTitle" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Tên nhiệm vụ / Nội dung chỉ đạo cụ thể <span class="text-rose-500">*</span>
+              </label>
+              <input type="text" id="taskTitle" name="taskTitle" required placeholder="Ví dụ: Kiểm tra hồ sơ cấp GCN số 1234/2026/GCN, rà soát tọa độ..."
+                class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+            </div>
+
+            <div>
+              <label for="taskPriority" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Mức độ khẩn cấp <span class="text-rose-500">*</span>
+              </label>
+              <select id="taskPriority" name="taskPriority" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                <option value="Bình thường" selected>🟢 Bình thường</option>
+                <option value="Khẩn">🟠 Khẩn (Ưu tiên)</option>
+                <option value="Hỏa tốc">🔴 Hỏa tốc (Xử lý ngay)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Hàng 3: Căn cứ giao việc & Đính kèm file -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label for="taskDocRef" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Văn bản căn cứ / Số hiệu hồ sơ liên quan
+              </label>
+              <input type="text" id="taskDocRef" name="taskDocRef" placeholder="VD: Công văn 123/STNMT, Hồ sơ số 00458/TN..."
+                class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+            </div>
+
+            <!-- Upload file đính kèm -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Tệp tin đính kèm (Văn bản, Báo cáo, Bản vẽ...)
+              </label>
+              <div class="relative flex items-center">
+                <input type="file" id="taskFileInput" class="hidden">
+                <button type="button" onclick="document.getElementById('taskFileInput').click()" class="btn btn-secondary btn-sm w-full justify-center h-[42px] border-dashed border-2 border-slate-300 hover:border-blue-500">
+                  <i class="fa-solid fa-paperclip text-slate-500 mr-2"></i>
+                  <span id="fileUploadLabel" class="text-xs text-slate-600 truncate">Chọn tệp đính kèm (PDF, DOCX, XLSX, PNG... Tối đa 15MB)</span>
+                </button>
+              </div>
+              <div id="fileUploadPreview" class="hidden mt-1.5 text-xs text-emerald-700 font-semibold flex items-center justify-between bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
+                <!-- Tên file preview và nút xóa -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Hàng 4: Hạn chót hoàn thành (Deadline) & Ý kiến chỉ đạo -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div>
+              <label for="taskDeadline" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Hạn chót hoàn thành (Deadline) <span class="text-rose-500">*</span>
+              </label>
+              <div class="relative">
+                <input type="text" id="taskDeadline" name="taskDeadline" required placeholder="Chọn ngày giờ hết hạn..."
+                  class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                <span class="absolute right-3.5 top-3 text-slate-400 text-xs pointer-events-none">
+                  <i class="fa-regular fa-calendar-days"></i>
+                </span>
+              </div>
+            </div>
+
+            <div class="md:col-span-2">
+              <label for="leaderGuidance" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Ý kiến chỉ đạo chi tiết của Lãnh đạo <span class="text-rose-500">*</span>
+              </label>
+              <textarea id="leaderGuidance" name="leaderGuidance" required rows="2" placeholder="Ghi rõ yêu cầu phối hợp, quy trình xử lý, các mốc thời gian báo cáo sơ bộ..."
+                class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition leading-relaxed"></textarea>
+            </div>
+          </div>
+
+          <!-- Ghi chú bổ sung -->
+          <div>
+            <label for="taskNote" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              Ghi chú bổ sung (Tùy chọn)
+            </label>
+            <input type="text" id="taskNote" name="taskNote" placeholder="Ghi chú thêm về phương thức liên hệ, lưu ý đặc biệt..."
+              class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+          </div>
+
+          <!-- Nút hành động -->
+          <div class="pt-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
+            <span class="text-xs text-slate-400 italic">
+              <i class="fa-solid fa-shield-halved text-blue-600 mr-1"></i> Lệnh giao việc sẽ tự động cập nhật thời gian thực vào bảng tiến độ
+            </span>
+            <div class="flex items-center gap-3">
+              <button type="button" id="btnResetTaskForm" class="btn btn-secondary text-xs">
+                <i class="fa-solid fa-rotate-left mr-1"></i> Làm mới biểu mẫu
+              </button>
+              <button type="submit" id="btnSubmitTask" class="btn btn-primary text-xs font-bold px-6 py-2.5 shadow-md">
+                <i class="fa-solid fa-paper-plane mr-2 text-amber-300"></i> PHÁT LỆNH GIAO VIỆC
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: BẢNG THEO DÕI TIẾN ĐỘ ==================== -->
+    <section id="panelTracking" class="tab-panel hidden space-y-4">
+
+      <!-- 5 Thẻ KPI Thống Kê Tiến Độ Nhiệm Vụ -->
+      <section id="taskKpiSection" class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+        <!-- KPI 1: Tổng số việc -->
+        <div class="kpi-metric-card">
+          <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center text-xl shrink-0 font-bold border border-blue-100">
+            <i class="fa-solid fa-folder-open"></i>
+          </div>
+          <div class="min-w-0">
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Tổng công việc</p>
+            <h3 id="kpiTotalTasks" class="text-2xl font-extrabold text-slate-900 leading-tight">0</h3>
+            <p class="text-[11px] text-slate-500 truncate">Nhiệm vụ đã phát lệnh</p>
+          </div>
+        </div>
+
+        <!-- KPI 2: Đang thực hiện -->
+        <div class="kpi-metric-card">
+          <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0 font-bold border border-amber-100">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+          </div>
+          <div class="min-w-0">
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Đang thực hiện</p>
+            <h3 id="kpiInProgressTasks" class="text-2xl font-extrabold text-amber-600 leading-tight">0</h3>
+            <p class="text-[11px] text-amber-600 font-medium">Chuyên viên đang xử lý</p>
+          </div>
+        </div>
+
+        <!-- KPI 3: Quá hạn (Deadline Alert) -->
+        <div class="kpi-metric-card">
+          <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl shrink-0 font-bold border border-rose-100">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <div class="min-w-0">
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Quá hạn Deadline</p>
+            <h3 id="kpiOverdueTasks" class="text-2xl font-extrabold text-rose-600 leading-tight">0</h3>
+            <p id="kpiOverdueBadge" class="text-[11px] font-semibold text-rose-600 truncate">Cần đôn đốc gấp</p>
+          </div>
+        </div>
+
+        <!-- KPI 4: Hoàn thành -->
+        <div class="kpi-metric-card">
+          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0 font-bold border border-emerald-100">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div class="min-w-0">
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Đã hoàn thành</p>
+            <h3 id="kpiCompletedTasks" class="text-2xl font-extrabold text-emerald-600 leading-tight">0</h3>
+            <p class="text-[11px] text-emerald-600 font-medium">Đạt kết quả yêu cầu</p>
+          </div>
+        </div>
+
+        <!-- KPI 5: Tỷ lệ hoàn thành -->
+        <div class="col-span-2 lg:col-span-1 bg-gradient-to-br from-blue-900 to-blue-800 rounded-2xl p-4 text-white shadow-sm flex items-center gap-3.5 border border-blue-700">
+          <div class="w-12 h-12 rounded-xl bg-white/10 text-amber-400 flex items-center justify-center text-xl shrink-0 font-bold border border-white/20">
+            <i class="fa-solid fa-chart-line"></i>
+          </div>
+          <div class="min-w-0">
+            <p class="text-xs font-semibold uppercase tracking-wider text-slate-300">Tỷ lệ hoàn thành</p>
+            <h3 id="kpiCompletionRate" class="text-2xl font-extrabold text-white leading-tight">0.0%</h3>
+            <p class="text-[11px] text-amber-300 font-medium">Hiệu suất chỉ đạo</p>
+          </div>
+        </div>
+      </section>
+
       <!-- Huy hiệu phạm vi vai trò (RBAC) -->
       <div class="flex items-center justify-between pb-1">
         <div id="taskRoleScopeBadge" class="hidden"></div>
@@ -230,187 +478,6 @@
       </div>
     </section>
 
-    <!-- ==================== TAB 2: FORM GIAO VIỆC & CHỈ ĐẠO ==================== -->
-    <section id="panelAssign" class="tab-panel hidden space-y-4">
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        
-        <!-- Header Phiếu Giao Việc có Nút Quay Lại -->
-        <div class="bg-gradient-to-r from-blue-900 to-blue-800 text-white px-6 py-4 flex flex-wrap items-center justify-between gap-3">
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
-              <i class="fa-solid fa-feather-pointed"></i>
-            </div>
-            <div>
-              <h2 class="text-base font-bold text-white">PHIẾU PHÁT LỆNH GIAO VIỆC & ĐÔN ĐỐC TIẾN ĐỘ</h2>
-              <p class="text-xs text-slate-300">Phân công nhiệm vụ cụ thể theo đúng thẩm quyền và tổ chuyên môn (75 nhân sự)</p>
-            </div>
-          </div>
-          
-          <div class="flex items-center gap-2">
-            <button type="button" id="btnBackToTracking" class="btn btn-secondary btn-sm bg-white/10 hover:bg-white/20 text-white border-white/20">
-              <i class="fa-solid fa-arrow-left"></i>
-              <span>Quay lại bảng tiến độ</span>
-            </button>
-            <span class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-lg font-mono font-semibold">
-              Chi nhánh 23
-            </span>
-          </div>
-        </div>
-
-        <form id="taskAssignmentForm" class="p-6 space-y-6">
-          <!-- Hàng 1: Người giao việc & Tổ nhận việc -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            <!-- 1. Người giao việc (Tự động cố định theo tài khoản đang đăng nhập) -->
-            <div>
-              <label for="assignLeader" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Lãnh đạo giao việc / Người chỉ đạo <span class="text-rose-500">*</span>
-              </label>
-              <div class="relative">
-                <input type="text" id="assignLeader" name="assignLeader" readonly required
-                  class="w-full bg-slate-100 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm font-bold focus:outline-hidden cursor-not-allowed select-none transition"
-                  placeholder="Đang nhận diện tài khoản đăng nhập...">
-                <span class="absolute right-3.5 top-3 text-slate-400 text-xs">
-                  <i class="fa-solid fa-lock"></i>
-                </span>
-              </div>
-              <p id="assignLeaderDeptNote" class="text-[11px] text-blue-700 font-medium mt-1 truncate">Tự động nhận diện theo tài khoản đăng nhập</p>
-            </div>
-
-            <!-- 2. Tổ chuyên môn nhận việc -->
-            <div>
-              <label for="filterStaffDept" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Tổ chuyên môn nhận việc
-              </label>
-              <div class="relative">
-                <select id="filterStaffDept" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-                  <option value="ALL">-- Tất cả cán bộ trong cơ quan (75 nhân sự) --</option>
-                  <option value="Tổ Kỹ thuật Địa chính và Lưu trữ">Tổ Kỹ thuật Địa chính và Lưu trữ (27)</option>
-                  <option value="Tổ Đăng ký cấp GCN">Tổ Đăng ký cấp GCN (27)</option>
-                  <option value="Tổ Hành chính Tổng hợp">Tổ Hành chính Tổng hợp (18)</option>
-                  <option value="Ban Giám đốc">Ban Giám đốc (3)</option>
-                </select>
-                <span id="lockStaffDeptIcon" class="hidden absolute right-8 top-3 text-amber-500 text-xs">
-                  <i class="fa-solid fa-lock"></i>
-                </span>
-              </div>
-              <p id="filterStaffDeptHint" class="text-[11px] text-slate-500 mt-1">Chọn tổ để thu hẹp danh sách cán bộ bên cạnh</p>
-            </div>
-
-            <!-- 3. Cán bộ tiếp nhận việc (Tự động nạp từ Sheet TaiKhoan) -->
-            <div>
-              <label for="assignStaff" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Cán bộ tiếp nhận việc <span class="text-rose-500">*</span>
-              </label>
-              <select id="assignStaff" required class="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm font-bold text-blue-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-                <option value="" disabled selected>-- Chọn cán bộ nhận việc --</option>
-              </select>
-              <p id="assignStaffDetail" class="text-[11px] text-blue-700 font-medium mt-1 truncate">
-                Chưa chọn cán bộ
-              </p>
-            </div>
-          </div>
-
-          <!-- Hàng 2: Tên nhiệm vụ, Mức độ ưu tiên & Hạn chót Deadline -->
-          <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
-            <!-- Tên nhiệm vụ (Chiếm 6 cột) -->
-            <div class="md:col-span-6">
-              <label for="taskTitle" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Tiêu đề nhiệm vụ / Nội dung công việc giao <span class="text-rose-500">*</span>
-              </label>
-              <input type="text" id="taskTitle" required placeholder="Ví dụ: Kiểm tra thực địa hồ sơ 1284/KTĐC, thẩm định cấp GCN..."
-                class="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-            </div>
-
-            <!-- Mức độ ưu tiên (Chiếm 3 cột) -->
-            <div class="md:col-span-3">
-              <label for="taskPriority" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Mức độ khẩn / Ưu tiên <span class="text-rose-500">*</span>
-              </label>
-              <select id="taskPriority" class="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm font-bold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-                <option value="Bình thường" class="text-slate-700 font-semibold">🟢 Bình thường</option>
-                <option value="Khẩn" class="text-amber-700 font-bold">🟠 Khẩn (Ưu tiên giải quyết trong ngày)</option>
-                <option value="Hỏa tốc" class="text-rose-700 font-extrabold">🔴 Hỏa tốc (Chỉ đạo trực tiếp của BGĐ)</option>
-              </select>
-            </div>
-
-            <!-- Thời hạn hoàn thành / Deadline (Chiếm 3 cột) -->
-            <div class="md:col-span-3">
-              <label for="taskDeadline" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Hạn chót hoàn thành (Deadline) <span class="text-rose-500">*</span>
-              </label>
-              <div class="relative">
-                <input type="datetime-local" id="taskDeadline" required
-                  class="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-              </div>
-            </div>
-          </div>
-
-          <!-- Hàng 3: Văn bản căn cứ & Tệp đính kèm -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <!-- Văn bản căn cứ -->
-            <div>
-              <label for="taskDocRef" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Văn bản căn cứ / Số phiếu hồ sơ / Mã VBDLIS
-              </label>
-              <div class="relative">
-                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
-                  <i class="fa-solid fa-file-invoice"></i>
-                </span>
-                <input type="text" id="taskDocRef" placeholder="Số công văn đến, số biên nhận, số tờ trình..."
-                  class="w-full bg-white border border-slate-300 text-slate-900 rounded-xl pl-10 pr-3.5 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-              </div>
-            </div>
-
-            <!-- Tệp đính kèm -->
-            <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                Tệp hồ sơ đính kèm (Ảnh/PDF/Docx)
-              </label>
-              <div class="flex items-center gap-2">
-                <label class="flex-1 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-dashed border-slate-300 rounded-xl px-3.5 py-2 text-xs text-slate-600 flex items-center justify-between transition">
-                  <span id="fileUploadLabel" class="truncate">Nhấp để chọn tệp từ máy tính...</span>
-                  <i class="fa-solid fa-paperclip text-slate-400"></i>
-                  <input type="file" id="taskFileInput" class="hidden">
-                </label>
-              </div>
-              <div id="fileUploadPreview" class="hidden mt-1.5 text-xs text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200 flex items-center justify-between"></div>
-            </div>
-          </div>
-
-          <!-- Hàng 4: Ý kiến chỉ đạo của Lãnh đạo (Trọng tâm) -->
-          <div>
-            <label for="leaderGuidance" class="block text-xs font-bold text-blue-900 uppercase tracking-wider mb-1.5 flex items-center justify-between">
-              <span><i class="fa-solid fa-bullhorn text-amber-500 mr-1.5"></i> Ý KIẾN CHỈ ĐẠO CỦA LÃNH ĐẠO (NỘI DUNG THỰC HIỆN) <span class="text-rose-500">*</span></span>
-              <span class="text-[11px] font-normal text-slate-400">Rõ ràng, cụ thể phương án xử lý</span>
-            </label>
-            <textarea id="leaderGuidance" required rows="4" placeholder="Ghi rõ yêu cầu chuyên môn, phương thức thẩm tra, phối hợp liên tổ, các bước kiểm tra thực địa, hoặc các mốc thời gian báo cáo sơ bộ..."
-              class="w-full bg-white border border-slate-300 text-slate-900 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition leading-relaxed"></textarea>
-          </div>
-
-          <!-- Hàng 5: Ghi chú thêm -->
-          <div>
-            <label for="taskNote" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Ghi chú bổ sung
-            </label>
-            <input type="text" id="taskNote" placeholder="Ví dụ: Báo cáo kết quả trực tiếp cho đ/c Phó Giám đốc Cường trước 16h thứ 6..."
-              class="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-          </div>
-
-          <!-- Nút hành động biểu mẫu -->
-          <div class="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-slate-200">
-            <button type="button" id="btnResetTaskForm" class="btn btn-secondary">
-              <i class="fa-solid fa-rotate-left"></i>
-              <span>Làm mới biểu mẫu</span>
-            </button>
-            <button type="submit" id="btnSubmitTask" class="btn btn-primary">
-              <i class="fa-solid fa-paper-plane text-amber-300"></i>
-              <span><strong>PHÁT LỆNH GIAO VIỆC</strong></span>
-            </button>
-          </div>
-        </form>
-      </div>
-    </section>
-
   </main>
 
   <!-- ==================== MODAL XEM CHI TIẾT NHIỆM VỤ ==================== -->
@@ -422,7 +489,7 @@
           <i class="fa-solid fa-circle-info text-amber-400 text-lg"></i>
           <h3 class="font-bold text-base text-white">CHI TIẾT NHIỆM VỤ CHỈ ĐẠO GIAO VIỆC</h3>
         </div>
-        <button onclick="closeTaskModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition">
+        <button type="button" onclick="closeTaskModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition">
           ✕
         </button>
       </div>
@@ -481,11 +548,99 @@
 
       <!-- Modal Footer -->
       <div class="bg-slate-50 px-6 py-3.5 border-t border-slate-200 flex items-center justify-end gap-2">
-        <button id="modalBtnToggleStatus" class="btn btn-primary btn-sm"></button>
-        <button onclick="closeTaskModal()" class="btn btn-secondary btn-sm">
+        <button type="button" id="modalBtnToggleStatus" class="btn btn-primary btn-sm"></button>
+        <button type="button" onclick="closeTaskModal()" class="btn btn-secondary btn-sm">
           <span>Đóng</span>
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL ĐĂNG VĂN BẢN PDF MỚI (CHỈ DÀNH RIÊNG CHO GIÁM ĐỐC NGUYỄN CHIẾN THẮNG & ADMIN) ==================== -->
+  <div id="uploadDirectiveModal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xl w-full border border-slate-200 shadow-2xl overflow-hidden transform transition-all">
+      <div class="bg-gradient-to-r from-blue-900 to-blue-800 text-white px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <i class="fa-solid fa-bullhorn text-amber-400 text-lg"></i>
+          <div>
+            <h3 class="font-bold text-base text-white">ĐĂNG TẢI VĂN BẢN & THÔNG CÁO CHỈ THỊ</h3>
+            <p class="text-[11px] text-slate-300">Phổ biến văn bản chỉ đạo toàn cơ quan (Chi nhánh số 23)</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeUploadDirectiveModal()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition">
+          ✕
+        </button>
+      </div>
+
+      <form id="directiveUploadForm" class="p-6 space-y-4">
+        <!-- Người đăng (Cố định: Giám đốc Nguyễn Chiến Thắng) -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+            Người ban hành / Đăng tải <span class="text-rose-500">*</span>
+          </label>
+          <div class="relative">
+            <input type="text" id="directiveSender" readonly required
+              class="w-full bg-slate-100 border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2 text-xs font-bold select-none cursor-not-allowed">
+            <span class="absolute right-3.5 top-2.5 text-slate-400 text-xs">
+              <i class="fa-solid fa-lock"></i>
+            </span>
+          </div>
+          <p class="text-[11px] text-blue-700 font-medium mt-1">Đặc quyền ban hành: Giám đốc Nguyễn Chiến Thắng</p>
+        </div>
+
+        <!-- Số hiệu văn bản -->
+        <div>
+          <label for="directiveDocRef" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+            Số hiệu văn bản / Công văn <span class="text-slate-400 font-normal">(VD: 2637/QĐ-SNNMT, 2162/CN23...)</span>
+          </label>
+          <input type="text" id="directiveDocRef" placeholder="Nhập số ký hiệu công văn, quyết định..."
+            class="w-full bg-white border border-slate-300 text-slate-900 rounded-xl px-3.5 py-2 text-xs focus:ring-2 focus:ring-blue-500 transition">
+        </div>
+
+        <!-- Tiêu đề / Trích yếu nội dung -->
+        <div>
+          <label for="directiveTitle" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+            Trích yếu nội dung / Tên văn bản <span class="text-rose-500">*</span>
+          </label>
+          <textarea id="directiveTitle" required rows="2" placeholder="Ví dụ: Quy định chức năng, nhiệm vụ, quyền hạn cơ cấu tổ chức Chi nhánh 23..."
+            class="w-full bg-white border border-slate-300 text-slate-900 rounded-xl p-3 text-xs focus:ring-2 focus:ring-blue-500 transition leading-relaxed"></textarea>
+        </div>
+
+        <!-- Tệp PDF đính kèm (BẮT BUỘC & CHỈ CHẤP NHẬN .PDF) -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+            Tệp văn bản PDF gốc <span class="text-rose-500">* (Bắt buộc chuẩn *.PDF)</span>
+          </label>
+          <div class="border-2 border-dashed border-rose-300 bg-rose-50/40 hover:bg-rose-50/80 rounded-2xl p-4 text-center cursor-pointer transition"
+               onclick="document.getElementById('directiveFileInput').click()">
+            <input type="file" id="directiveFileInput" accept=".pdf,application/pdf" class="hidden">
+            <i class="fa-solid fa-file-pdf text-3xl text-rose-600 mb-2 block"></i>
+            <span id="directiveFileLabel" class="text-xs font-semibold text-slate-700 block">Bấm để chọn tệp PDF từ máy tính hoặc kéo thả vào đây</span>
+            <span class="text-[10px] text-slate-400 block mt-1">Định dạng hỗ trợ: *.pdf (Dung lượng tối đa: 25MB)</span>
+          </div>
+          <div id="directiveFilePreview" class="hidden mt-2 p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs text-emerald-800"></div>
+        </div>
+
+        <!-- Ý kiến chỉ đạo / Quán triệt chung -->
+        <div>
+          <label for="directiveNotes" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+            Ý kiến quán triệt / Chỉ đạo của Giám đốc <span class="text-slate-400 font-normal">(Tùy chọn)</span>
+          </label>
+          <textarea id="directiveNotes" rows="2" placeholder="Nhập yêu cầu triển khai đến các tổ, thời hạn nghiên cứu, quán triệt thực hiện..."
+            class="w-full bg-white border border-slate-300 text-slate-900 rounded-xl p-3 text-xs focus:ring-2 focus:ring-blue-500 transition leading-relaxed"></textarea>
+        </div>
+
+        <!-- Footer hành động -->
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
+          <button type="button" onclick="closeUploadDirectiveModal()" class="btn btn-secondary btn-sm">
+            <span>Hủy bỏ</span>
+          </button>
+          <button type="submit" id="btnSubmitDirective" class="btn btn-danger btn-sm inline-flex items-center gap-1.5 shadow-xs">
+            <i class="fa-solid fa-paper-plane text-white"></i>
+            <span><strong>ĐĂNG TẢI VĂN BẢN</strong></span>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 

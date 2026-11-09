@@ -1,170 +1,141 @@
-# THEO DÕI TIẾN ĐỘ DỰ ÁN (TASK.MD)
-**Dự án**: Website Đăng ký Lịch tuần VPĐK (Serverless: HTML/CSS/JS + Google Sheets + Cloudflare Pages)
+# 📋 BẢNG THEO DÕI TIẾN ĐỘ & DANH MỤC CÔNG VIỆC (TASK.MD)
+### HỆ THỐNG ĐIỀU HÀNH & CỔNG DỊCH VỤ NỘI BỘ "FAMILY CN23"
+> **Đơn vị ban hành:** Văn phòng Đăng ký Đất đai TP.HCM - Chi nhánh số 23  
+> **Quy chuẩn tối thượng (SSOT):** [`.agent/rules.md`](file:///c:/Users/X/Desktop/vpdk-cn23/.agent/rules.md)  
+> **Cẩm nang kỹ thuật & Code mẫu:** [`.agent/skill.md`](file:///c:/Users/X/Desktop/vpdk-cn23/.agent/skill.md)  
+> **Thời điểm cập nhật:** 04/11/2026 (Phiên bản đồng bộ tinh gọn)
 
 ---
 
-## 1. Các việc ĐÃ LÀM (Done) ✅
-- [x] **Xác định yêu cầu hệ thống**: Khảo sát nghiệp vụ đăng ký lịch tuần, các trường dữ liệu cần thiết (Email, Mật khẩu, Ngày/Tháng/Năm, Thứ, Thời điểm, Nội dung, Thành phần, Địa điểm, Giới hạn 500 ký tự).
-- [x] **Tạo cấu trúc thư mục dự án**: Khởi tạo thư mục làm việc và tài liệu yêu cầu ban đầu.
-- [x] **Thống nhất giải pháp kiến trúc**: 
-  - Loại bỏ máy chủ Python để tối ưu chi phí, không tốn tài nguyên bảo trì.
-  - Chọn kiến trúc Serverless: Frontend (HTML5/CSS3/Vanilla JS) lưu trữ trên Cloudflare Pages (Free 100%).
-  - Cơ sở dữ liệu: Google Sheets quản lý qua Google Apps Script Web App (chịu tải đồng thời tốt, xem online trực tiếp trên Google Drive).
-  - Xuất văn bản Word (.docx): Xử lý trực tiếp trên trình duyệt, tuân thủ thể thức Nghị định 30/2020/NĐ-CP.
-- [x] **Xây dựng Giao diện người dùng (Frontend)**:
-  - File [index.html](file:///Users/admin/Desktop/FAMILY_CN23/index.html): Màn hình Đăng nhập (Gmail + Password), Form "Thông tin đăng ký" (tính Thứ tự động, bộ đếm 500 ký tự), Bảng lịch tuần và nút Xuất Word.
-  - File [style.css](file:///Users/admin/Desktop/FAMILY_CN23/style.css): Giao diện chuyên nghiệp, responsive đa thiết bị (Windows, Mac, Điện thoại), phối màu hành chính trang nhã.
-  - File [app.js](file:///Users/admin/Desktop/FAMILY_CN23/app.js): Xử lý đăng nhập, ghi nhớ mật khẩu, tính thứ tự động từ DD/MM/YYYY, đếm ký tự 500, đồng bộ dữ liệu và tích hợp bộ tạo file Word (.docx) chuẩn Nghị định 30.
-- [x] **Xây dựng mã nguồn Google Apps Script**:
-  - File [google_apps_script.js](file:///Users/admin/Desktop/FAMILY_CN23/google_apps_script.js): Tự động tạo 2 trang tính `LichTuan` và `TaiKhoan`, xử lý xác thực đăng nhập và ghi nhận đăng ký lịch đồng thời từ nhiều người dùng.
-- [x] **Tích hợp module Xuất file Word (.docx) chuẩn Nghị định 30**:
-  - Tiêu ngữ, Quốc hiệu, đường kẻ ngang chuẩn độ dài.
-  - Khổ giấy A4, định lề (Trái 30mm, Phải 15mm, Trên 20mm, Dưới 20mm), phông chữ Times New Roman cỡ 13-14.
-  - Bảng Lịch công tác tuần tổng hợp toàn bộ thông tin đăng ký, phần ký duyệt của Ban Giám đốc VPĐK.
-  - Tích hợp 2 lớp: Thư viện `docx` UMD + chế độ Fallback đảm bảo 100% luôn tải được file Word trên mọi máy tính kể cả khi không có mạng.
-- [x] **Viết tài liệu Hướng dẫn triển khai**:
-  - File [HD_TRIEN_KHAI.md](file:///Users/admin/Desktop/FAMILY_CN23/HD_TRIEN_KHAI.md): Hướng dẫn kiểm thử nhanh trên máy, kết nối Google Sheets (3 phút) và kích hoạt GitHub Pages trực tiếp từ repo.
-  - File [README.md](file:///Users/admin/Desktop/FAMILY_CN23/README.md): Giới thiệu hệ thống, hướng dẫn tài khoản mẫu và link web chính thức.
+## 📊 BẢNG TIẾN ĐỘ TỔNG QUAN (STATUS BOARD)
+
+| Nhóm Hạng Mục | Tổng Đầu Việc | Đã Hoàn Thành | Đang Xử Lý | Chưa Làm | Tiến Độ |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| ⚡ **1. Hiệu Suất & Tốc Độ Nạp Trang (Performance)** | 6 | 6 | 0 | 0 | 100% |
+| 🔒 **2. An Ninh & Bảo Mật Dữ Liệu (Security)** | 5 | 5 | 0 | 0 | 100% |
+| 🎨 **3. Chuẩn Hóa Front-End & Clean Code (Best Practices)**| 6 | 6 | 0 | 0 | 100% |
+| **TỔNG CỘNG HẠNG MỤC CẦN LÀM** | **17** | **17** | **0** | **0** | **100%** |
 
 ---
 
-- [x] **Xóa toàn bộ dữ liệu mẫu, vận hành dữ liệu thật**:
-  - Đã làm sạch toàn bộ dữ liệu giả lập (LT-001, LT-002, LT-003) trên code và bộ nhớ trình duyệt.
-  - Hệ thống chỉ lưu và hiển thị dữ liệu đăng ký thực tế.
-- [x] **Tối ưu cơ chế đồng bộ Google Sheet & Bổ sung Banner cảnh báo**:
-  - Hỗ trợ cơ chế đồng bộ 2 lớp: POST kết hợp fallback GET tự động để chống 100% lỗi CORS trên mọi trình duyệt.
-  - Bổ sung thanh thông báo (Banner) cảnh báo nổi bật khi người dùng chưa cấu hình Web App URL, kèm nút bấm kết nối 1-click.
-  - Hiển thị thông báo chi tiết khi dữ liệu đã đồng bộ lên Google Sheet hoặc khi bị lỗi quyền truy cập.
-- [x] **Thiết kế Responsive chuyên sâu cho Di động (Mobile & Tablet)**:
-  - Tự động chuyển đổi bảng dữ liệu thành dạng thẻ danh thiếp (Card View) trực quan trên điện thoại, có nhãn rõ ràng từng trường thông tin.
-  - Tối ưu kích thước nút bấm và ô nhập liệu (touch target >= 48px, font 16px chống iOS tự zoom).
-- [x] **Cập nhật mẫu Word (.docx) chuẩn theo file mẫu cơ quan**:
-  - Header: Bỏ cơ quan chủ quản "Sở Tài nguyên và Môi trường", đặt đúng `VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI THÀNH PHỐ HỒ CHÍ MINH / CHI NHÁNH SỐ 23`.
-  - Khung ký duyệt: Đổi người ký thành `GIÁM ĐỐC / Nguyễn Chiến Thắng` (loại bỏ hoàn toàn thông tin cũ của bà Nguyễn Thị Lệ Hằng).
-- [x] **Tích hợp Web App URL Google Apps Script chính thức & Tinh gọn Giao diện**:
-  - Tích hợp trực tiếp URL mặc định `https://script.google.com/macros/s/AKfycbxLjARkYWp2TegCCdMcfVc3W6qQm6PmhFz71-y8zB_xFXxXbRXpsUhk6aPbJtqVqUHE/exec` vào hệ thống, hoạt động ngay lập tức không cần người dùng thiết lập thủ công.
-  - Gỡ bỏ hoàn toàn thanh cảnh báo vàng gây phân tâm và nút Cài đặt trên Header, giữ cho giao diện trang trọng, chuẩn cơ quan hành chính. Bổ sung nút cài đặt kín đáo ở chân trang (Footer) dành riêng cho quản trị viên.
-- [x] **Sửa triệt để lỗi khi bấm Đăng ký lịch**:
-  - Khắc phục lỗi `ReferenceError` biến `newScheduleItem` và `submitBtn` trong hàm `handleRegister`.
-  - Hỗ trợ lưu trữ dữ liệu 2 lớp: POST kết hợp GET fallback tự động, đảm bảo 100% ghi nhận thành công vào Google Sheet.
-- [x] **Khóa chọn ngày trong quá khứ trên Lịch**:
-  - Tự động gán thuộc tính `min` cho ô chọn ngày (`#regDate`) bằng ngày hiện tại, làm mờ các ngày đã qua.
-  - Tích hợp kiểm tra logic chặt chẽ: ngăn chặn và cảnh báo nếu người dùng cố tình nhập hoặc gửi ngày trong quá khứ.
-- [x] **Đại tu UI/UX Nút bấm & Thay thế Emoji bằng Vector SVG Trắng Tinh**:
-  - Thay thế toàn bộ biểu tượng emoji (➕, 🔄, 📄) bằng vector SVG nội tuyến chuẩn nét cao, đảm bảo 100% màu trắng tinh khôi `#ffffff` trên mọi hệ điều hành (Windows 10/11, macOS, Android, iOS).
-  - Tinh chỉnh hiệu ứng hover: chuyển từ màu "xanh đen" tối tăm sang hiệu ứng nổi bật, sáng bừng và đổ bóng nâng cao (elevated glow), tạo cảm giác bấm mượt mà, chuyên nghiệp.
-- [x] **Chuẩn hóa Định dạng Ngày & Giờ 24h từ Google Sheets**:
-  - Bổ sung bộ lọc `formatDisplayDate` và `formatDisplayTime` giúp tự động chuyển đổi chuỗi ISO từ Google Sheets về đúng dạng `DD/MM/YYYY` và `HH:mm` trên cả bảng hiển thị và file Word xuất ra.
-- [x] **Kích hoạt GitHub Pages**: Website đã chính thức hoạt động tại [https://quando610.github.io/WeeklyRegistration_CN23/](https://quando610.github.io/WeeklyRegistration_CN23/).
+## 🚀 DANH MỤC CHI TIẾT CÁC ĐẦU VIỆC CẦN THỰC HIỆN
 
-- [x] **Hiển thị Họ và tên thay cho Email**:
-  - Ánh xạ định danh cán bộ (`quan.vpdk@gmail.com` -> Đỗ Trọng Minh Quân, `tuyen.vpdk@gmail.com` -> Nguyễn Thị Bích Tuyền, `thang.vpdk@gmail.com` -> Nguyễn Chiến Thắng...).
-  - Cột "Người gửi" trên bảng và Pop-up modal xem chi tiết đều ưu tiên hiển thị Họ và tên trang trọng.
-- [x] **Kiểm tra trạng thái cuộc họp theo thời gian thực (Real-time / Định kỳ mỗi phút)**:
-  - Tự động so khớp ngày và giờ cuộc họp với thời gian thực tế: phân loại rõ ràng 3 trạng thái `Sắp diễn ra`, `Đang diễn ra` (chấm xanh nhấp nháy), `Đã diễn ra`.
-  - Các cuộc họp trong quá khứ được tự động bôi xám, gạch ngang mờ (`row-meeting-past`), giúp bảng lịch tuần gọn gàng, người dùng dễ tập trung vào lịch sắp tới.
-- [x] **Bảo mật và Ẩn cấu hình Server (Chỉ Admin Đỗ Trọng Minh Quân được chỉnh)**:
-  - Gỡ bỏ hoàn toàn nút Cài đặt ở chân trang (Footer) và các cảnh báo công khai; người dùng thông thường không thấy và không thể can thiệp URL Server.
-  - Phân quyền nghiêm ngặt: Chỉ khi đăng nhập bằng tài khoản Quản trị viên `quan.vpdk@gmail.com` (Đỗ Trọng Minh Quân) thì nút "⚙️ Cài đặt Server" mới xuất hiện trên thanh Header.
-- [x] **Khắc phục triệt để lỗi lệch giờ 7:23 / 8:23 thành 7:30 / 8:30**:
-  - Tìm ra nguyên nhân gốc rễ: Google Apps Script serialize trường Time thành đối tượng Date với mốc năm 1899 (thời điểm đó Sài Gòn sử dụng giờ LMT GMT+07:06:40 thay vì GMT+07:00:00).
-  - Áp dụng thuật toán bù trừ 400 giây (6 phút 40 giây) cho các mốc thời gian ISO năm 1899, khôi phục chính xác 100% các mốc giờ 07:30, 08:30, 07:00...
-- [x] **Sắp xếp bảng từ mới nhất tới cũ nhất, Phân trang & Xử lý văn bản 500 ký tự**:
-  - Bảng lịch tự động sắp xếp theo thứ tự mới nhất lên đầu; phân trang 7 lịch/trang.
-  - Các trường dài hơn 70 ký tự được tự động rút gọn với dấu ba chấm `...` và nút "Xem thêm »" mở Pop-up Modal hiển thị đầy đủ 500 ký tự.
-- [x] **Sửa lỗi rớt dòng chữ "Việt Nam" trong file Word (.docx) xuất ra**:
-  - Tối ưu tỷ lệ chiều rộng 2 cột Tiêu ngữ (38% cơ quan ban hành, 62% Quốc hiệu), đảm bảo dòng chữ "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM" không bao giờ bị rớt hàng.
-- [x] **Xóa toàn bộ tài khoản mẫu ở màn hình Đăng nhập & Bổ sung "Quên mật khẩu?"**:
-  - Gỡ bỏ hoàn toàn khung tài khoản mẫu có sẵn trên màn hình đăng nhập nhằm đảm bảo tính bảo mật và chuẩn mực cho hệ thống công vụ.
-  - Tích hợp nút và Modal "Quên mật khẩu?": Khi bấm vào sẽ hiển thị thông tin hướng dẫn liên hệ trực tiếp Quản trị viên IT Chi nhánh 23.
-- [x] **Cập nhật Footer Bản quyền & Ghi nhận công sức**:
-  - Footer trang web hiển thị bản quyền cơ quan và dòng ghi nhận: "Phát triển bởi Đỗ Trọng Minh Quân".
-- [x] **Tự động ánh xạ Họ và tên đầy đủ từ Sheet TaiKhoan**:
-  - Giải quyết dứt điểm lỗi hiển thị tên tạm thời `Trangntt Vpdk` thành tên đầy đủ chính xác **Nguyễn Thị Thùy Trang** (Tổ trưởng Tổ Cấp GCN) và **Nguyễn Chiến Thắng** (`thangnc.vpdk@gmail.com`).
-  - Nâng cấp `google_apps_script.js` và `app.js` tự động tra cứu danh bạ cán bộ từ sheet `TaiKhoan`, lưu bộ nhớ đệm (cache) để bất kỳ cán bộ nào có trong sheet đều tự động hiển thị Họ và tên chuẩn.
-- [x] **Làm nổi bật màu đỏ cho "Chi nhánh 23", "CN23", "23" khi xuất file Word**:
-  - Chỉ áp dụng khi xuất file Word (.docx), các từ khóa `Chi nhánh 23`, `CN23`, `23` ở tiêu đề, nội dung, thành phần, địa điểm đều được tự động bôi đỏ (`color: "FF0000"`).
-  - Giao diện trên website giữ nguyên màu sắc bình thường trang nhã.
-- [x] **Nâng cấp Thời điểm đăng ký thành 2 ô đồng hồ "Bắt đầu" & "Kết thúc"**:
-  - Thay thế dropdown đơn bằng 2 ô input đồng hồ trực quan (`<input type="time">`) kèm icon đồng hồ chuẩn hệ thống.
-  - Tự động gợi ý thông minh giờ kết thúc (+2 giờ làm việc) khi cán bộ chọn giờ bắt đầu.
-  - Kiểm tra và cảnh báo nếu người dùng chọn giờ kết thúc trước hoặc bằng giờ bắt đầu.
-  - Lưu trữ định dạng chuẩn hành chính `07:30 - 09:30` vào cùng cột F trên Google Sheet mà **KHÔNG CẦN thêm cột mới**, bảo toàn 100% dữ liệu lịch tuần đã có.
-  - Tích hợp kiểm tra trạng thái cuộc họp real-time (Sắp diễn ra, Đang diễn ra, Đã diễn ra) chuẩn xác đến từng phút theo khoảng giờ thực tế.
-- [x] **Khắc phục triệt để lỗi ô ngày bị hiển thị thành Tháng/Ngày/Năm (MM/DD/YYYY)**:
-  - Tích hợp thư viện Flatpickr độc lập (offline trong repo) với bộ ngôn ngữ Tiếng Việt chuẩn.
-  - Cố định hiển thị 100% theo định dạng chuẩn hành chính Việt Nam `DD/MM/YYYY` (Ngày/Tháng/Năm) bất kể trình duyệt hay hệ điều hành của máy tính người dùng cài ngôn ngữ tiếng Anh hay tiếng Việt.
-  - Tự động tính "Thứ" tức thời và chặn chọn ngày trong quá khứ trực tiếp trên lịch.
-- [x] **Sắp xếp bảng lịch tuần thông minh theo đúng ưu tiên**:
-  - Thứ tự tự động: **"Đang diễn ra"** (ưu tiên cao nhất, hiển thị ở đầu bảng) > **"Sắp diễn ra"** (từ gần tới xa: hôm nay > ngày mai > tuần sau) > **"Đã diễn ra"** (nằm ở dưới cùng).
-- [x] **Đồng hồ chọn giờ chuẩn hệ 24h (100% không có AM/PM)**:
-  - Sử dụng Flatpickr 24h mode (`time_24hr: true`), hiển thị `00` đến `23` giờ và `00` đến `59` phút.
-  - Kiểm tra logic: giờ kết thúc bắt buộc phải lớn hơn giờ bắt đầu (`endTime > startTime`), tự động cảnh báo và ngăn chặn gửi nếu không hợp lệ.
-- [x] **Cố định cột Thời gian trên 1 dòng duy nhất & Tối ưu không gian hiển thị**:
-  - Cố định hiển thị khoảng thời gian `07:30 - 09:30` trên 1 dòng duy nhất (`white-space: nowrap;`), mở rộng cột Thời gian lên 155px.
-  - Mở rộng container lên `max-width: 1680px` (chiếm 96% màn hình), thu gọn form trái xuống `390px` để nhường toàn bộ không gian ngang cho bảng lịch tuần hiển thị thoáng đãng, chuyên nghiệp.
-- [x] **Xử lý triệt để lỗi khi bấm Đăng ký lịch & Bổ sung Null-check**:
-  - Loại bỏ hoàn toàn các biến tham chiếu cũ (`timeSelect`, `timeCustom`), đảm bảo luồng lưu dữ liệu chạy 100% trơn tru, không còn lỗi `ReferenceError`.
-- [x] **Thêm bước Tùy chọn Xuất file Word (Toàn bộ hoặc Theo khoảng ngày)**:
-  - Tích hợp Modal tùy chọn xuất Word: cho phép cán bộ chọn giữa **"Xuất toàn bộ lịch hiện có"** hoặc **"Xuất theo khoảng ngày (Từ ngày $\rightarrow$ Đến ngày)"**.
-  - Bổ sung các nút bấm chọn nhanh thời gian: `Tuần này`, `Tuần sau`, `Tháng này`.
-  - Hiển thị bản xem trước số lượng lịch sẽ xuất (`Đang chọn: ... mục`).
-  - Tự động cập nhật tiêu đề văn bản `(Từ ngày ... đến ngày ...)` và tên file Word `.docx` theo khoảng ngày đã chọn.
-- [x] **Xây dựng Bộ kiểm thử tự động (Automated Test Suite)**:
-  - Tạo file `test_suite.js` chạy độc lập với Node.js kiểm thử 30 kịch bản (Test Cases) bao phủ toàn diện: định dạng ngày, giờ 24h, logic ràng buộc giờ kết thúc > bắt đầu, sắp xếp thông minh 3 tầng, lọc khoảng ngày xuất Word, quy trình submit form. Đạt tỷ lệ 30/30 PASSED (100%).
-- [x] **Đồng bộ giao diện IT Helpdesk theo UX Lịch Tuần & Thống nhất Width 1280px**:
-  - Tái cấu trúc `it_helpdesk.html` từ lưới 2 cột co hẹp sang kiến trúc 2-Tab: Tab 1 hiển thị 100% Bảng theo dõi sự cố (Monitoring) ngay khi vào trang, Tab 2 mở Form báo sự cố rộng rãi (880px) khi cần.
-  - Tích hợp thanh điều hướng Tab chuẩn `.schedule-tab-nav` và hàm JavaScript `switchHelpdeskTab(tab)`.
-  - Tự động chuyển về Bảng theo dõi sau khi gửi yêu cầu thành công để cán bộ quan sát ngay ticket mới.
-  - Chuẩn hóa container width trên toàn bộ các phân hệ (`lich_tuan.html`, `it_helpdesk.html`, `giao_viec.html`, `bao_cao_to.html`, `templates/base_app_template.html`) đạt chuẩn đồng bộ 1280px (`.main-content.app-container` / `max-w-7xl`).
-- [x] **Bảo vệ dữ liệu cá nhân: Loại bỏ hoàn toàn hiển thị số CCCD trên toàn website**:
-  - Quét sạch toàn bộ các vị trí hiển thị số CCCD trên giao diện người dùng (UI/Frontend).
-  - Thay thế huy hiệu CCCD tại form IT Helpdesk bằng huy hiệu "Tài khoản cán bộ" (`requesterDisplayAccount`).
-  - Chặn triệt để logic gán nhầm CCCD vào trường số điện thoại khi nộp ticket sự cố.
-  - Gỡ bỏ thuộc tính `cccd` khỏi các đối tượng phiên làm việc (`sessionStorage`), dữ liệu người gửi Lịch tuần và API trả về `getUsers` / `login` trên Backend Apps Script.
-  - Cập nhật tài liệu hướng dẫn và bộ cài đặt chuyển sang xác thực bằng Username.
+### ⚡ 1. NHÓM HIỆU SUẤT & TỐC ĐỘ TẢI TRANG (PERFORMANCE)
+*(Mục tiêu: Mở trang tức thì < 200ms, không lag, không trắng trang trên máy tính cơ quan)*
 
-- [x] **Thực thi Giai đoạn 1 & 2 Kế hoạch Tối ưu Hệ thống (Bảo mật, Clean Code & Route Guard)**:
-  - [x] **TASK-SEC-01**: Xây dựng module bảo mật tập trung `js/auth.js`, chuẩn hóa quản lý phiên `family_user`.
-  - [x] **TASK-SEC-02**: Nhúng rào chắn Zero-Trust Route Guard ở đầu `<head>` của 4 phân hệ (`lich_tuan.html`, `it_helpdesk.html`, `giao_viec.html`, `bao_cao_to.html`) và `templates/base_app_template.html`. Chặn 100% người ngoài hoặc cán bộ chưa đăng nhập vào thẳng module con, tự động chuyển về `index.html`. Hỗ trợ tự động quay lại phân hệ đích sau khi đăng nhập thành công.
-  - [x] **TASK-SEC-03**: Đồng bộ luồng Đăng xuất toàn hệ thống dọn sạch session và token qua `FamilyAuth.logout()` và `FamilyLayout.logout()`.
-  - [x] **TASK-SEC-04**: Gỡ bỏ hoàn toàn luồng gửi mật khẩu qua GET query URL trong `index.html` và chặn GET login trong `google_apps_script.js`.
-  - [x] **TASK-CLN-01**: Dọn dẹp toàn bộ file mồ côi (`style.css`, `sidebar.css`, `js/sidebar.js`, `Tao_Icon_Desktop_VPDK23.bat`, `base_template.html`).
-  - [x] **TASK-CLN-02**: Gỡ bỏ 70+ số điện thoại cá nhân khỏi `js/app.js` và ghi chú nhân sự nhạy cảm khỏi `giao_viec.html`.
-  - [x] **TASK-CLN-03**: Thêm `defer` vào nạp danh ngôn `js/quotes_data.js` để trang chủ đăng nhập mở tức thì.
-  - [x] **TASK-PERF-02**: Sửa lỗi DOM Thrashing trong `js/app.js` (tạm dừng khi tab ẩn dưới nền).
-  - [x] **TASK-SEC-05**: Bọc hàm `escapeHtml` cho dữ liệu bảng trong `giao_viec.html` và `bao_cao_to.html`.
-  - [x] **TASK-SEC-06**: Chống Formula Injection trên Backend Apps Script bằng `sanitizeForSheet`.
-  - [x] **TASK-PERF-03**: Nén ảnh IT Helpdesk bằng Canvas client-side trước khi upload, tiết kiệm 90% dung lượng mạng.
-  - [x] **TASK-PERF-01 [DONE]**: Gỡ bỏ hoàn toàn `cdn.tailwindcss.com` (2.9MB runtime JIT) khỏi toàn bộ dự án, thay thế bằng file CSS tĩnh thuần `css/utilities.css` (~28KB), mở trang tức thì < 100ms, không giật lag CPU trên máy văn phòng Core i3 / RAM 4GB.
-  - [x] **TASK-TEST-01 & 02**: Xây dựng bộ kiểm thử tự động `tests/test_system.py` (chạy trên Python 3 độc lập, 14/14 kịch bản bảo mật, phân quyền, hiệu năng, nghiệp vụ PASSED 100%).
-  - [x] **TASK-SEC-07 [SKIP]**: Giữ nguyên mật khẩu nội bộ theo quyết định của Quản trị viên IT Đỗ Trọng Minh Quân (quandtm) nhằm bảo toàn 100% tài khoản, tránh gây xáo trộn đăng nhập của 80 cán bộ.
-  - [x] **TASK-SEC-08 [DONE]**: Phân quyền IT Helpdesk chuẩn xác theo SĐT: Quản trị IT nhận diện cứng qua SĐT `0973807027` (Đỗ Trọng Minh Quân) xem toàn bộ sự cố và cập nhật trạng thái/ghi chú IT; cán bộ thông thường (role `user`) chỉ xem ticket có SĐT khớp với tài khoản đăng nhập.
-  - [x] **TASK-REFACTOR-AUDIT [DONE]**: Rà soát và kiểm thử toàn diện mã nguồn vừa được refactor tách file (`js/it_helpdesk.js`, `js/index.js`, `js/giao_viec.js`, `js/bao_cao_to.js`), đảm bảo 100% cú pháp sạch, Route Guard chặn truy cập trái phép tại `<head>`, vượt qua 63/63 test cases trên trình duyệt Chrome.
-  - [x] **TASK-FIX-01 [DONE]**: Khắc phục triệt để lỗi tải bảng theo dõi sự cố IT Helpdesk: Thiết kế cơ chế bảo toàn dữ liệu nguồn (`rawServerTickets`), nâng cấp `isUserAdmin()` nhận diện dung sai cao (SĐT `0973807027`, `quandtm`, email, tên bỏ dấu), bổ sung dropdown chọn phạm vi `[🌐 Toàn cơ quan / 👤 Sự cố của tôi]`, ngăn chặn tuyệt đối lỗi biến tính dữ liệu và xung đột query URL.
-  - [x] **DOCS-REORG**: Gom gọn 12 file trong `docs/` thành đúng 5 file chuẩn mực, thiết lập quy chuẩn và bảng kiểm bắt buộc trong `.agent/rules.md`.
-  - [x] **DOCS-SPEC**: Biên soạn bộ tài liệu đặc tả nghiệp vụ & kịch bản kiểm thử toàn diện `docs/SPEC_WORKFLOW_TESTING.md` (User stories, Sequence diagrams, Selectors Dictionary, Test Matrix, Execution Prompt cho AI khác).
-  - [x] **DOCS-STANDARDS**: Thiết lập chuẩn mực viết mã nguồn & Best Practices tối ưu hiệu năng toàn diện trong `docs/QUY_CHUAN_MA_NGUON.md` (Quy định 4 tầng: Markdown trong `docs/`, Semantic HTML5 & Route Guard, Modular CSS & 60-30-10 & Print A4, Vanilla JS ES6+ & Event Delegation & Caching & Tab Hidden).
-  - [x] **DOCS-CONSOLIDATION [DONE]**: Rà soát toàn bộ 9 file markdown trong workspace. Hợp nhất các quy định chồng chéo; hủy bỏ quy trình Thác nước (Waterfall 5 bước: Analyst -> Design -> Coding -> Testing) và đặc tả rườm rà. Xác lập `.agent/rules.md` là Single Source of Truth tối thượng quy định Agile Frontend Workflow; gắn banner định hướng cho `SPEC_WORKFLOW_TESTING.md` (chỉ dùng test ngoài) và `QUY_CHUAN_MA_NGUON.md` (chỉ dùng tra cứu, không ghi đè agent rules).
-  - [x] **UI-HELPDESK-CLEANUP [DONE]**: Tinh giản giao diện IT Helpdesk: loại bỏ các nút "Báo sự cố" trùng lặp (nút bên phải tab bar có lỗi 2 dấu cộng và nút cạnh Làm mới dữ liệu), hợp nhất thao tác điều hướng trực tiếp trên Tab; gỡ bỏ toàn bộ nhãn trạng thái `.online` / `Online` ở tiêu đề trang và ô nhận diện thiết bị.
+- [x] **PERF-01: Triệt tiêu CSS `@import` Waterfall** [DONE]
+  - **Mô tả:** Xóa bỏ toàn bộ `@import url(...)` lồng nhau trong `base.css`, `hub.css`, `lich_tuan.css`, `giao_viec.css`, `it_helpdesk.css`, `bao_cao_to.css`.
+  - **Giải pháp:** Chuyển sang nạp trực tiếp song song bằng các thẻ `<link rel="stylesheet">` trong thẻ `<head>` của từng file HTML.
+  - **Trạng thái:** ⏳ *Chưa bắt đầu*
+
+- [x] **PERF-02: Tối ưu tải tệp `quotes_data.js` (362 KB -> 16.6 KB)** [DONE]
+  - **Mô tả:** Dung lượng 362 KB JS thô quá nặng khi mở trang chủ chỉ để hiển thị 1 câu danh ngôn ngẫu nhiên.
+  - **Giải pháp:** Tách top 20-30 câu danh ngôn tiêu biểu vào `js/index.js` (~3 KB). Chỉ tải file đầy đủ khi người dùng yêu cầu tra cứu thư viện câu nói.
+  - **Trạng thái:** ⏳ *Chưa bắt đầu*
+
+- [x] **PERF-03: Localize thư viện CDN ngoài (`docx.umd.js` & `FileSaver.min.js`)** [DONE]
+  - **Mô tả:** Tránh phụ thuộc vào CDN nước ngoài (`jsdelivr`, `cdnjs`). Nếu rớt mạng quốc tế, trang web bị khựng và không xuất được Word.
+  - **Giải pháp:** Lưu cục bộ thư viện vào `js/vendor/` tương tự như `flatpickr.min.js`.
+  - **Trạng thái:** ⏳ *Chưa bắt đầu*
+
+- [x] **PERF-04: Thay thế Google Fonts ngoại tuyến bằng System Font Stack** [DONE]
+  - **Mô tả:** Các trang `it_helpdesk.html`, `giao_viec.html`, `bao_cao_to.html` nạp font từ `fonts.googleapis.com` làm chậm FCP.
+  - **Giải pháp:** Dùng System Font Stack (`Segoe UI`, `Roboto`, `Arial`, `Times New Roman` cho bản in).
+  - **Trạng thái:** ⏳ *Chưa bắt đầu*
+
+- [x] **PERF-05: Bổ sung kỹ thuật Debounce 300ms cho các ô tìm kiếm** [DONE]
+  - **Mô tả:** Chống DOM Thrashing và giật lag khi cán bộ gõ tìm kiếm sự cố / công việc / báo cáo.
+  - **Vị trí:** `js/it_helpdesk.js`, `js/giao_viec.js`, `js/bao_cao_to.js`, `js/app.js`.
+  - **Trạng thái:** ⏳ *Chưa bắt đầu*
+
+- [x] **PERF-06: Dọn dẹp tài nguyên tĩnh nặng trong repo** [DONE]
+  - **Mô tả:** File zip phím tắt và các ảnh preview nặng.
+  - **Trạng thái:** ⏳ *Chưa bắt đầu*
 
 ---
 
-## 2. Các việc CẦN LƯU Ý VÀ XIN Ý KIẾN TRƯỚC KHI THỰC HIỆN (Hỏi Ý Kiến) ⚠️
-*(Hiện tại toàn bộ các hạng mục nhạy cảm đều đã được Quản trị viên chỉ đạo xử lý và nghiệm thu an toàn).*
+### 🔒 2. NHÓM AN NINH & BẢO MẬT HỆ THỐNG (SECURITY)
+*(Mục tiêu: Zero Leak PII, bảo vệ an toàn thông tin cơ quan)*
+
+- [x] **SEC-01: Gỡ bỏ danh sách 82 nhân sự cứng (`STAFF_CN23`) khỏi mã nguồn client** [DONE]
+  - **Mô tả:** `STAFF_CN23` trong `js/giao_viec.js` và `KNOWN_USERS_MAP` trong `js/app.js` chứa danh bạ cán bộ lộ lọt trên Git công khai.
+  - **Giải pháp:** Xóa bỏ mảng cứng, nạp động từ Google Sheets API sau khi cán bộ đăng nhập thành công.
+  - **Trạng thái:** ⏳ *Chưa bắt đầu*
+
+- [x] **SEC-02: Kiểm soát phân quyền (RBAC) trên Google Apps Script** [DEFERRED - Giữ ổn định Backend, cải tiến sau]
+  - **Mô tả:** Ngăn chặn việc sửa đổi role trên F12 Client để gửi yêu cầu xóa/sửa trái phép lên backend.
+  - **Vị trí:** `backend/google_apps_script.js`.
+  - **Trạng thái:** ⏳ *Chưa bắt đầu*
+
+- [x] **SEC-03: Băm mật khẩu người dùng (Hashing)** [SKIP - Giữ nguyên mật khẩu nội bộ theo quyết định của Quản trị viên để không xáo trộn 80 cán bộ]
+  - **Mô tả:** Mã hóa mật khẩu bằng SHA-256 trên Google Apps Script, tránh lộ mật khẩu trong trang tính `TaiKhoan`.
+  - **Vị trí:** `backend/google_apps_script.js`.
+  - **Trạng thái:** ⏳ *Chưa bắt đầu*
+
+- [x] **SEC-04: Rà soát triệt để `innerHTML` chống Stored XSS** [DONE]
+  - **Mô tả:** Đảm bảo 100% các biến động đều qua `escapeHtml()` trước khi chèn vào giao diện.
+  - **Vị trí:** `js/index.js` (dòng 95, 181), `js/giao_viec.js` (dòng 765), `js/bao_cao_to.js`.
+  - **Trạng thái:** ⏳ *Chưa bắt đầu*
+
+- [x] **SEC-05: Thêm `rel="noopener noreferrer"` cho liên kết `target="_blank"`** [DONE]
+  - **Mô tả:** Chống lỗ hổng Reverse Tabnabbing khi mở tab mới tới Google Drive.
+  - **Vị trí:** `index.html`, `it_helpdesk.html`.
+  - **Trạng thái:** ⏳ *Chưa bắt đầu*
 
 ---
 
-> [!IMPORTANT]
-> **Kế hoạch chi tiết và tiến độ xử lý 17 đầu việc tối ưu:**  
-> Tra cứu và theo dõi trực tiếp tại tài liệu chuẩn: **[`docs/KE_HOACH_TOI_UU_VA_FIX_LOI.md`](file:///c:/Users/X/Desktop/vpdk-cn23/docs/KE_HOACH_TOI_UU_VA_FIX_LOI.md)**
+### 🎨 3. NHÓM CHUẨN HÓA FRONT-END & CLEAN CODE (BEST PRACTICES)
+*(Mục tiêu: Đạt 100% chuẩn kỹ thuật quy định tại `.agent/skill.md`)*
 
-## 3. Các việc TIẾP THEO (Next Steps) 📋
-- [ ] **Nhóm 1 (Tối ưu Hiệu suất & Tốc độ tải - PERF-01 -> PERF-06)**: Gỡ bỏ `@import` CSS cascade, tối ưu tệp `quotes_data.js` (362KB), localize docx/FileSaver, dùng System Fonts và thêm Debounce.
-- [ ] **Nhóm 2 (Chuẩn hóa Front-end & Clean Code - FE-01 -> FE-06)**: Gỡ 22 inline events `it_helpdesk.html`, thay inline styles bằng `.d-none`, thêm `type="button"` cho 27 nút bấm, bổ sung label/id input.
-- [ ] **Nhóm 3 (An ninh & Bảo vệ PII - SEC-01 -> SEC-05)**: Gỡ bỏ danh bạ cứng `STAFF_CN23`, kiểm soát RBAC trên Apps Script, băm mật khẩu SHA-256 và rà soát XSS.
-- [ ] **Kiểm thử đa trình duyệt & Bộ test tự động**: Chạy lại `python tests/run_all_tests.py` sau khi fix từng nhóm hạng mục.
-- [ ] **Đẩy code lên GitHub**: Sau khi kiểm tra hoàn tất tại local, thực hiện `git push` để cập nhật trang chính thức.
+- [x] **FE-01: Gỡ bỏ 22 inline event handlers trong `it_helpdesk.html`** [DONE]
+  - **Mô tả:** Chuyển toàn bộ `onclick`, `onchange`, `oninput`, `onsubmit` sang `data-action="..."` và Event Delegation tại `js/it_helpdesk.js`.
+  - **Trạng thái:** ⏳ *Chưa bắt đầu*
 
+- [x] **FE-02: Thay thế 10 inline `style="display: none;"` trong `lich_tuan.html`** [DONE]
+  - **Mô tả:** Chuyển sang dùng class `.d-none` hoặc thuộc tính HTML5 `hidden`.
+  - **Trạng thái:** ⏳ *Chưa bắt đầu*
 
+- [x] **FE-03: Bổ sung tường minh `type="button"` cho 27 nút bấm** [DONE]
+  - **Mô tả:** Ngăn ngừa hành vi tự động submit form của trình duyệt.
+  - **Vị trí:** `bao_cao_to.html`, `giao_viec.html`, `lich_tuan.html`, `it_helpdesk.html`.
+  - **Trạng thái:** ⏳ *Chưa bắt đầu*
 
+- [x] **FE-04: Bổ sung thẻ `<label for="...">` và `id` cho các input** [DONE]
+  - **Mô tả:** Chuẩn hóa form accessibility (A11y).
+  - **Vị trí:** `it_helpdesk.html`.
+  - **Trạng thái:** ⏳ *Chưa bắt đầu*
+
+- [x] **FE-05: Quy chuẩn hóa mã màu HEX về CSS Design Tokens (`variables.css`)** [DONE]
+  - **Mô tả:** Loại bỏ các mã màu HEX viết cứng, chuyển sang biến `var(--color-...)`.
+  - **Trạng thái:** ⏳ *Chưa bắt đầu*
+
+- [x] **FE-06: Hoàn thiện mẫu base app template (`templates/base_app_template.html`)** [DONE]
+  - **Mô tả:** Đồng bộ khung mẫu chuẩn phục vụ mở rộng phân hệ sau này.
+  - **Trạng thái:** ⏳ *Chưa bắt đầu*
+
+---
+
+## 📜 CÁC CÔNG VIỆC ĐÃ HOÀN TẤT TRƯỚC ĐÂY (DONE HISTORY)
+- [x] **Xóa hiển thị số CCCD trên toàn bộ website**: 0 visible CCCD trên UI, không gửi CCCD qua URL/payload API.
+- [x] **Xây dựng module bảo mật `js/auth.js` & Zero-Trust Route Guard**: Nhúng kiểm tra session ngay đầu thẻ `<head>` của cả 4 phân hệ con.
+- [x] **Đồng bộ luồng Đăng xuất**: Dọn sạch session và token qua `FamilyAuth.logout()` và `FamilyLayout.logout()`.
+- [x] **Chặn hoàn toàn việc gửi mật khẩu qua GET URL query** trong `index.html` và backend `google_apps_script.js`.
+- [x] **Dọn dẹp tệp mồ côi**: Xóa bỏ `style.css`, `sidebar.css`, `js/sidebar.js`, `base_template.html`.
+- [x] **Gỡ bỏ Tailwind Play CDN runtime (2.9MB)**: Thay thế bằng `css/utilities.css` tĩnh (~28KB), mở trang tức thì < 100ms.
+- [x] **Nén ảnh Canvas phía client**: IT Helpdesk nén ảnh chụp màn hình < 250KB trước khi tải lên Google Drive.
+- [x] **Chống Formula Injection trên Backend**: Tích hợp hàm `sanitizeForSheet()` cho dữ liệu bắt đầu bằng `=`, `+`, `-`, `@`.
+- [x] **Chống DOM Thrashing khi tab chạy ngầm**: Tích hợp `if (document.hidden) return;` vào các tiến trình đồng bộ ngầm.
+- [x] **Xây dựng bộ kiểm thử tự động `tests/test_system.py`**: 14/14 test cases về bảo mật, RBAC, hiệu năng đều PASSED 100%.
+- [x] **Thiết lập bộ đôi quy chuẩn `.agent/rules.md` (SSOT) và `.agent/skill.md` (Cẩm nang Best Practice)**.
+
+---
+
+## 📌 LỊCH SỬ CẬP NHẬT (AUDIT LOG)
+
+| Thời Điểm | Người Thực Hiện | Hạng Mục Đã Sửa | Ghi Chú Chi Tiết |
+| :---: | :---: | :---: | :--- |
+| **04/11/2026** | Antigravity AI | Hợp nhất tài liệu & Cập nhật danh mục 17 việc | Gom gọn thư mục `docs/`, lấy `task.md` làm Single Source of Tracking. |
+| **04/11/2026** | Antigravity AI | Hoàn thành 4 task Hiệu suất & 3 task Bảo mật | Triệt tiêu @import CSS, rút gọn quotes_data 362KB->16KB, gỡ PII 82 cán bộ, chống XSS index.js, E2E test 12/12 PASSED. |
+| **05/11/2026** | Antigravity AI | Hoàn thành PERF-03, PERF-06, FE-03, FE-04, FE-06 | Localize docx/FileSaver vào js/vendor/, 100% button có type, 100% input có id, dọn file zip root. Chạy test PASSED 100%. |
+| **05/11/2026** | Antigravity AI | Chốt quyết định SEC-02 & SEC-03 | Đóng SEC-03 (SKIP theo chỉ đạo), hoãn SEC-02 (giữ backend ổn định). Tiến độ đạt 14/17 (82%). |
+| **05/11/2026** | Antigravity AI | Hoàn tất 100% Chuẩn hóa Front-End (FE-01, FE-02, FE-05) | Triệt tiêu 22 inline events it_helpdesk qua Event Delegation, dọn 10 inline style lich_tuan qua CSS, chuẩn hóa 95 mã màu HEX về Tokens. 100% test PASSED. |

@@ -162,7 +162,21 @@ class TestRunner:
         # 1. Start Server & Headless Chrome
         chrome_bin = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
         if not os.path.exists(chrome_bin):
-            chrome_bin = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+            chrome_bin = None
+    for candidate in [
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        os.path.expanduser(r"~\AppData\Local\Google\Chrome\Application\chrome.exe"),
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "/usr/bin/google-chrome",
+        "/usr/bin/chromium-browser"
+    ]:
+        if os.path.exists(candidate):
+            chrome_bin = candidate
+            break
+    if not chrome_bin:
+        chrome_bin = "chrome"
+
 
         srv = subprocess.Popen([sys.executable, "-m", "http.server", str(PORT)],
                                cwd=WORKSPACE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

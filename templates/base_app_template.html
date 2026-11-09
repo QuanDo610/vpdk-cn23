@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Khung Mẫu Phân Hệ Chuẩn (Base Template) - VPĐK Chi Nhánh 23</title>
+  <!-- Modular CSS (Parallel Load - No @import) -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/utilities.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <!-- ==================== 0. RÀO CHẮN BẢO MẬT (ZERO-TRUST ROUTE GUARD) ==================== -->
   <script src="js/auth.js"></script>
@@ -11,10 +16,8 @@
 
   <!-- ==================== 1. THƯ VIỆN BỔ TRỢ CHUẨN ==================== -->
   <!-- Font Awesome 6 Icons (Free CDN) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <!-- Bộ Class Tiện Ích Tĩnh Cục Bộ (Thay thế hoàn toàn Tailwind Play CDN) -->
-  <link rel="stylesheet" href="css/utilities.css">
 
   <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,7 +26,6 @@
 
   <!-- ==================== 2. HỆ THỐNG GIAO DIỆN CỐT LÕI (DESIGN SYSTEM) ==================== -->
   <!-- Bảng định kiểu cơ sở (Base CSS - Tự động nạp variables.css & utilities.css) -->
-  <link rel="stylesheet" href="css/base.css">
 
   <!-- CSS riêng của phân hệ mới: Ví dụ href="css/ten_module.css" -->
 

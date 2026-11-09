@@ -5,8 +5,6 @@
    Kiến trúc: Đồng bộ với Lịch Tuần (2 Tab: Bảng theo dõi & Báo sự cố mới)
    ========================================================================= */
 
-@import url("base.css");
-
 /* ==================== 1. KHUNG LÀM VIỆC CHÍNH ==================== */
 .helpdesk-workspace {
   width: 100%;
