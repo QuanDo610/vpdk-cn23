@@ -1557,6 +1557,79 @@ async function syncDirectiveToCloud(directive) {
   }
 }
 
+/**
+ * Đồng bộ văn bản chỉ đạo trực tiếp từ Google Sheet tab ThongCaoChiThi
+ * @param {boolean} forceRefresh - Bấm thủ công thì hiển thị thông báo toast
+ */
+async function syncDirectivesFromCloud(forceRefresh = false) {
+  const syncBtn = document.getElementById("btnSyncDirectives");
+  const syncIcon = document.getElementById("syncDirectiveIcon");
+  const reloadIcon = document.getElementById("reloadDirectivesListIcon");
+
+  if (syncIcon) syncIcon.classList.add("fa-spin");
+  if (reloadIcon) reloadIcon.classList.add("fa-spin");
+  if (syncBtn) syncBtn.classList.add("opacity-75", "pointer-events-none");
+
+  try {
+    const res = await fetch(`${SCRIPT_URL}?action=getDirectives&t=${Date.now()}`);
+    if (res.ok) {
+      const result = await res.json();
+      if (result.success && Array.isArray(result.directives) && result.directives.length > 0) {
+        const cloudDocs = result.directives.map((d, idx) => {
+          const rawName = d.fileName || `Van_ban_${idx + 1}.pdf`;
+          const baseName = rawName.replace(/\.pdf$/i, "");
+          let detectedSoHieu = "CHỈ ĐẠO CHUNG";
+          const soHieuMatch = baseName.match(/^([0-9]+[\/_-][A-Za-z0-9đĐ_-]+)/);
+          if (soHieuMatch) {
+            detectedSoHieu = soHieuMatch[1].replace(/[_-]/g, "/").toUpperCase();
+          }
+
+          return {
+            id: d.id || `CLOUD_${idx + 1}_${Date.now()}`,
+            soHieu: d.soHieu || detectedSoHieu,
+            title: d.title || baseName.replace(/[_-]/g, " "),
+            sender: d.sender || "Nguyễn Chiến Thắng — Giám đốc",
+            createdAt: d.createdAt || d.timestamp || "",
+            timestamp: d.timestamp || (Date.now() - idx * 1000),
+            fileName: rawName,
+            fileSize: d.fileSize || "PDF",
+            previewUrl: d.viewUrl || d.previewUrl || d.downloadUrl || "",
+            viewUrl: d.viewUrl || d.previewUrl || "",
+            downloadUrl: d.downloadUrl || d.fileUrl || "",
+            fileUrl: d.viewUrl || d.downloadUrl || "",
+            notes: d.notes || ""
+          };
+        });
+
+        // Ghi đè danh sách mới nhất từ Google Sheet vào localStorage
+        saveStoredDirectives(cloudDocs);
+        renderDirectives();
+
+        if (forceRefresh) {
+          showToast(`Đã đồng bộ ${cloudDocs.length} văn bản chỉ đạo mới nhất từ Google Sheet!`, "success");
+        }
+        return true;
+      } else if (forceRefresh) {
+        showToast("Google Sheet chưa có thêm văn bản mới.", "info");
+      }
+    } else if (forceRefresh) {
+      showToast("Không thể kết nối đến máy chủ Google Sheet!", "error");
+    }
+  } catch (err) {
+    console.warn("Lỗi syncDirectivesFromCloud:", err);
+    if (forceRefresh) {
+      showToast("Chế độ ngoại tuyến: Không thể kết nối tới Google Sheet.", "warning");
+    }
+  } finally {
+    if (syncIcon) syncIcon.classList.remove("fa-spin");
+    if (reloadIcon) reloadIcon.classList.remove("fa-spin");
+    if (syncBtn) syncBtn.classList.remove("opacity-75", "pointer-events-none");
+  }
+  return false;
+}
+window.syncDirectivesFromCloud = syncDirectivesFromCloud;
+window.refreshDirectivesFromCloud = () => syncDirectivesFromCloud(true);
+
 // ========================================================
 // 5. KHỞI CHẠY & EVENT DELEGATION
 // ========================================================
@@ -1569,6 +1642,7 @@ window.addEventListener("DOMContentLoaded", () => {
     renderTasksTable();
     renderDirectives();
     syncTasksFromCloud();
+    syncDirectivesFromCloud(false);
   } catch (err) {
     console.error("LỖI KHỞI ĐỘNG GIAO VIỆC:", err);
     window.__dom_error = err.stack || String(err);
@@ -1773,6 +1847,8 @@ window.addEventListener("DOMContentLoaded", () => {
     [panelDirectives, panelAssign, panelTracking].forEach(p => p?.classList.add("hidden"));
     if (btnQuickOpenAssign) btnQuickOpenAssign.style.display = "none";
     if (btnQuickOpenUploadDirective) btnQuickOpenUploadDirective.classList.add("hidden");
+    const btnSyncDirectives = document.getElementById("btnSyncDirectives");
+    if (btnSyncDirectives) btnSyncDirectives.classList.add("hidden");
 
     if (tabName === "assign") {
       tabBtnAssign?.classList.add("active");
@@ -1799,6 +1875,11 @@ window.addEventListener("DOMContentLoaded", () => {
           btnQuickOpenUploadDirective.classList.add("hidden");
           btnQuickOpenUploadDirective.style.display = "none";
         }
+      }
+      // Hiển thị nút Tải lại Sheet ở Tab 1
+      if (btnSyncDirectives) {
+        btnSyncDirectives.classList.remove("hidden");
+        btnSyncDirectives.style.display = "";
       }
       renderDirectives();
     }

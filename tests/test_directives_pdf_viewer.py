@@ -522,8 +522,52 @@ def run_tests():
 
         print("  ✅ PASS: Tải lên trực tiếp PDF nhanh không form và KPI hoạt động chuẩn xác trong Tab 3!")
 
+        # -------------------------------------------------------------
+        # TEST CASE 7: Kiểm tra Nút Làm Mới / Đồng Bộ Google Sheet
+        # Kỳ vọng:
+        # - Nút #btnSyncDirectives hiển thị ở Tab 1
+        # - Nút biểu tượng #btnReloadDirectivesList ở tiêu đề danh mục
+        # - Chuyển sang Tab 2 hoặc 3 thì nút #btnSyncDirectives bị ẩn
+        # - Hàm syncDirectivesFromCloud() và refreshDirectivesFromCloud() tồn tại và thực thi an toàn
+        # -------------------------------------------------------------
+        print("\n🔄 [TEST CASE 7] Kiểm tra Nút Làm Mới / Đồng Bộ Google Sheet...")
+        sync_check = client.evaluate("""
+            (() => {
+                switchTaskTab('directives');
+                const btnSync = document.getElementById('btnSyncDirectives');
+                const btnReloadList = document.getElementById('btnReloadDirectivesList');
+                const isSyncVisibleInTab1 = btnSync && !btnSync.classList.contains('hidden') && btnSync.style.display !== 'none';
+                const isReloadListVisible = btnReloadList && !btnReloadList.classList.contains('hidden');
+
+                // Chuyển sang Tab 3 kiểm tra nút bị ẩn
+                switchTaskTab('tracking');
+                const isSyncHiddenInTab3 = btnSync && (btnSync.classList.contains('hidden') || btnSync.style.display === 'none');
+
+                // Quay lại Tab 1
+                switchTaskTab('directives');
+
+                return {
+                    syncVisibleTab1: isSyncVisibleInTab1,
+                    reloadListVisible: isReloadListVisible,
+                    syncHiddenTab3: isSyncHiddenInTab3,
+                    hasFunction: typeof window.syncDirectivesFromCloud === 'function' && typeof window.refreshDirectivesFromCloud === 'function'
+                };
+            })()
+        """)
+        print(f"  Nút Tải Lại Sheet hiển thị ở Tab 1: {sync_check.get('syncVisibleTab1')}")
+        print(f"  Nút Reload List hiển thị ở header danh mục: {sync_check.get('reloadListVisible')}")
+        print(f"  Nút Tải Lại Sheet bị ẩn khi sang Tab 3: {sync_check.get('syncHiddenTab3')}")
+        print(f"  Hàm syncDirectivesFromCloud khả dụng: {sync_check.get('hasFunction')}")
+
+        assert sync_check.get("syncVisibleTab1") is True, "LỖI: Nút Tải Lại Sheet không hiển thị ở Tab 1!"
+        assert sync_check.get("reloadListVisible") is True, "LỖI: Nút reload trên danh mục không hiển thị!"
+        assert sync_check.get("syncHiddenTab3") is True, "LỖI: Nút Tải Lại Sheet không bị ẩn ở Tab 3!"
+        assert sync_check.get("hasFunction") is True, "LỖI: Thiếu hàm syncDirectivesFromCloud / refreshDirectivesFromCloud!"
+
+        print("  ✅ PASS: Nút Tải Lại / Đồng Bộ Google Sheet hoạt động hoàn hảo!")
+
         print("\n" + "=" * 70)
-        print("🎉 TẤT CẢ 6/6 TEST CASE VỀ THÔNG CÁO & CHỈ THỊ PDF ĐỀU THÀNH CÔNG 100%!")
+        print("🎉 TẤT CẢ 7/7 TEST CASE VỀ THÔNG CÁO & CHỈ THỊ PDF ĐỀU THÀNH CÔNG 100%!")
         print("=" * 70)
         return True
 

@@ -1141,6 +1141,9 @@ function doPost(e) {
     }
 
     // 7. THÔNG CÁO & CHỈ THỊ PDF TOÀN CƠ QUAN (BAN GIÁM ĐỐC)
+    if (action === "getDirectives") {
+      return jsonResponse(handleGetDirectives(ss));
+    }
     if (action === "createDirective" || action === "uploadDirective") {
       return jsonResponse(handleCreateDirective(body, ss));
     }
