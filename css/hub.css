@@ -795,10 +795,10 @@
   color: #1d4ed8;
 }
 
-/* Lưới 4 Phân Hệ Gọn Nhỏ (Tinh giản, không status, không description dài dòng) */
+/* Lưới 5 Phân Hệ Gọn Nhỏ (Tinh giản, không status, không description dài dòng) */
 .compact-modules-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
   gap: 16px;
   margin-bottom: 24px;
 }
@@ -832,6 +832,7 @@
 .compact-module-card.card-mod-it::before { background: var(--color-brand-navy-light); }
 .compact-module-card.card-mod-task::before { background: var(--color-accent); }
 .compact-module-card.card-mod-report::before { background: #0d9488; }
+.compact-module-card.card-mod-hrm::before { background: #6366f1; }
 
 .compact-module-card:hover {
   transform: translateY(-2px);
@@ -859,6 +860,7 @@
 .card-mod-it .mod-icon-wrapper { background: #dbeafe; color: #1e40af; }
 .card-mod-task .mod-icon-wrapper { background: #fef3c7; color: var(--color-accent-hover); }
 .card-mod-report .mod-icon-wrapper { background: #ccfbf1; color: #0f766e; }
+.card-mod-hrm .mod-icon-wrapper { background: #e0e7ff; color: #4338ca; }
 
 .mod-info {
   flex: 1;

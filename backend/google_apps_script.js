@@ -1038,22 +1038,25 @@ function doGet(e) {
       });
     }
 
-    // 3. LẤY DANH SÁCH TÀI KHOẢN
+    // 3. LẤY DANH SÁCH TÀI KHOẢN (TUYỆT ĐỐI KHÔNG TRẢ CCCD & MẬT KHẨU)
     if (action === "getUsers") {
       const sheet = getUsersSheet(ss);
       const data = sheet.getDataRange().getDisplayValues();
       const users = [];
       if (data.length > 1) {
-        const headers = data[0].map(function(h) { return (h || "").toString().trim().toLowerCase(); });
+        const rawHeaders = data[0].map(function(h) { return (h || "").toString().trim(); });
+        const headers = rawHeaders.map(function(h) { return h.toLowerCase(); });
         let colName = headers.findIndex(function(h) { return h.includes("họ và tên") || h.includes("họ tên") || h.includes("fullname"); });
         if (colName === -1) colName = 0;
         let colUsername = headers.findIndex(function(h) { return h === "username" || h.includes("username") || h.includes("tên đăng nhập"); });
         if (colUsername === -1) colUsername = 1;
+        let colPass = headers.findIndex(function(h) { return h.includes("mật khẩu") || h.includes("password") || h === "pass"; });
+        if (colPass === -1) colPass = 2;
         let colPos = headers.findIndex(function(h) { return h.includes("chức danh") || h.includes("chức vụ") || h.includes("position"); });
         if (colPos === -1) colPos = 3;
         let colPhone = headers.findIndex(function(h) { return h.includes("điện thoại") || h.includes("sđt") || h.includes("phone"); });
         if (colPhone === -1) colPhone = 4;
-        let colDept = headers.findIndex(function(h) { return h.includes("đơn vị") || h.includes("bộ phận") || h.includes("department"); });
+        let colDept = headers.findIndex(function(h) { return h.includes("đơn vị") || h.includes("bộ phận") || h.includes("phòng ban") || h.includes("department"); });
         if (colDept === -1) colDept = 5;
         let colCccd = headers.findIndex(function(h) { return h.includes("cccd") || h.includes("căn cước") || h.includes("cmnd"); });
         if (colCccd === -1) colCccd = 6;
@@ -1063,12 +1066,78 @@ function doGet(e) {
         if (colRole === -1) colRole = 8;
         let colDate = headers.findIndex(function(h) { return h.includes("ngày tạo") || h.includes("date"); });
         if (colDate === -1) colDate = 9;
+        const colEmail = headers.findIndex(function(h) { return h.includes("email") || h.includes("mail"); });
+
+        const knownCols = {};
+        [colName, colUsername, colPass, colPos, colPhone, colDept, colCccd, colStatus, colRole, colDate, colEmail].forEach(function(idx) {
+          if (idx >= 0) knownCols[idx] = true;
+        });
+
+        // Kiểm tra quyền xem nhân sự đã nghỉ việc khi truy vấn cho phân hệ HRM
+        // Chỉ IT (quandtm), Giám đốc, và Nguyễn Thị Bích Tuyền (tuyenntb) được xem trạng thái nghỉ việc
+        let allowInactive = true;
+        if ((params.scope || "").toString().trim().toLowerCase() === "hrm") {
+          allowInactive = false;
+          const vUser = (params.viewerUsername || "").toString().trim().toLowerCase();
+          const vPhone = (params.viewerPhone || "").toString().replace(/^'+/, "").replace(/[\s.\-]+/g, "").replace(/^0+/, "");
+          const vName = removeVietnameseTones((params.viewerFullname || "").toString()).toLowerCase().trim();
+
+          if (
+            vUser === "quandtm" || vUser === "admin" || vPhone === "973807027" || vName.includes("do trong minh quan") ||
+            vUser === "tuyenntb" || vPhone === "909736435" || vName.includes("nguyen thi bich tuyen")
+          ) {
+            allowInactive = true;
+          } else if (vUser || vPhone || vName) {
+            for (let k = 1; k < data.length; k++) {
+              const kr = data[k];
+              const kName = (kr[colName] || "").trim();
+              const kUser = ((kr[colUsername] || "").trim() || generateUsernameFromFullname(kName)).toLowerCase();
+              const kPhone = (kr[colPhone] || "").replace(/^'+/, "").replace(/[\s.\-]+/g, "").replace(/^0+/, "");
+              const kPos = removeVietnameseTones((kr[colPos] || "").toString()).toLowerCase().trim();
+              const kNameNorm = removeVietnameseTones(kName).toLowerCase().trim();
+              const isViewerRow = (vUser && kUser === vUser) || (vPhone && kPhone === vPhone) || (vName && kNameNorm === vName);
+              if (isViewerRow) {
+                if ((kPos.includes("giam doc") && !kPos.includes("pho")) || kPos.includes("quan tri vien it")) {
+                  allowInactive = true;
+                }
+                break;
+              }
+            }
+          }
+        }
 
         for (let i = 1; i < data.length; i++) {
           const r = data[i];
           const name = (r[colName] || "").trim();
           if (!name && !r[colPhone] && !r[colUsername]) continue;
+          const rowStatus = (r[colStatus] || "Đang làm việc").trim();
+          const rowStatusNorm = removeVietnameseTones(rowStatus).toLowerCase();
+          const isRowInactive = rowStatusNorm.includes("da nghi") || rowStatusNorm.includes("nghi viec") || rowStatusNorm.includes("thoi viec");
+          if (!allowInactive && isRowInactive) continue;
           const uName = (r[colUsername] || "").trim() || generateUsernameFromFullname(name);
+
+          // Thu thập thêm các cột mở rộng không nhạy cảm nếu Sheet có thêm (tuyệt đối chặn CCCD/mật khẩu)
+          const extraFields = [];
+          for (let c = 0; c < rawHeaders.length; c++) {
+            if (knownCols[c]) continue;
+            const hNorm = headers[c] || "";
+            if (!hNorm) continue;
+            if (
+              hNorm.includes("cccd") ||
+              hNorm.includes("căn cước") ||
+              hNorm.includes("cmnd") ||
+              hNorm.includes("mật khẩu") ||
+              hNorm.includes("password") ||
+              hNorm === "pass"
+            ) {
+              continue;
+            }
+            const cellVal = (r[c] || "").toString().replace(/^'+/, "").trim();
+            if (cellVal) {
+              extraFields.push({ label: rawHeaders[c], value: cellVal });
+            }
+          }
+
           users.push({
             fullname: name,
             username: uName,
@@ -1077,7 +1146,9 @@ function doGet(e) {
             department: (r[colDept] || "Chi nhánh số 23").trim(),
             status: (r[colStatus] || "Đang làm việc").trim(),
             role: (r[colRole] && r[colRole].toLowerCase().includes("admin")) ? "admin" : "user",
-            createdDate: (colDate !== -1 && r[colDate]) ? r[colDate].trim() : ""
+            createdDate: (colDate !== -1 && r[colDate]) ? r[colDate].trim() : "",
+            email: (colEmail !== -1 && r[colEmail]) ? r[colEmail].trim() : "",
+            extraFields: extraFields
           });
         }
       }

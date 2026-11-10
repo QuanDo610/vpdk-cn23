@@ -160,22 +160,20 @@ class TestRunner:
         print("==================================================================\n")
 
         # 1. Start Server & Headless Chrome
-        chrome_bin = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
-        if not os.path.exists(chrome_bin):
-            chrome_bin = None
-    for candidate in [
-        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
-        os.path.expanduser(r"~\AppData\Local\Google\Chrome\Application\chrome.exe"),
-        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-        "/usr/bin/google-chrome",
-        "/usr/bin/chromium-browser"
-    ]:
-        if os.path.exists(candidate):
-            chrome_bin = candidate
-            break
-    if not chrome_bin:
-        chrome_bin = "chrome"
+        chrome_bin = None
+        for candidate in [
+            r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+            r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+            os.path.expanduser(r"~\AppData\Local\Google\Chrome\Application\chrome.exe"),
+            "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+            "/usr/bin/google-chrome",
+            "/usr/bin/chromium-browser"
+        ]:
+            if os.path.exists(candidate):
+                chrome_bin = candidate
+                break
+        if not chrome_bin:
+            chrome_bin = "chrome"
 
 
         srv = subprocess.Popen([sys.executable, "-m", "http.server", str(PORT)],
@@ -202,6 +200,7 @@ class TestRunner:
             self.test_index_hub_and_auth()
             self.test_it_helpdesk_workflow()
             self.test_schedule_workflow()
+            self.test_hrm_workflow()
             self.test_other_modules_integrity()
             self.test_security_and_pii_rules()
 
@@ -234,7 +233,7 @@ class TestRunner:
     # -------------------------------------------------------------
     def test_route_guards(self):
         print("\n🔒 [NHÓM 1] Kiểm tra Route Guard khi CHƯA đăng nhập (Zero-Trust)")
-        pages = ["lich_tuan.html", "it_helpdesk.html", "giao_viec.html", "bao_cao_to.html"]
+        pages = ["lich_tuan.html", "it_helpdesk.html", "giao_viec.html", "bao_cao_to.html", "hrm.html"]
 
         for page in pages:
             # Clear all session keys
@@ -311,12 +310,12 @@ class TestRunner:
         quote_text_after = self.client.evaluate("document.getElementById('quoteTextVi').textContent")
         self.assert_true(len(quote_text_before) > 0, "Thẻ danh ngôn hiển thị câu nói tiếng Việt")
 
-        # Check 4 Module links
+        # Check 5 Module links
         links = self.client.evaluate("""
             Array.from(document.querySelectorAll('.compact-module-card')).map(a => a.getAttribute('href'))
         """)
-        expected_links = ["lich_tuan.html", "it_helpdesk.html", "giao_viec.html", "bao_cao_to.html"]
-        self.assert_equal(links, expected_links, "4 Thẻ phân hệ liên kết đúng các trang")
+        expected_links = ["lich_tuan.html", "it_helpdesk.html", "giao_viec.html", "bao_cao_to.html", "hrm.html"]
+        self.assert_equal(links, expected_links, "5 Thẻ phân hệ liên kết đúng các trang")
 
         # Check User Dropdown in Layout
         header_user_name = self.client.evaluate("document.getElementById('displayUserName')?.textContent || document.getElementById('headerUserName')?.textContent || ''")
@@ -653,6 +652,194 @@ class TestRunner:
         self.client.evaluate("closeExportWordModal()")
 
     # -------------------------------------------------------------
+    # 5. HRM - TRA CỨU NHÂN SỰ (hrm.html & js/hrm.js)
+    # -------------------------------------------------------------
+    def test_hrm_workflow(self):
+        print("\n👥 [NHÓM 4B] Kiểm tra Phân hệ HRM - Tra Cứu Nhân Sự (hrm.html & js/hrm.js)")
+
+        mock_user = {
+            "username": "quandtm",
+            "fullname": "Đỗ Trọng Minh Quân",
+            "phone": "0973807027",
+            "position": "Chuyên viên CNTT",
+            "department": "Tổ Hành chính - Tổng hợp",
+            "role": "admin"
+        }
+        self.client.evaluate(f"FamilyAuth.saveSession({json.dumps(mock_user)});")
+        self.client.navigate(f"{BASE_URL}/hrm.html")
+        for _ in range(25):
+            time.sleep(0.25)
+            is_ready = self.client.evaluate("typeof window.FamilyHRM === 'object'")
+            if is_ready:
+                break
+
+        has_header = self.client.evaluate("!!document.getElementById('appTopbar')")
+        has_footer = self.client.evaluate("!!document.getElementById('appFooter')")
+        self.assert_true(has_header and has_footer, "HRM: Layout controller nạp Topbar & Footer")
+
+        # Nạp danh sách giả lập có chứa cccd, mật khẩu và 1 nhân sự Đã nghỉ
+        hrm_res = self.client.evaluate("""
+            (function() {
+                const sampleUsers = [
+                    {
+                        fullname: "Nguyễn Chiến Thắng",
+                        username: "thangnc",
+                        position: "Giám đốc",
+                        department: "Ban Giám đốc",
+                        phone: "0901112223",
+                        status: "Đang làm việc",
+                        role: "admin",
+                        cccd: "074088001234",
+                        password: "secret",
+                        createdDate: "01/01/2026"
+                    },
+                    {
+                        fullname: "Đỗ Trọng Minh Quân",
+                        username: "quandtm",
+                        position: "Chuyên viên CNTT",
+                        department: "Tổ Hành chính - Tổng hợp",
+                        phone: "0973807027",
+                        status: "Đang làm việc",
+                        role: "admin",
+                        cccd: "074095005678",
+                        createdDate: "01/01/2026"
+                    },
+                    {
+                        fullname: "Trần Văn Tuấn",
+                        username: "tuantv",
+                        position: "Chuyên viên",
+                        department: "Tổ Kỹ thuật Địa chính",
+                        phone: "0912345678",
+                        status: "Đang làm việc",
+                        role: "user",
+                        cccd: "074092009999",
+                        createdDate: "02/01/2026"
+                    },
+                    {
+                        fullname: "Lê Văn Nghỉ",
+                        username: "nghilv",
+                        position: "Chuyên viên",
+                        department: "Tổ Kỹ thuật Địa chính",
+                        phone: "0988777666",
+                        status: "Đã nghỉ",
+                        role: "user",
+                        cccd: "074091008888",
+                        createdDate: "03/01/2026"
+                    }
+                ];
+
+                window.FamilyHRM.setUsersForTest(sampleUsers);
+
+                const cardsCount = document.querySelectorAll('#staffCardGrid .hrm-staff-card').length;
+                const bodyText = document.body.innerText;
+                const hasAnyCccd = bodyText.includes("074088001234") || bodyText.includes("074095005678") || bodyText.includes("074092009999") || bodyText.includes("074091008888");
+                const adminStatusVisible = !document.getElementById('filterStatusField').classList.contains('hidden');
+
+                // Tìm theo tên không dấu
+                document.getElementById('searchUserInput').value = "minh quan";
+                window.FamilyHRM.applyFilters();
+                const searchMatched = window.FamilyHRM.getFilteredUsers().map(u => u.username);
+
+                // Reset search & lọc theo phòng ban
+                document.getElementById('searchUserInput').value = "";
+                document.getElementById('filterDeptSelect').value = "Tổ Kỹ thuật Địa chính";
+                window.FamilyHRM.applyFilters();
+                const deptMatched = window.FamilyHRM.getFilteredUsers().map(u => u.username);
+
+                // Reset lọc & chuyển sang Table View + mở Detail Modal
+                document.getElementById('filterDeptSelect').value = "ALL";
+                window.FamilyHRM.applyFilters();
+                window.FamilyHRM.switchViewMode("table");
+                const tableRowsCount = document.querySelectorAll('#staffTableBody tr').length;
+
+                const firstUid = window.FamilyHRM.getFilteredUsers()[0].uid;
+                window.FamilyHRM.openStaffDetail(firstUid);
+                const modalOpen = !document.getElementById('modalStaffDetail').classList.contains('hidden');
+                const modalText = document.getElementById('modalStaffDetail').innerText;
+                const modalHasCccd = modalText.includes("074088001234") || modalText.includes("074095005678") || modalText.includes("074092009999");
+                window.FamilyHRM.closeStaffDetail();
+
+                // Kiểm tra RBAC xem trạng thái nghỉ việc:
+                // 1. Chuyên viên thường (không được xem Đã nghỉ)
+                FamilyAuth.saveSession({
+                    username: "tuantv",
+                    fullname: "Trần Văn Tuấn",
+                    phone: "0912345678",
+                    position: "Chuyên viên",
+                    department: "Tổ Kỹ thuật Địa chính",
+                    role: "user"
+                });
+                window.FamilyHRM.setUsersForTest(sampleUsers);
+                const regularUserVisible = window.FamilyHRM.getRawUsers().map(u => u.username);
+                const regularStatusHidden = document.getElementById('filterStatusField').classList.contains('hidden');
+
+                // 2. Phó Giám đốc (không phải Giám đốc, không được xem Đã nghỉ)
+                FamilyAuth.saveSession({
+                    username: "cuongdh",
+                    fullname: "Đặng Huy Cường",
+                    phone: "0902223334",
+                    position: "Phó Giám đốc",
+                    department: "Ban Giám đốc",
+                    role: "admin"
+                });
+                window.FamilyHRM.setUsersForTest(sampleUsers);
+                const viceDirVisible = window.FamilyHRM.getRawUsers().map(u => u.username);
+
+                // 3. Giám đốc (được xem Đã nghỉ)
+                FamilyAuth.saveSession({
+                    username: "thangnc",
+                    fullname: "Nguyễn Chiến Thắng",
+                    phone: "0901112223",
+                    position: "Giám đốc",
+                    department: "Ban Giám đốc",
+                    role: "admin"
+                });
+                window.FamilyHRM.setUsersForTest(sampleUsers);
+                const directorVisible = window.FamilyHRM.getRawUsers().map(u => u.username);
+
+                // 4. Nguyễn Thị Bích Tuyền (được xem Đã nghỉ)
+                FamilyAuth.saveSession({
+                    username: "tuyenntb",
+                    fullname: "Nguyễn Thị Bích Tuyền",
+                    phone: "0909736435",
+                    position: "Tổ trưởng",
+                    department: "Tổ Hành chính - Tổng hợp",
+                    role: "admin"
+                });
+                window.FamilyHRM.setUsersForTest(sampleUsers);
+                const tuyenVisible = window.FamilyHRM.getRawUsers().map(u => u.username);
+
+                return {
+                    cardsCount,
+                    hasAnyCccd,
+                    adminStatusVisible,
+                    searchMatched,
+                    deptMatched,
+                    tableRowsCount,
+                    modalOpen,
+                    modalHasCccd,
+                    regularUserVisible,
+                    regularStatusHidden,
+                    viceDirVisible,
+                    directorVisible,
+                    tuyenVisible
+                };
+            })()
+        """)
+
+        self.assert_equal(hrm_res.get("cardsCount"), 4, "HRM: IT Admin xem đầy đủ 4 nhân sự (gồm cả Đã nghỉ)")
+        self.assert_true(hrm_res.get("adminStatusVisible"), "HRM: IT Admin thấy bộ lọc Trạng thái")
+        self.assert_true(not hrm_res.get("hasAnyCccd"), "HRM: Tuyệt đối KHÔNG hiển thị CCCD trên thẻ/bảng")
+        self.assert_equal(hrm_res.get("searchMatched"), ["quandtm"], "HRM: Tìm kiếm theo tên không dấu chính xác")
+        self.assert_equal(hrm_res.get("deptMatched"), ["tuantv", "nghilv"], "HRM: Lọc theo phòng ban chính xác")
+        self.assert_equal(hrm_res.get("tableRowsCount"), 4, "HRM: Chế độ xem Bảng hiển thị đủ 4 dòng")
+        self.assert_true(hrm_res.get("modalOpen") and not hrm_res.get("modalHasCccd"), "HRM: Modal chi tiết mở đúng và không chứa CCCD")
+        self.assert_true("nghilv" not in hrm_res.get("regularUserVisible", []) and hrm_res.get("regularStatusHidden"), "HRM RBAC: Chuyên viên thường chỉ thấy Đang làm việc và ẩn lọc Trạng thái")
+        self.assert_true("nghilv" not in hrm_res.get("viceDirVisible", []), "HRM RBAC: Phó Giám đốc không thấy nhân sự Đã nghỉ")
+        self.assert_true("nghilv" in hrm_res.get("directorVisible", []), "HRM RBAC: Giám đốc xem được nhân sự Đã nghỉ")
+        self.assert_true("nghilv" in hrm_res.get("tuyenVisible", []), "HRM RBAC: Nguyễn Thị Bích Tuyền xem được nhân sự Đã nghỉ")
+
+    # -------------------------------------------------------------
     # 5. OTHER MODULES INTEGRITY (giao_viec.html & bao_cao_to.html)
     # -------------------------------------------------------------
     def test_other_modules_integrity(self):
@@ -688,7 +875,7 @@ class TestRunner:
         print("\n🛡️ [NHÓM 6] Kiểm tra Tuân Thủ An Toàn Thông Tin Cá Nhân (SEC-01 -> SEC-04)")
 
         # SEC-01: No CCCD visible on UI across pages
-        for page in ["index.html", "lich_tuan.html", "it_helpdesk.html", "giao_viec.html", "bao_cao_to.html"]:
+        for page in ["index.html", "lich_tuan.html", "it_helpdesk.html", "giao_viec.html", "bao_cao_to.html", "hrm.html"]:
             self.client.navigate(f"{BASE_URL}/{page}")
             time.sleep(0.5)
 

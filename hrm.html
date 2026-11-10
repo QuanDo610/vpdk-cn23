@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HRM - Tra Cứu Nhân Sự &amp; Danh Bạ Cán Bộ - Chi Nhánh Số 23</title>
+
+  <!-- Modular CSS (Parallel Load - No @import - Pure Vanilla Web) -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/utilities.css">
+  <link rel="stylesheet" href="css/hrm.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Rào chắn kiểm soát truy cập (Zero-Trust Route Guard) -->
+  <script src="js/auth.js"></script>
+  <script>FamilyAuth.requireAuth();</script>
+
+  <!-- Layout Controller & Logic Phân Hệ HRM (Deferred) -->
+  <script src="js/layout.js" defer></script>
+  <script src="js/hrm.js" defer></script>
+</head>
+<body class="antialiased">
+
+  <!-- Thông báo Toast Notification -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- ==================== NỘI DUNG CHÍNH (CONTAINER CHUẨN 1280PX) ==================== -->
+  <main class="main-content app-container max-w-7xl w-full mx-auto px-4 sm:px-6 py-4 flex-1">
+
+    <!-- 1. THANH TIÊU ĐỀ PHÂN HỆ -->
+    <header class="page-title-strip">
+      <div>
+        <nav class="hrm-breadcrumb no-print" aria-label="Điều hướng phân cấp">
+          <a href="index.html">
+            <i class="fa-solid fa-house"></i>
+            <span>Cổng Dịch Vụ</span>
+          </a>
+          <i class="fa-solid fa-chevron-right hrm-breadcrumb-sep"></i>
+          <span class="hrm-breadcrumb-current">HRM &bull; Tra Cứu Nhân Sự</span>
+        </nav>
+        <h1 class="hrm-page-title">
+          <span class="hrm-title-icon">
+            <i class="fa-solid fa-users-viewfinder"></i>
+          </span>
+          <span>HRM &bull; DANH BẠ &amp; TRA CỨU NHÂN SỰ</span>
+        </h1>
+        <p class="hrm-page-subtitle">
+          Thông tin cán bộ, chức danh, đơn vị công tác và liên hệ nội bộ đồng bộ trực tiếp từ Sheet <strong>TaiKhoan</strong>
+        </p>
+      </div>
+
+      <div class="hrm-header-actions no-print">
+        <button type="button" id="btnRefreshUsers" class="btn btn-secondary btn-sm" title="Tải lại dữ liệu mới nhất từ Sheet TaiKhoan">
+          <i id="refreshUsersIcon" class="fa-solid fa-arrows-rotate"></i>
+          <span>Làm mới</span>
+        </button>
+        <button type="button" id="btnExportUsersCsv" class="btn btn-success btn-sm" title="Xuất danh sách đang hiển thị ra file Excel (CSV)">
+          <i class="fa-solid fa-file-excel"></i>
+          <span>Xuất Excel</span>
+        </button>
+        <button type="button" id="btnPrintUsers" class="btn btn-primary btn-sm" title="In danh bạ cán bộ chuẩn A4">
+          <i class="fa-solid fa-print"></i>
+          <span>In Danh Bạ</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 2. THẺ KPI TỔNG QUAN NHÂN SỰ -->
+    <section class="hrm-kpi-grid" aria-label="Thống kê nhân sự">
+      <div class="hrm-kpi-card">
+        <div class="hrm-kpi-icon kpi-navy">
+          <i class="fa-solid fa-users"></i>
+        </div>
+        <div class="hrm-kpi-meta">
+          <div class="hrm-kpi-label">Tổng số nhân sự</div>
+          <div id="statTotalUsers" class="hrm-kpi-value">0</div>
+          <div class="hrm-kpi-sub">Dữ liệu từ Sheet TaiKhoan</div>
+        </div>
+      </div>
+
+      <div class="hrm-kpi-card">
+        <div class="hrm-kpi-icon kpi-success">
+          <i class="fa-solid fa-user-check"></i>
+        </div>
+        <div class="hrm-kpi-meta">
+          <div class="hrm-kpi-label">Đang làm việc</div>
+          <div id="statActiveUsers" class="hrm-kpi-value">0</div>
+          <div class="hrm-kpi-sub">Cán bộ đang công tác</div>
+        </div>
+      </div>
+
+      <div class="hrm-kpi-card">
+        <div class="hrm-kpi-icon kpi-info">
+          <i class="fa-solid fa-sitemap"></i>
+        </div>
+        <div class="hrm-kpi-meta">
+          <div class="hrm-kpi-label">Phòng ban / Tổ</div>
+          <div id="statDeptCount" class="hrm-kpi-value">0</div>
+          <div class="hrm-kpi-sub">Đơn vị chuyên môn</div>
+        </div>
+      </div>
+
+      <div class="hrm-kpi-card">
+        <div class="hrm-kpi-icon kpi-accent">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </div>
+        <div class="hrm-kpi-meta">
+          <div class="hrm-kpi-label">Kết quả hiển thị</div>
+          <div id="statFilteredUsers" class="hrm-kpi-value">0</div>
+          <div id="statLastSync" class="hrm-kpi-sub">Chưa đồng bộ</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. THANH TÌM KIẾM & BỘ LỌC THEO TÊN / PHÒNG BAN -->
+    <section class="hrm-filter-panel no-print" aria-label="Tìm kiếm và lọc nhân sự">
+      <div id="hrmFilterControls" class="hrm-filter-controls no-status-filter">
+        <!-- Ô tìm kiếm theo tên -->
+        <div class="hrm-filter-field">
+          <label for="searchUserInput" class="form-label">
+            <i class="fa-solid fa-id-card"></i> Tìm kiếm theo họ tên
+          </label>
+          <div class="hrm-search-input-wrap">
+            <i class="fa-solid fa-magnifying-glass hrm-search-icon"></i>
+            <input
+              type="text"
+              id="searchUserInput"
+              class="form-control hrm-search-input"
+              placeholder="Nhập họ tên (có dấu hoặc không dấu), username..."
+              autocomplete="off"
+            >
+            <button type="button" id="btnClearSearch" class="hrm-clear-btn hidden" title="Xóa từ khóa tìm kiếm" aria-label="Xóa từ khóa">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Bộ lọc phòng ban -->
+        <div class="hrm-filter-field">
+          <label for="filterDeptSelect" class="form-label">
+            <i class="fa-solid fa-building-user"></i> Phòng ban / Bộ phận
+          </label>
+          <select id="filterDeptSelect" class="form-select">
+            <option value="ALL">-- Tất cả phòng ban --</option>
+          </select>
+        </div>
+
+        <!-- Bộ lọc trạng thái (Chỉ IT, Giám đốc, Nguyễn Thị Bích Tuyền mới thấy) -->
+        <div id="filterStatusField" class="hrm-filter-field hidden">
+          <label for="filterStatusSelect" class="form-label">
+            <i class="fa-solid fa-circle-dot"></i> Trạng thái
+          </label>
+          <select id="filterStatusSelect" class="form-select">
+            <option value="ALL">Tất cả trạng thái</option>
+            <option value="ACTIVE">Đang làm việc</option>
+            <option value="INACTIVE">Đã nghỉ</option>
+          </select>
+        </div>
+
+        <!-- Sắp xếp -->
+        <div class="hrm-filter-field">
+          <label for="sortUserSelect" class="form-label">
+            <i class="fa-solid fa-arrow-down-a-z"></i> Sắp xếp
+          </label>
+          <select id="sortUserSelect" class="form-select">
+            <option value="SMART">Mặc định (Tổ &amp; Chức vụ)</option>
+            <option value="NAME_ASC">Họ tên (A &rarr; Z)</option>
+            <option value="NAME_DESC">Họ tên (Z &rarr; A)</option>
+            <option value="DEPT_ASC">Phòng ban (A &rarr; Z)</option>
+          </select>
+        </div>
+
+        <!-- Chuyển đổi chế độ hiển thị -->
+        <div class="hrm-filter-field">
+          <span class="form-label">Chế độ xem</span>
+          <div class="hrm-view-toggle-group" role="group" aria-label="Chế độ hiển thị">
+            <button type="button" id="btnViewGrid" class="hrm-view-btn active" data-view="grid" title="Xem dạng thẻ hồ sơ">
+              <i class="fa-solid fa-grip"></i>
+              <span>Thẻ</span>
+            </button>
+            <button type="button" id="btnViewTable" class="hrm-view-btn" data-view="table" title="Xem dạng bảng danh sách">
+              <i class="fa-solid fa-table-list"></i>
+              <span>Bảng</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pills chọn nhanh theo phòng ban -->
+      <div id="deptPillsContainer" class="hrm-dept-pills-bar" aria-label="Lọc nhanh theo phòng ban">
+        <span class="hrm-dept-pills-label">
+          <i class="fa-solid fa-filter"></i> Lọc nhanh phòng ban:
+        </span>
+      </div>
+    </section>
+
+    <!-- 4. KHU VỰC HIỂN THỊ DANH SÁCH NHÂN SỰ -->
+    <section id="hrmContentArea" aria-label="Danh sách nhân sự">
+
+      <!-- Trạng thái đang tải -->
+      <div id="hrmLoadingState" class="hrm-state-box">
+        <div class="hrm-state-icon">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+        </div>
+        <h2 class="hrm-state-title">Đang tải dữ liệu nhân sự từ Sheet TaiKhoan...</h2>
+        <p class="hrm-state-desc">Hệ thống đang kết nối Google Sheets để đồng bộ danh bạ cán bộ mới nhất.</p>
+      </div>
+
+      <!-- Trạng thái lỗi kết nối -->
+      <div id="hrmErrorState" class="hrm-state-box hidden">
+        <div class="hrm-state-icon is-error">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h2 class="hrm-state-title">Không thể tải danh sách nhân sự</h2>
+        <p id="hrmErrorMessage" class="hrm-state-desc">Vui lòng kiểm tra kết nối mạng hoặc thử tải lại dữ liệu.</p>
+        <button type="button" id="btnRetryFetch" class="btn btn-primary btn-sm">
+          <i class="fa-solid fa-rotate-right"></i>
+          <span>Thử tải lại</span>
+        </button>
+      </div>
+
+      <!-- Trạng thái không có kết quả phù hợp -->
+      <div id="hrmEmptyState" class="hrm-state-box hidden">
+        <div class="hrm-state-icon">
+          <i class="fa-solid fa-user-slash"></i>
+        </div>
+        <h2 class="hrm-state-title">Không tìm thấy cán bộ phù hợp</h2>
+        <p class="hrm-state-desc">Không có nhân sự nào khớp với từ khóa tìm kiếm hoặc bộ lọc phòng ban hiện tại.</p>
+        <button type="button" id="btnResetFilters" class="btn btn-secondary btn-sm">
+          <i class="fa-solid fa-rotate-left"></i>
+          <span>Xóa toàn bộ bộ lọc</span>
+        </button>
+      </div>
+
+      <!-- Chế độ 1: Lưới Thẻ Hồ Sơ (Mặc định) -->
+      <div id="staffCardGrid" class="hrm-staff-grid hidden"></div>
+
+      <!-- Chế độ 2: Bảng Danh Sách Chi Tiết -->
+      <div id="staffTableWrapper" class="hrm-table-card hidden">
+        <div class="hrm-table-scroll">
+          <table class="hrm-table">
+            <thead>
+              <tr>
+                <th>STT</th>
+                <th>Họ và tên / Tài khoản</th>
+                <th>Chức danh / Chức vụ</th>
+                <th>Phòng ban / Bộ phận</th>
+                <th>Số điện thoại</th>
+                <th>Vai trò</th>
+                <th>Trạng thái</th>
+                <th>Ngày tạo</th>
+                <th class="no-print">Chi tiết</th>
+              </tr>
+            </thead>
+            <tbody id="staffTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ==================== MODAL HỒ SƠ CHI TIẾT CÁN BỘ ==================== -->
+  <div id="modalStaffDetail" class="hrm-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modalStaffName">
+    <div class="hrm-modal-dialog">
+      <div class="hrm-modal-header">
+        <div class="hrm-modal-profile-head">
+          <div id="modalStaffAvatar" class="hrm-modal-avatar">CB</div>
+          <div>
+            <h2 id="modalStaffName" class="hrm-modal-title">Họ và tên cán bộ</h2>
+            <div id="modalStaffPosition" class="hrm-modal-subtitle">Chức danh &bull; Đơn vị</div>
+          </div>
+        </div>
+        <button type="button" id="btnCloseDetailModal" class="hrm-modal-close" aria-label="Đóng hộp thoại">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div id="modalStaffBody" class="hrm-modal-body"></div>
+
+      <div class="hrm-modal-footer">
+        <button type="button" id="btnModalCloseFooter" class="btn btn-secondary btn-sm">
+          <i class="fa-solid fa-xmark"></i>
+          <span>Đóng</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
