@@ -67,16 +67,27 @@ async function syncStaffFromCloud() {
 }
 
 const STORAGE_KEY_TASKS = "CN23_TASK_ASSIGNMENTS_V1";
-const STORAGE_KEY_DIRECTIVES = "CN23_DIRECTIVES_V2";
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLjARkYWp2TegCCdMcfVc3W6qQm6PmhFz71-y8zB_xFXxXbRXpsUhk6aPbJtqVqUHE/exec";
+const STORAGE_KEY_DIRECTIVES = "CN23_DIRECTIVES_V4";
+const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxLjARkYWp2TegCCdMcfVc3W6qQm6PmhFz71-y8zB_xFXxXbRXpsUhk6aPbJtqVqUHE/exec";
+
+function getScriptUrl() {
+  const saved = localStorage.getItem("vpdk_script_url") || localStorage.getItem("CN23_SCRIPT_URL");
+  if (saved && saved.startsWith("https://script.google.com/macros/s/")) {
+    return saved.trim();
+  }
+  return DEFAULT_SCRIPT_URL;
+}
+
+const SCRIPT_URL = getScriptUrl();
 let currentViewingTaskId = null;
 let currentSelectedDirectiveId = null;
 let attachedFileInfo = null;
 let attachedDirectivePdf = null;
 let taskCurrentPage = 1;
 let taskPageSize = 10;
+window.__sessionDirectiveUrls = window.__sessionDirectiveUrls || {};
 
-// Kho tài liệu mẫu ban đầu của Giám đốc Chi nhánh 23
+// Kho tài liệu PDF gốc mẫu chuẩn của Giám đốc Chi nhánh 23 (dùng làm dự phòng khi Sheet trống / offline)
 const DEFAULT_DIRECTIVES = [
   {
     id: "VB-2026-005",
@@ -109,83 +120,65 @@ const DEFAULT_DIRECTIVES = [
     downloadUrl: "data/sample_documents/Cong%20van%20so%203987%20Ng%C6%B0%E1%BB%9Di%20N%C6%B0%E1%BB%9Bc%20ngo%C3%A0i%20c%C3%B9ng%20%C4%91%E1%BB%A9ng%20t%C3%AAn.pdf",
     viewUrl: "data/sample_documents/Cong%20van%20so%203987%20Ng%C6%B0%E1%BB%9Di%20N%C6%B0%E1%BB%9Bc%20ngo%C3%A0i%20c%C3%B9ng%20%C4%91%E1%BB%A9ng%20t%C3%AAn.pdf",
     notes: "Tổ Đăng ký & Cấp GCN phối hợp chặt chẽ với Tổ Kỹ thuật Địa chính kiểm tra kỹ điều kiện pháp lý đối với hồ sơ có người nước ngoài cùng đứng tên theo đúng tinh thần Công văn 3987."
-  },
-  {
-    id: "VB-2026-003",
-    soHieu: "2637/QĐ-SNNMT",
-    title: "Quyết định 2637/QĐ-SNNMT: Quy định chức năng, nhiệm vụ, quyền hạn và cơ cấu tổ chức Chi nhánh 23",
-    category: "Quyết định",
-    sender: "Nguyễn Chiến Thắng — Giám đốc",
-    createdAt: "09/11/2026 08:00",
-    timestamp: 1794100000000,
-    fileName: "2637-Q-SNN-Quy dinh chuc nang_Chi nhanh 23.pdf",
-    fileSize: "6.4 MB",
-    pages: "10 trang",
-    previewUrl: "https://drive.google.com/file/d/1Mv76Y49TASsdbAukya_aNDml_bmmdGan/preview",
-    downloadUrl: "https://drive.google.com/uc?export=download&id=1Mv76Y49TASsdbAukya_aNDml_bmmdGan",
-    viewUrl: "https://drive.google.com/file/d/1Mv76Y49TASsdbAukya_aNDml_bmmdGan/view",
-    notes: "Yêu cầu Lãnh đạo các Tổ chuyên môn phổ biến sâu rộng đến 100% cán bộ, viên chức và người lao động nghiêm túc thực hiện theo đúng chức năng nhiệm vụ 3 Tổ nghiệp vụ mới."
-  },
-  {
-    id: "VB-2026-002",
-    soHieu: "2162/CN23-HCTH",
-    title: "Công văn số 2162/CN23-HCTH: Đề nghị hỗ trợ đường truyền mạng & an toàn thông tin CSDL đất đai",
-    category: "Công văn",
-    sender: "Nguyễn Chiến Thắng — Giám đốc",
-    createdAt: "06/11/2026 14:15",
-    timestamp: 1793970900000,
-    fileName: "2162_0001.signed.pdf",
-    fileSize: "1.8 MB",
-    pages: "4 trang",
-    previewUrl: "https://drive.google.com/file/d/1Mv76Y49TASsdbAukya_aNDml_bmmdGan/preview",
-    downloadUrl: "https://drive.google.com/uc?export=download&id=1Mv76Y49TASsdbAukya_aNDml_bmmdGan",
-    viewUrl: "https://drive.google.com/file/d/1Mv76Y49TASsdbAukya_aNDml_bmmdGan/view",
-    notes: "Bộ phận CNTT & Mạng phối hợp chặt chẽ với Sở TT&TT triển khai cấu hình tường lửa và cấp phát dải IP tĩnh cho máy trạm phục vụ tra cứu VBDLIS."
-  },
-  {
-    id: "VB-2026-001",
-    soHieu: "15/CT-UBND",
-    title: "Chỉ thị 15/CT-UBND: Tăng cường kỷ luật, kỷ cương hành chính và nâng cao hiệu quả giải quyết TTHC",
-    category: "Chỉ thị",
-    sender: "Nguyễn Chiến Thắng — Giám đốc",
-    createdAt: "02/11/2026 08:30",
-    timestamp: 1793608200000,
-    fileName: "15_CT_UBND_Tang_cuong_ky_luat.pdf",
-    fileSize: "1.2 MB",
-    pages: "3 trang",
-    previewUrl: "https://drive.google.com/file/d/1Mv76Y49TASsdbAukya_aNDml_bmmdGan/preview",
-    downloadUrl: "https://drive.google.com/uc?export=download&id=1Mv76Y49TASsdbAukya_aNDml_bmmdGan",
-    viewUrl: "https://drive.google.com/file/d/1Mv76Y49TASsdbAukya_aNDml_bmmdGan/view",
-    notes: "Tuyệt đối không để hồ sơ trễ hạn không có văn bản xin lỗi người dân; nghiêm cấm tự ý tiếp xúc công dân ngoài trụ sở tiếp nhận Một cửa."
   }
 ];
+
+function hydrateSessionUrls(list) {
+  const sessionMap = window.__sessionDirectiveUrls || {};
+  return list.map(item => {
+    const sess = sessionMap[item.id];
+    if (sess && (!item.previewUrl || item.previewUrl.startsWith("blob:"))) {
+      return {
+        ...item,
+        previewUrl: sess.previewUrl || item.previewUrl,
+        downloadUrl: sess.downloadUrl || item.downloadUrl,
+        viewUrl: sess.viewUrl || item.viewUrl
+      };
+    }
+    return item;
+  });
+}
 
 function getStoredDirectives() {
   const data = localStorage.getItem(STORAGE_KEY_DIRECTIVES);
   if (!data) {
-    const oldData = localStorage.getItem("CN23_DIRECTIVES_V1");
-    let initialList = [...DEFAULT_DIRECTIVES];
-    if (oldData) {
-      try {
-        const parsedOld = JSON.parse(oldData);
-        const customUploads = parsedOld.filter(d => d.id && !d.id.startsWith("VB-2026-00"));
-        if (customUploads.length > 0) {
-          initialList = [...customUploads, ...DEFAULT_DIRECTIVES];
-        }
-      } catch (err) {}
-    }
-    localStorage.setItem(STORAGE_KEY_DIRECTIVES, JSON.stringify(initialList));
+    // Dọn dẹp cache phiên bản cũ (chứa link lỗi docx / file mẫu thừa)
+    try {
+      localStorage.removeItem("CN23_DIRECTIVES_V1");
+      localStorage.removeItem("CN23_DIRECTIVES_V2");
+      localStorage.removeItem("CN23_DIRECTIVES_V3");
+    } catch (e) {}
+    const initialList = [...DEFAULT_DIRECTIVES];
+    saveStoredDirectives(initialList);
     return initialList;
   }
   try {
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return hydrateSessionUrls(parsed);
+    }
+    return [...DEFAULT_DIRECTIVES];
   } catch (e) {
-    return DEFAULT_DIRECTIVES;
+    return [...DEFAULT_DIRECTIVES];
   }
 }
 
 function saveStoredDirectives(list) {
-  localStorage.setItem(STORAGE_KEY_DIRECTIVES, JSON.stringify(list));
+  // Bảo vệ giới hạn 5MB của localStorage: loại bỏ chuỗi base64 quá lớn (>100KB), giữ link URL Drive/Blob trong phiên
+  const safeList = (Array.isArray(list) ? list : []).map(item => {
+    const copy = { ...item };
+    ["previewUrl", "downloadUrl", "viewUrl", "fileUrl"].forEach(k => {
+      if (typeof copy[k] === "string" && copy[k].startsWith("data:") && copy[k].length > 100000) {
+        copy[k] = "";
+      }
+    });
+    return copy;
+  });
+  try {
+    localStorage.setItem(STORAGE_KEY_DIRECTIVES, JSON.stringify(safeList));
+  } catch (e) {
+    console.warn("Bỏ qua lưu localStorage do vượt dung lượng:", e);
+  }
 }
 
 // Đồng bộ Cloud Google Apps Script & Xóa cache dữ liệu cũ
@@ -1247,6 +1240,80 @@ function closeTaskModal() {
 // 4B. QUẢN LÝ THÔNG CÁO & CHỈ THỊ PDF TOÀN CƠ QUAN
 // (CHỈ GIÁM ĐỐC NGUYỄN CHIẾN THẮNG & IT ADMIN ĐƯỢC PHÉP ĐĂNG)
 // ========================================================
+
+/**
+ * So sánh 2 văn bản xem có phải là cùng một tài liệu không (dùng để gộp và ghi đè dữ liệu từ Sheet)
+ */
+function isSameDocument(docA, docB) {
+  if (!docA || !docB) return false;
+  if (docA.id && docB.id && docA.id === docB.id) return true;
+
+  const clean = (name) => (name || "")
+    .toLowerCase()
+    .replace(/\.pdf$/i, "")
+    .replace(/(\.signed)+/gi, "")
+    .replace(/[^a-z0-9]/gi, "");
+
+  const nameA = clean(docA.fileName);
+  const nameB = clean(docB.fileName);
+  if (nameA && nameB && (nameA === nameB || nameA.includes(nameB) || nameB.includes(nameA))) {
+    return true;
+  }
+
+  const cleanCode = (code) => (code || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const codeA = cleanCode(docA.soHieu);
+  const codeB = cleanCode(docB.soHieu);
+  if (codeA && codeB && codeA.length >= 4 && codeB.length >= 4 && (codeA === codeB || codeA.includes(codeB) || codeB.includes(codeA))) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Chuyển đổi linh hoạt chuỗi ngày tháng dd/MM/yyyy HH:mm sang Timestamp dạng số để sắp xếp chuẩn
+ */
+function parseDirectiveTimestamp(d) {
+  if (!d) return 0;
+  if (typeof d.timestamp === "number" && !isNaN(d.timestamp) && d.timestamp > 0) {
+    return d.timestamp;
+  }
+
+  // Ưu tiên chuỗi có cả ngày và giờ (chứa ký tự :)
+  let str = "";
+  if (typeof d.timestamp === "string" && d.timestamp.includes(":")) {
+    str = d.timestamp;
+  } else if (typeof d.createdAt === "string" && d.createdAt.includes(":")) {
+    str = d.createdAt;
+  } else if (typeof d.timestamp === "string" && d.timestamp.trim()) {
+    str = d.timestamp;
+  } else if (typeof d.createdAt === "string" && d.createdAt.trim()) {
+    str = d.createdAt;
+  }
+
+  if (str) {
+    str = str.trim();
+    const parts = str.split(/\s+/);
+    const dateParts = (parts[0] || "").split("/");
+    if (dateParts.length === 3) {
+      const day = parseInt(dateParts[0], 10) || 1;
+      const month = (parseInt(dateParts[1], 10) || 1) - 1;
+      const year = parseInt(dateParts[2], 10) || 2026;
+      let hour = 0, min = 0, sec = 0;
+      if (parts[1]) {
+        const timeParts = parts[1].split(":");
+        hour = parseInt(timeParts[0], 10) || 0;
+        min = parseInt(timeParts[1], 10) || 0;
+        sec = parseInt(timeParts[2], 10) || 0;
+      }
+      const dt = new Date(year, month, day, hour, min, sec);
+      if (!isNaN(dt.getTime())) return dt.getTime();
+    }
+    const dt = new Date(str);
+    if (!isNaN(dt.getTime())) return dt.getTime();
+  }
+  return 0;
+}
+
 function renderDirectives() {
   const listContainer = document.getElementById("directiveListContainer");
   const countBadge = document.getElementById("directiveCountBadge");
@@ -1255,7 +1322,7 @@ function renderDirectives() {
 
   const rawList = getStoredDirectives();
   // QUY TẮC BẮT BUỘC: SẮP XẾP TỪ MỚI TỚI CŨ (Timestamp giảm dần)
-  rawList.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+  rawList.sort((a, b) => parseDirectiveTimestamp(b) - parseDirectiveTimestamp(a));
 
   const keyword = (searchInput?.value || "").toLowerCase().trim();
   const filtered = keyword ? rawList.filter(d => 
@@ -1266,7 +1333,7 @@ function renderDirectives() {
   ) : rawList;
 
   if (countBadge) {
-    countBadge.textContent = `${filtered.length} văn bản`;
+    countBadge.textContent = `${filtered.length} files`;
   }
 
   if (filtered.length === 0) {
@@ -1276,6 +1343,13 @@ function renderDirectives() {
         <span class="text-xs">Không tìm thấy thông cáo/văn bản nào phù hợp.</span>
       </div>`;
     return;
+  }
+
+  // Tự động chọn văn bản đầu tiên nếu văn bản hiện tại không tồn tại
+  if (!currentSelectedDirectiveId || !rawList.some(d => d.id === currentSelectedDirectiveId)) {
+    if (filtered.length > 0) {
+      currentSelectedDirectiveId = filtered[0].id;
+    }
   }
 
   listContainer.innerHTML = "";
@@ -1495,8 +1569,21 @@ function handleDirectPdfUpload(file) {
       ? (file.size / (1024 * 1024)).toFixed(2) + " MB" 
       : (file.size / 1024).toFixed(1) + " KB";
 
+    const docId = "VB-" + now.getFullYear() + "-" + Math.floor(1000 + Math.random() * 9000);
+    // Dùng Blob URL cho tệp lớn để trình duyệt hiển thị PDF mượt mà, không gây tràn bộ nhớ localStorage
+    const localPreviewUrl = (base64Data.length > 100000 && typeof URL !== "undefined" && URL.createObjectURL)
+      ? URL.createObjectURL(file)
+      : base64Data;
+
+    window.__sessionDirectiveUrls = window.__sessionDirectiveUrls || {};
+    window.__sessionDirectiveUrls[docId] = {
+      previewUrl: localPreviewUrl,
+      downloadUrl: localPreviewUrl,
+      viewUrl: localPreviewUrl
+    };
+
     const newDirective = {
-      id: "VB-" + now.getFullYear() + "-" + Math.floor(1000 + Math.random() * 9000),
+      id: docId,
       soHieu: detectedSoHieu,
       title: cleanTitle || file.name,
       sender: "Nguyễn Chiến Thắng — Giám đốc",
@@ -1504,9 +1591,9 @@ function handleDirectPdfUpload(file) {
       timestamp: now.getTime(), // BẮT BUỘC timestamp mới nhất để luôn hiển thị trên đầu
       fileName: file.name,
       fileSize: sizeStr,
-      previewUrl: base64Data,
-      downloadUrl: base64Data,
-      viewUrl: base64Data,
+      previewUrl: localPreviewUrl,
+      downloadUrl: localPreviewUrl,
+      viewUrl: localPreviewUrl,
       notes: "Văn bản ban hành trực tiếp từ Ban Giám đốc"
     };
 
@@ -1517,28 +1604,32 @@ function handleDirectPdfUpload(file) {
     currentSelectedDirectiveId = newDirective.id;
     renderDirectives();
 
-    // Đồng bộ cloud trong nền (nếu có mạng)
-    syncDirectiveToCloud(newDirective);
-
-    showToast(`Đã tải lên văn bản "${file.name}" thành công!`, "success");
+    showToast(`Đang lưu "${file.name}" lên Google Drive & Google Sheet...`, "info");
+    // Đồng bộ cloud trong nền kèm dữ liệu base64 gốc
+    syncDirectiveToCloud(newDirective, base64Data);
   };
 
   reader.readAsDataURL(file);
 }
 
-async function syncDirectiveToCloud(directive) {
+async function syncDirectiveToCloud(directive, rawBase64 = "") {
   try {
-    const res = await fetch(SCRIPT_URL, {
+    const fileBase64 = rawBase64 || (directive.previewUrl && directive.previewUrl.startsWith("data:") ? directive.previewUrl : "");
+    const targetScriptUrl = getScriptUrl();
+    const res = await fetch(targetScriptUrl, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({
         action: "createDirective",
         ...directive,
-        fileBase64: directive.previewUrl?.startsWith("data:") ? directive.previewUrl : ""
+        previewUrl: "",
+        downloadUrl: "",
+        viewUrl: "",
+        fileBase64: fileBase64
       })
     });
     const result = await res.json();
-    if (result && result.fileUrl) {
+    if (result && result.success && result.fileUrl) {
       directive.previewUrl = result.previewUrl || result.fileUrl;
       directive.downloadUrl = result.downloadUrl || result.fileUrl;
       directive.viewUrl = result.fileUrl;
@@ -1547,21 +1638,26 @@ async function syncDirectiveToCloud(directive) {
       if (idx !== -1) {
         list[idx] = directive;
         saveStoredDirectives(list);
-        if (currentSelectedDirectiveId === directive.id) {
-          renderDirectiveDetail(directive);
-        }
       }
+      showToast(`Đã lưu "${directive.fileName}" lên Google Drive & Google Sheet thành công!`, "success");
+    } else if (result && result.message) {
+      showToast("Cảnh báo đồng bộ Drive: " + result.message, "warning");
     }
   } catch (err) {
-    console.log("Cloud directive sync local mode");
+    console.log("Cloud directive sync local mode:", err);
   }
 }
+
+let isSyncingDirectives = false;
 
 /**
  * Đồng bộ văn bản chỉ đạo trực tiếp từ Google Sheet tab ThongCaoChiThi
  * @param {boolean} forceRefresh - Bấm thủ công thì hiển thị thông báo toast
  */
 async function syncDirectivesFromCloud(forceRefresh = false) {
+  if (isSyncingDirectives) return false;
+  isSyncingDirectives = true;
+
   const syncBtn = document.getElementById("btnSyncDirectives");
   const syncIcon = document.getElementById("syncDirectiveIcon");
   const reloadIcon = document.getElementById("reloadDirectivesListIcon");
@@ -1571,59 +1667,143 @@ async function syncDirectivesFromCloud(forceRefresh = false) {
   if (syncBtn) syncBtn.classList.add("opacity-75", "pointer-events-none");
 
   try {
-    const res = await fetch(`${SCRIPT_URL}?action=getDirectives&t=${Date.now()}`);
+    const targetScriptUrl = getScriptUrl();
+    const res = await fetch(`${targetScriptUrl}?action=getDirectives&t=${Date.now()}`);
     if (res.ok) {
       const result = await res.json();
-      if (result.success && Array.isArray(result.directives) && result.directives.length > 0) {
-        const cloudDocs = result.directives.map((d, idx) => {
-          const rawName = d.fileName || `Van_ban_${idx + 1}.pdf`;
-          const baseName = rawName.replace(/\.pdf$/i, "");
-          let detectedSoHieu = "CHỈ ĐẠO CHUNG";
-          const soHieuMatch = baseName.match(/^([0-9]+[\/_-][A-Za-z0-9đĐ_-]+)/);
-          if (soHieuMatch) {
-            detectedSoHieu = soHieuMatch[1].replace(/[_-]/g, "/").toUpperCase();
-          }
+      if (result && result.success && Array.isArray(result.directives)) {
+        // Loại bỏ các dòng dữ liệu test cũ (tệp giả rỗng 79 bytes không xem trước được)
+        const brokenDriveIds = [
+          "1AkcbxXsehvLWdrW7lnsANJ3vePdDqAkh",
+          "1Ts2xwJ4TNfFaDt2t-OHvP1WrtzRxJukG",
+          "1njx_9KZMmVYse8v047ov352ZI-H1D93D",
+          "1gC7vJbRPJ-9xNMg2C8Jm1rzFXhPBRSeF",
+          "1FZSoC3p-Fqhh_F1IxynQrH1lP7n5Bw9h",
+          "1Mv76Y49TASsdbAukya_aNDml_bmmdGan"
+        ];
+        const brokenTestNames = [
+          "thong_bao_khan_9999_cn23.pdf",
+          "123_qd_ubnd_ke_hoach_giam_sat_dat_dai_2026.pdf"
+        ];
 
-          return {
-            id: d.id || `CLOUD_${idx + 1}_${Date.now()}`,
-            soHieu: d.soHieu || detectedSoHieu,
-            title: d.title || baseName.replace(/[_-]/g, " "),
-            sender: d.sender || "Nguyễn Chiến Thắng — Giám đốc",
-            createdAt: d.createdAt || d.timestamp || "",
-            timestamp: d.timestamp || (Date.now() - idx * 1000),
-            fileName: rawName,
-            fileSize: d.fileSize || "PDF",
-            previewUrl: d.viewUrl || d.previewUrl || d.downloadUrl || "",
-            viewUrl: d.viewUrl || d.previewUrl || "",
-            downloadUrl: d.downloadUrl || d.fileUrl || "",
-            fileUrl: d.viewUrl || d.downloadUrl || "",
-            notes: d.notes || ""
-          };
+        const validDirectives = result.directives.filter(d => {
+          const fname = (d.fileName || "").toLowerCase().trim();
+          const url = `${d.previewUrl || ""} ${d.viewUrl || ""} ${d.fileUrl || ""}`;
+          if (brokenTestNames.includes(fname)) return false;
+          if (brokenDriveIds.some(bid => url.includes(bid))) return false;
+          return true;
         });
 
-        // Ghi đè danh sách mới nhất từ Google Sheet vào localStorage
-        saveStoredDirectives(cloudDocs);
-        renderDirectives();
+        if (validDirectives.length > 0) {
+          const cloudDocs = validDirectives.map((d, idx) => {
+            const rawName = d.fileName || `Van_ban_${idx + 1}.pdf`;
+            const cleanName = rawName.replace(/\.pdf$/i, "").replace(/(\.signed)+/gi, "").trim();
 
-        if (forceRefresh) {
-          showToast(`Đã đồng bộ ${cloudDocs.length} văn bản chỉ đạo mới nhất từ Google Sheet!`, "success");
+            let detectedSoHieu = d.soHieu || d.code || "";
+            if (!detectedSoHieu || detectedSoHieu === "CHỈ ĐẠO CHUNG") {
+              const m = cleanName.match(/^([0-9]+[\/_-][A-Za-z0-9đĐ_-]+)/);
+              if (m) {
+                detectedSoHieu = m[1].replace(/_/g, "/").toUpperCase();
+              } else {
+                const numMatch = cleanName.match(/^([0-9]+)/);
+                if (numMatch) {
+                  detectedSoHieu = `${numMatch[1]}/VPĐK`;
+                } else {
+                  detectedSoHieu = "CHỈ ĐẠO CHUNG";
+                }
+              }
+            }
+
+            const numTs = parseDirectiveTimestamp(d) || (Date.now() - idx * 1000);
+
+            // Chuẩn hóa link Google Drive preview/download
+            let viewUrl = d.viewUrl || d.previewUrl || d.downloadUrl || d.fileUrl || "";
+            let downloadUrl = d.downloadUrl || d.fileUrl || viewUrl;
+            let previewUrl = d.previewUrl || viewUrl;
+
+            if (viewUrl && viewUrl.includes("drive.google.com")) {
+              const fileIdMatch = viewUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+              if (fileIdMatch) {
+                const fileId = fileIdMatch[1];
+                previewUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+                viewUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+                downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+              }
+            }
+
+            return {
+              id: d.id || `CLOUD_${idx + 1}_${numTs}`,
+              soHieu: detectedSoHieu,
+              title: d.title || cleanName.replace(/[_-]+/g, " "),
+              sender: d.sender || d.signer || "Nguyễn Chiến Thắng — Giám đốc",
+              createdAt: (typeof d.timestamp === "string" && d.timestamp) || d.createdAt || new Date(numTs).toLocaleDateString("vi-VN"),
+              timestamp: numTs,
+              fileName: rawName,
+              fileSize: d.fileSize || "PDF",
+              previewUrl: previewUrl,
+              viewUrl: viewUrl,
+              downloadUrl: downloadUrl,
+              fileUrl: previewUrl || downloadUrl,
+              notes: d.notes || ""
+            };
+          });
+
+          // Hợp nhất: Toàn bộ cloudDocs từ Google Sheet là nguồn chuẩn mực
+          // Loại bỏ các mục cloud cũ (VB_*, CLOUD_*) đã bị xóa trên Sheet; chỉ giữ lại văn bản mẫu offline nếu không trùng
+          const existingList = getStoredDirectives();
+          const mergedList = [...cloudDocs];
+          existingList.forEach(localItem => {
+            const isOldCloudItem = localItem.id && (localItem.id.startsWith("VB_") || localItem.id.startsWith("CLOUD_"));
+            if (isOldCloudItem) return; // Bỏ qua cache cloud cũ đã xóa trên Sheet
+            const isDuplicate = cloudDocs.some(c => isSameDocument(c, localItem));
+            if (!isDuplicate) {
+              mergedList.push(localItem);
+            }
+          });
+
+          // QUY TẮC BẮT BUỘC: Sắp xếp văn bản từ MỚI NHẤT tới CŨ NHẤT (Timestamp giảm dần)
+          mergedList.sort((a, b) => parseDirectiveTimestamp(b) - parseDirectiveTimestamp(a));
+          saveStoredDirectives(mergedList);
+
+          // Tự động chọn văn bản mới nhất trên đầu để xem ngay trong Document Viewer
+          if (mergedList.length > 0) {
+            currentSelectedDirectiveId = mergedList[0].id;
+          }
+          renderDirectives();
+
+          if (forceRefresh) {
+            showToast(`Đã đồng bộ thành công ${cloudDocs.length} văn bản từ Google Sheet!`, "success");
+          }
+          return true;
+        } else {
+          // Trường hợp tab trên sheet trống (0 dòng): dọn bỏ toàn bộ bản ghi cloud cũ, chỉ giữ tệp mẫu gốc cục bộ
+          const cleanLocalList = [...DEFAULT_DIRECTIVES];
+          saveStoredDirectives(cleanLocalList);
+          currentSelectedDirectiveId = cleanLocalList[0]?.id || null;
+          renderDirectives();
+          if (forceRefresh) {
+            showToast("Tab ThongCaoChiThi trên Google Sheet hiện đang trống — hiển thị tài liệu mẫu nội bộ.", "info");
+          }
+          return true;
         }
-        return true;
-      } else if (forceRefresh) {
-        showToast("Google Sheet chưa có thêm văn bản mới.", "info");
+      } else {
+        if (forceRefresh) {
+          showToast(result.message || "Không thể nạp danh sách từ Google Sheet!", "warning");
+        }
       }
     } else if (forceRefresh) {
-      showToast("Không thể kết nối đến máy chủ Google Sheet!", "error");
+      showToast("Không thể kết nối đến máy chủ Google Sheet! (HTTP " + res.status + ")", "error");
     }
   } catch (err) {
     console.warn("Lỗi syncDirectivesFromCloud:", err);
     if (forceRefresh) {
-      showToast("Chế độ ngoại tuyến: Không thể kết nối tới Google Sheet.", "warning");
+      showToast("Lỗi đồng bộ: " + (err.message || String(err)), "warning");
     }
   } finally {
     if (syncIcon) syncIcon.classList.remove("fa-spin");
     if (reloadIcon) reloadIcon.classList.remove("fa-spin");
     if (syncBtn) syncBtn.classList.remove("opacity-75", "pointer-events-none");
+    isSyncingDirectives = false;
   }
   return false;
 }
@@ -1653,6 +1833,22 @@ window.addEventListener("DOMContentLoaded", () => {
   if (btnRefresh) {
     btnRefresh.addEventListener("click", () => {
       syncTasksFromCloud(true);
+    });
+  }
+
+  // Nút Đồng bộ văn bản chỉ đạo PDF từ Google Sheet
+  const btnSyncDirectives = document.getElementById("btnSyncDirectives");
+  if (btnSyncDirectives) {
+    btnSyncDirectives.addEventListener("click", (e) => {
+      e.preventDefault();
+      syncDirectivesFromCloud(true);
+    });
+  }
+  const btnReloadList = document.getElementById("btnReloadDirectivesList");
+  if (btnReloadList) {
+    btnReloadList.addEventListener("click", (e) => {
+      e.preventDefault();
+      syncDirectivesFromCloud(true);
     });
   }
 
@@ -2031,7 +2227,7 @@ window.addEventListener("DOMContentLoaded", () => {
       renderDirectives();
 
       // Đồng bộ cloud trong nền (nếu có mạng)
-      syncDirectiveToCloud(newDirective);
+      syncDirectiveToCloud(newDirective, effectivePdf.base64);
 
       showToast(`Đã ban hành văn bản chỉ đạo "${title.slice(0, 30)}..." thành công!`, "success");
       closeUploadDirectiveModal();

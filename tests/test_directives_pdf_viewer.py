@@ -170,6 +170,32 @@ def run_tests():
         time.sleep(2)
         client = ChromeCDPClient(CDP_PORT)
         client.connect_tab("index.html")
+        client.send_cmd("Page.enable")
+        # Chặn tuyệt đối các request test ghi dữ liệu rác lên Google Sheet/Drive thật của người dùng
+        client.send_cmd("Page.addScriptToEvaluateOnNewDocument", {
+            "source": """
+                const __origFetch = window.fetch;
+                window.fetch = function(url, opts) {
+                    const u = (typeof url === 'string') ? url : (url && url.url ? url.url : '');
+                    if (u.includes('script.google.com')) {
+                        if (opts && opts.method === 'POST') {
+                            return Promise.resolve(new Response(JSON.stringify({
+                                success: true,
+                                message: 'MOCK_TEST_OK',
+                                fileUrl: ''
+                            }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+                        }
+                        if (u.includes('getDirectives')) {
+                            return Promise.resolve(new Response(JSON.stringify({
+                                success: true,
+                                directives: []
+                            }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+                        }
+                    }
+                    return __origFetch.apply(this, arguments);
+                };
+            """
+        })
 
         # -------------------------------------------------------------
         # TEST CASE 1: Đăng nhập vai trò Chuyên viên (Trần Văn Tuấn - user demo & Pikachu)
@@ -191,6 +217,8 @@ def run_tests():
             }));
             localStorage.removeItem('CN23_DIRECTIVES_V1');
             localStorage.removeItem('CN23_DIRECTIVES_V2');
+            localStorage.removeItem('CN23_DIRECTIVES_V3');
+            localStorage.removeItem('CN23_DIRECTIVES_V4');
         """)
         client.navigate(f"{BASE_URL}/giao_viec.html")
         time.sleep(1.5)
@@ -307,7 +335,7 @@ def run_tests():
         print(f"  Iframe PDF src: {viewer_checks.get('iframeSrc')[:60]}...")
         print(f"  Nút mở tab mới link: {viewer_checks.get('openTabHref')[:60]}...")
 
-        assert viewer_checks.get("docCount") >= 5, "LỖI: Thiếu danh mục văn bản mặc định (phải có ít nhất 5 files gồm 2 file mẫu mới)!"
+        assert viewer_checks.get("docCount") >= 2, "LỖI: Thiếu danh mục văn bản mặc định (phải có ít nhất 2 file PDF mẫu thật)!"
         assert "39266" in viewer_checks.get("firstDocTitle") or "39266" in viewer_checks.get("iframeSrc"), "LỖI: Văn bản mới nhất (39266) chưa nằm ở đầu danh sách!"
         print("  ✅ PASS: Giao diện Document Viewer hiển thị trực quan 2 file mẫu mới từ mới tới cũ, hỗ trợ xem và tải về!")
 

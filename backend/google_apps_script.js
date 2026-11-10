@@ -40,6 +40,9 @@ function onOpen() {
       .addItem("📋 Định dạng tab GiaoViec (Lãnh đạo giao việc & Bảng tiến độ)", "seedTasksOnly")
       .addItem("📊 Định dạng tab BaoCaoSoLieu (Báo cáo số liệu thực hiện cấp tổ)", "seedPerformanceOnly")
       .addItem("📜 Định dạng tab ThongCaoChiThi (Văn bản & Chỉ thị PDF Ban Giám đốc)", "seedDirectivesOnly")
+      .addSeparator()
+      .addItem("🧹 Hợp nhất & Chuẩn hóa 1 Thư mục Văn Bản Chỉ Đạo Drive", "consolidateDriveFolders")
+      .addItem("🗑️ Dọn sạch dữ liệu test cũ tab ThongCaoChiThi", "clearTestDirectives")
       .addToUi();
   } catch (e) {}
 }
@@ -485,15 +488,22 @@ function seedPerformanceOnly() {
 }
 
 /**
- * Lấy sheet Thông Cáo & Chỉ Thị PDF
+ * Lấy sheet Thông Cáo & Chỉ Thị PDF (Hỗ trợ nhận diện thông minh tên tab có dấu / khoảng trắng)
  */
 function getDirectivesSheet(ss) {
   ss = ss || SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName(SHEET_DIRECTIVES_NAME);
-  if (!sheet) {
-    sheet = seedDirectivesOnly();
+  if (sheet) return sheet;
+
+  // Tìm kiếm thông minh nếu người dùng đặt tên tab có dấu hoặc khoảng trắng
+  const allSheets = ss.getSheets();
+  for (let i = 0; i < allSheets.length; i++) {
+    const sName = removeVietnameseTones(allSheets[i].getName()).toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (sName.includes("thongcao") || sName.includes("chithi") || sName.includes("vanbanchidao")) {
+      return allSheets[i];
+    }
   }
-  return sheet;
+  return seedDirectivesOnly();
 }
 
 /**
@@ -553,34 +563,161 @@ function seedDirectivesOnly() {
  *   ├── 📁 it-helpdesk/ (Chuyên lưu ảnh ticket báo sự cố)
  *   └── 📁 giao-viec/   (Chuyên lưu văn bản, công văn, tài liệu đính kèm)
  */
+/**
+ * Lấy hoặc tự động tạo cấu trúc thư mục 2 tầng chuẩn mực trên Google Drive:
+ * 📁 VPDK_CN23_SYSTEM/ (Thư mục mẹ gốc duy nhất)
+ *   ├── 📁 it-helpdesk/      (Chuyên lưu ảnh ticket báo sự cố IT)
+ *   ├── 📁 giao-viec/        (Chuyên lưu tệp văn bản đính kèm từng nhiệm vụ giao việc)
+ *   └── 📁 van-ban-chi-dao/  (Chuyên lưu Thông cáo & Chỉ thị PDF toàn cơ quan của Ban Giám đốc)
+ *
+ * ⚠️ Cơ chế chống trùng lặp & chuẩn hóa thông minh:
+ * - Tự động nhận diện mọi biến thể tên thư mục (có dấu / không dấu / khoảng trắng / gạch nối).
+ * - Nếu phát hiện có từ 2 thư mục cùng mục đích, tự động gom toàn bộ file về 1 thư mục chuẩn duy nhất.
+ */
 function getStorageFolder(moduleName) {
   moduleName = moduleName || FOLDER_HELPDESK;
 
-  // 1. Thư mục mẹ gốc: VPDK_CN23_SYSTEM
+  // 1. Thư mục mẹ gốc duy nhất: VPDK_CN23_SYSTEM (bỏ qua thư mục nằm trong Thùng rác)
+  let rootFolder = null;
   const rootFolders = DriveApp.getFoldersByName(ROOT_FOLDER_NAME);
-  let rootFolder;
-  if (rootFolders.hasNext()) {
-    rootFolder = rootFolders.next();
-  } else {
+  while (rootFolders.hasNext()) {
+    const candidate = rootFolders.next();
+    if (!candidate.isTrashed()) {
+      rootFolder = candidate;
+      break;
+    }
+  }
+  if (!rootFolder) {
     rootFolder = DriveApp.createFolder(ROOT_FOLDER_NAME);
     try {
       rootFolder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     } catch (e) {}
   }
 
-  // 2. Thư mục con theo từng phân hệ nghiệp vụ
-  const subFolders = rootFolder.getFoldersByName(moduleName);
-  let subFolder;
-  if (subFolders.hasNext()) {
-    subFolder = subFolders.next();
+  // 2. Chuẩn hóa tên phân hệ để tìm kiếm thông minh
+  const normTarget = removeVietnameseTones(moduleName).toLowerCase().replace(/[^a-z0-9]/g, "");
+
+  // Quét tìm tất cả thư mục con hiện có (không nằm trong Thùng rác) trong VPDK_CN23_SYSTEM
+  const existingSubFolders = rootFolder.getFolders();
+  const matchedFolders = [];
+
+  while (existingSubFolders.hasNext()) {
+    const f = existingSubFolders.next();
+    if (f.isTrashed()) continue;
+    const fNorm = removeVietnameseTones(f.getName()).toLowerCase().replace(/[^a-z0-9]/g, "");
+    const isDirectivesMatch = (normTarget.includes("vanbanchidao") || normTarget.includes("chithi")) && 
+                              (fNorm.includes("vanbanchidao") || fNorm.includes("chithi"));
+    const isGiaoViecMatch = (normTarget.includes("giaoviec")) && (fNorm.includes("giaoviec"));
+    const isHelpdeskMatch = (normTarget.includes("helpdesk")) && (fNorm.includes("helpdesk"));
+
+    if (fNorm === normTarget || isDirectivesMatch || isGiaoViecMatch || isHelpdeskMatch) {
+      matchedFolders.push(f);
+    }
+  }
+
+  let primaryFolder = null;
+  if (matchedFolders.length > 0) {
+    // Ưu tiên chọn folder có tên khớp chuẩn nhất (hoặc folder đầu tiên)
+    primaryFolder = matchedFolders.find(function(f) { return f.getName() === moduleName; }) || matchedFolders[0];
+
+    // Đổi tên về tên chuẩn mực nếu chưa đúng
+    if (primaryFolder.getName() !== moduleName) {
+      try { primaryFolder.setName(moduleName); } catch (e) {}
+    }
+
+    // Nếu phát hiện có từ 2 thư mục trùng lặp, tự động gộp toàn bộ file về primaryFolder và dọn folder thừa
+    if (matchedFolders.length > 1) {
+      for (let i = 0; i < matchedFolders.length; i++) {
+        const dupFolder = matchedFolders[i];
+        if (dupFolder.getId() === primaryFolder.getId()) continue;
+
+        const files = dupFolder.getFiles();
+        while (files.hasNext()) {
+          const file = files.next();
+          try {
+            file.moveTo(primaryFolder);
+          } catch (e) {
+            try {
+              primaryFolder.createFile(file.getBlob());
+              file.setTrashed(true);
+            } catch (e2) {}
+          }
+        }
+        try {
+          dupFolder.setTrashed(true);
+        } catch (e) {}
+      }
+    }
   } else {
-    subFolder = rootFolder.createFolder(moduleName);
+    // Chưa có thư mục nào -> Tạo mới duy nhất 1 thư mục chuẩn
+    primaryFolder = rootFolder.createFolder(moduleName);
     try {
-      subFolder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      primaryFolder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
     } catch (e) {}
   }
 
-  return subFolder;
+  return primaryFolder;
+}
+
+/**
+ * Tiện ích dọn dẹp & hợp nhất thư mục Drive:
+ * Quét toàn bộ Drive để gom tất cả thư mục văn bản chỉ đạo (cả ngoài gốc Drive và trong VPDK_CN23_SYSTEM)
+ * về duy nhất 1 thư mục chuẩn: VPDK_CN23_SYSTEM/van-ban-chi-dao
+ */
+function consolidateDriveFolders() {
+  const root = DriveApp.getRootFolder();
+  const targetFolder = getStorageFolder(FOLDER_DIRECTIVES);
+  let mergedCount = 0;
+  let movedFiles = 0;
+
+  // 1. Quét tìm các thư mục ngoài gốc Drive có tên liên quan đến văn bản chỉ đạo
+  const rootSubFolders = root.getFolders();
+  while (rootSubFolders.hasNext()) {
+    const f = rootSubFolders.next();
+    if (f.isTrashed() || f.getId() === targetFolder.getId() || f.getName() === ROOT_FOLDER_NAME) continue;
+
+    const fNorm = removeVietnameseTones(f.getName()).toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (fNorm.includes("vanbanchidao") || fNorm.includes("chithi") || (fNorm.includes("vanban") && fNorm.includes("chidao"))) {
+      const files = f.getFiles();
+      while (files.hasNext()) {
+        const file = files.next();
+        try {
+          file.moveTo(targetFolder);
+          movedFiles++;
+        } catch (e) {
+          try {
+            targetFolder.createFile(file.getBlob());
+            file.setTrashed(true);
+            movedFiles++;
+          } catch (e2) {}
+        }
+      }
+      try {
+        f.setTrashed(true);
+        mergedCount++;
+      } catch (e) {}
+    }
+  }
+
+  // 2. Đảm bảo quyền chia sẻ công khai cho mọi tệp trong targetFolder
+  const allFiles = targetFolder.getFiles();
+  while (allFiles.hasNext()) {
+    const fl = allFiles.next();
+    try {
+      fl.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    } catch (e) {}
+  }
+
+  const msg = "✅ ĐÃ HỢP NHẤT VÀ CHUẨN HÓA THƯ MỤC DRIVE THÀNH CÔNG!\n\n" +
+              "Thư mục chuẩn duy nhất: " + ROOT_FOLDER_NAME + "/" + FOLDER_DIRECTIVES + "\n" +
+              "- Số thư mục trùng lặp đã dọn dẹp: " + mergedCount + "\n" +
+              "- Số tệp văn bản đã gom về: " + movedFiles + "\n\n" +
+              "Từ nay mọi tệp PDF chỉ đạo sẽ lưu duy nhất và nhất quán tại đây.";
+  Logger.log(msg);
+  try {
+    SpreadsheetApp.getUi().alert(msg);
+  } catch (e) {}
+  return { success: true, mergedFolders: mergedCount, movedFiles: movedFiles, targetFolderId: targetFolder.getId() };
 }
 
 /**
@@ -962,6 +1099,13 @@ function doGet(e) {
       return jsonResponse(handleGetDirectives(ss));
     }
 
+    if (action === "consolidateFolders" || action === "consolidateDriveFolders") {
+      return jsonResponse(consolidateDriveFolders());
+    }
+    if (action === "clearDirectives" || action === "clearTestDirectives") {
+      return jsonResponse(clearTestDirectives(ss));
+    }
+
     // 7. FALLBACK GET
     if (action === "createTicket") {
       let ticketData = params;
@@ -1146,6 +1290,12 @@ function doPost(e) {
     }
     if (action === "createDirective" || action === "uploadDirective") {
       return jsonResponse(handleCreateDirective(body, ss));
+    }
+    if (action === "consolidateFolders" || action === "consolidateDriveFolders") {
+      return jsonResponse(consolidateDriveFolders());
+    }
+    if (action === "clearDirectives" || action === "clearTestDirectives") {
+      return jsonResponse(clearTestDirectives(ss));
     }
 
     return jsonResponse({ success: false, message: "Hành động (action) không hợp lệ!" });
@@ -1877,18 +2027,20 @@ function saveDirectivePdfToDrive(base64Data, filename) {
     let contentType = "application/pdf";
     let base64String = base64Data;
     if (base64Data.indexOf("data:") === 0) {
-      const parts = base64Data.split(",");
-      const mimeMatch = parts[0].match(/:(.*?);/);
-      if (mimeMatch && mimeMatch[1]) {
-        contentType = mimeMatch[1];
+      const commaIdx = base64Data.indexOf(",");
+      if (commaIdx !== -1) {
+        base64String = base64Data.substring(commaIdx + 1);
       }
-      base64String = parts[1];
     }
 
+    const decodedBytes = Utilities.base64Decode(base64String);
+    const cleanFileName = (filename || ("ChiThi_" + new Date().getTime() + ".pdf")).replace(/[\\/:*?"<>|]/g, "_");
+    const finalFileName = /\.pdf$/i.test(cleanFileName) ? cleanFileName : (cleanFileName + ".pdf");
+
     const decodedBlob = Utilities.newBlob(
-      Utilities.base64Decode(base64String),
+      decodedBytes,
       contentType,
-      filename || ("ChiThi_" + new Date().getTime() + ".pdf")
+      finalFileName
     );
 
     const file = targetFolder.createFile(decodedBlob);
@@ -1909,7 +2061,8 @@ function saveDirectivePdfToDrive(base64Data, filename) {
 }
 
 /**
- * Lấy danh sách văn bản chỉ đạo từ tab ThongCaoChiThi (4 cột siêu tinh gọn)
+ * Lấy danh sách văn bản chỉ đạo từ tab ThongCaoChiThi
+ * Hỗ trợ nhận diện cột tự động linh hoạt (4 cột, 5 cột hoặc 11 cột, bất kể thứ tự tiêu đề)
  * Sắp xếp: Mới nhất lên đầu (Newest on top)
  */
 function handleGetDirectives(ss) {
@@ -1918,26 +2071,67 @@ function handleGetDirectives(ss) {
   if (data.length <= 1) {
     return { success: true, directives: [], total: 0 };
   }
+
+  // 1. Phân tích tự động hàng tiêu đề cột
+  const headerRow = data[0].map(function(h) {
+    return removeVietnameseTones((h || "").toString()).toLowerCase().trim();
+  });
+
+  const colTime = headerRow.findIndex(function(h) { return h.includes("thoi gian") || h.includes("ngay") || h.includes("date") || h.includes("time"); });
+  const colFile = headerRow.findIndex(function(h) { return h.includes("ten tep") || h.includes("file") || h.includes("tep tin") || h.includes("van ban"); });
+  const colTitle = headerRow.findIndex(function(h) { return h.includes("trich yeu") || h.includes("tieu de") || h.includes("noi dung"); });
+  const colCode = headerRow.findIndex(function(h) { return h.includes("so hieu") || h.includes("ma") || h.includes("so"); });
+  const colView = headerRow.findIndex(function(h) { return h.includes("link xem") || h.includes("xem truc tiep") || h.includes("preview") || (h.includes("xem") && !h.includes("thoi gian")); });
+  const colDown = headerRow.findIndex(function(h) { return h.includes("link tai") || h.includes("tai ve") || h.includes("download") || (h.includes("tai") && !h.includes("thoi gian") && !h.includes("ngay")); });
+
   const directives = [];
   for (let i = 1; i < data.length; i++) {
     const r = data[i];
-    const uploadTime = r[0] || "";
-    const fileName = r[1] || "";
-    if (!uploadTime && !fileName) continue;
-    const viewUrl = r[2] || "";
-    const downloadUrl = r[3] || "";
+
+    // Quét tìm link Google Drive trong từng ô của dòng nếu không chỉ định rõ cột
+    let rowViewUrl = (colView !== -1 && r[colView]) ? r[colView].trim() : "";
+    let rowDownUrl = (colDown !== -1 && r[colDown]) ? r[colDown].trim() : "";
+
+    for (let c = 0; c < r.length; c++) {
+      const val = (r[c] || "").trim();
+      if (val.indexOf("drive.google.com") !== -1 || val.indexOf("http://") === 0 || val.indexOf("https://") === 0) {
+        if (!rowViewUrl) {
+          rowViewUrl = val;
+        } else if (!rowDownUrl && val !== rowViewUrl) {
+          rowDownUrl = val;
+        }
+      }
+    }
+
+    // Tên file và thời gian
+    let fileName = (colFile !== -1 && r[colFile]) ? r[colFile].trim() : "";
+    let uploadTime = (colTime !== -1 && r[colTime]) ? r[colTime].trim() : "";
+    let docTitle = (colTitle !== -1 && r[colTitle]) ? r[colTitle].trim() : "";
+    let docCode = (colCode !== -1 && r[colCode]) ? r[colCode].trim() : "";
+
+    // Dự phòng vị trí chuẩn 4 cột [Thời gian, Tên tệp, Link xem, Link tải]
+    if (!fileName && r.length >= 2 && r[1].trim()) fileName = r[1].trim();
+    if (!uploadTime && r.length >= 1 && r[0].trim()) uploadTime = r[0].trim();
+
+    // Bỏ qua dòng trống hoàn toàn
+    if (!fileName && !uploadTime && !docTitle && !rowViewUrl) continue;
 
     directives.push({
       id: "VB_" + i,
+      soHieu: docCode || "CHỈ ĐẠO CHUNG",
+      code: docCode,
+      title: docTitle || fileName.replace(/\.pdf$/i, "").replace(/[_-]/g, " "),
+      fileName: fileName || (docTitle ? docTitle + ".pdf" : ("Van_ban_" + i + ".pdf")),
+      fileSize: "PDF",
       timestamp: uploadTime,
       createdAt: uploadTime.split(" ")[0] || uploadTime,
-      fileName: fileName,
-      previewUrl: viewUrl,
-      viewUrl: viewUrl,
-      downloadUrl: downloadUrl,
-      fileUrl: viewUrl || downloadUrl
+      previewUrl: rowViewUrl,
+      viewUrl: rowViewUrl,
+      downloadUrl: rowDownUrl || rowViewUrl,
+      fileUrl: rowViewUrl || rowDownUrl
     });
   }
+
   // Sắp xếp văn bản mới nhất lên đầu
   directives.reverse();
   return { success: true, directives: directives, total: directives.length };
@@ -1954,13 +2148,19 @@ function handleCreateDirective(data, ss) {
   const rawFileName = data.fileName || "Van_ban_chi_dao.pdf";
 
   // Tải lên Google Drive
-  let viewUrl = data.viewUrl || data.previewUrl || "";
-  let downloadUrl = data.downloadUrl || "";
-  const fileBase64 = data.fileBase64 || (data.previewUrl && data.previewUrl.startsWith("data:") ? data.previewUrl : "");
+  let viewUrl = (data.viewUrl && data.viewUrl.indexOf("http") === 0) ? data.viewUrl : "";
+  let downloadUrl = (data.downloadUrl && data.downloadUrl.indexOf("http") === 0) ? data.downloadUrl : "";
+  const fileBase64 = data.fileBase64 || (data.previewUrl && data.previewUrl.indexOf("data:") === 0 ? data.previewUrl : "");
 
   if (fileBase64) {
-    const safeName = rawFileName.replace(/[^a-zA-Z0-9._\-]/g, "_");
+    const safeName = rawFileName.replace(/[\\/:*?"<>|]/g, "_");
     const driveUpload = saveDirectivePdfToDrive(fileBase64, safeName);
+    if (driveUpload.error) {
+      return {
+        success: false,
+        message: "Lỗi lưu tệp PDF lên Google Drive: " + driveUpload.error
+      };
+    }
     if (driveUpload.viewUrl) {
       viewUrl = driveUpload.viewUrl;
       downloadUrl = driveUpload.downloadUrl;
@@ -2000,6 +2200,41 @@ function handleCreateDirective(data, ss) {
       downloadUrl: downloadUrl
     }
   };
+}
+
+/**
+ * Dọn sạch dữ liệu test rác trên tab ThongCaoChiThi (chỉ giữ lại hàng tiêu đề 1)
+ * và xóa các tệp giả test (< 1KB) trong thư mục Drive van-ban-chi-dao
+ */
+function clearTestDirectives(ss) {
+  ss = ss || SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = getDirectivesSheet(ss);
+  const lastRow = sheet.getLastRow();
+  let deletedRows = 0;
+  if (lastRow > 1) {
+    deletedRows = lastRow - 1;
+    sheet.deleteRows(2, deletedRows);
+  }
+
+  let deletedFiles = 0;
+  try {
+    const folder = getStorageFolder(FOLDER_DIRECTIVES);
+    const files = folder.getFiles();
+    while (files.hasNext()) {
+      const f = files.next();
+      const name = f.getName();
+      if (f.getSize() < 1024 || name.indexOf("Thong_bao_khan_9999") !== -1 || name.indexOf("123_QD_UBND_Ke_hoach") !== -1) {
+        f.setTrashed(true);
+        deletedFiles++;
+      }
+    }
+  } catch (e) {}
+
+  try {
+    SpreadsheetApp.getUi().alert("✅ Đã dọn sạch " + deletedRows + " dòng cũ trong tab ThongCaoChiThi và " + deletedFiles + " tệp test rỗng trên Drive!");
+  } catch (e) {}
+
+  return { success: true, deletedRows: deletedRows, deletedFiles: deletedFiles };
 }
 
 /**
