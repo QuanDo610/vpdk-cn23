@@ -434,25 +434,27 @@ class TestRunner:
                 const initialTotal = parseInt(document.getElementById('statTotal').textContent) || 0;
                 const initialPending = parseInt(document.getElementById('statPending').textContent) || 0;
 
-                // Trigger form submission
-                const fakeEvent = { preventDefault: () => {} };
-                return handleSubmitTicket(fakeEvent).then(() => {
-                    const newTotal = parseInt(document.getElementById('statTotal').textContent) || 0;
-                    const newPending = parseInt(document.getElementById('statPending').textContent) || 0;
-                    const listDisplay = document.getElementById('listSection').style.display;
-                    const modalSuccessVisible = !document.getElementById('modalSuccess').classList.contains('hidden');
-                    const modalTicketText = document.getElementById('resTicketId').textContent;
-                    const firstTicket = currentTickets[0];
+                // Trigger real button click & form submission
+                document.getElementById('btnSubmitTicket').click();
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        const newTotal = parseInt(document.getElementById('statTotal').textContent) || 0;
+                        const newPending = parseInt(document.getElementById('statPending').textContent) || 0;
+                        const listDisplay = document.getElementById('listSection').style.display;
+                        const modalSuccessVisible = !document.getElementById('modalSuccess').classList.contains('hidden');
+                        const modalTicketText = document.getElementById('resTicketId').textContent;
+                        const firstTicket = currentTickets[0];
 
-                    return {
-                        success: true,
-                        totalDiff: newTotal - initialTotal,
-                        pendingDiff: newPending - initialPending,
-                        listDisplay: listDisplay,
-                        modalSuccessVisible: modalSuccessVisible,
-                        modalTicketText: modalTicketText,
-                        firstTicketId: firstTicket?.id
-                    };
+                        resolve({
+                            success: true,
+                            totalDiff: newTotal - initialTotal,
+                            pendingDiff: newPending - initialPending,
+                            listDisplay: listDisplay,
+                            modalSuccessVisible: modalSuccessVisible,
+                            modalTicketText: modalTicketText,
+                            firstTicketId: firstTicket?.id
+                        });
+                    }, 400);
                 });
             })()
         """, await_promise=True)

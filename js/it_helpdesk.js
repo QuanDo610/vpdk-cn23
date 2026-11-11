@@ -1083,7 +1083,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupPasteEventListener();
   setupDragAndDrop();
 
-  const viewerImg = document.getElementById("viewerImage");
+  const viewerImg = document.getElementById("modalFullImg");
   if (viewerImg) {
     viewerImg.addEventListener("load", onModalImgLoaded);
     viewerImg.addEventListener("error", onModalImgError);
@@ -1146,9 +1146,9 @@ document.addEventListener("DOMContentLoaded", () => {
     filterStatus.addEventListener("change", renderTickets);
   }
 
-  const helpdeskForm = document.getElementById("helpdeskForm");
-  if (helpdeskForm) {
-    helpdeskForm.addEventListener("submit", handleSubmitTicket);
+  const ticketForm = document.getElementById("ticketForm");
+  if (ticketForm) {
+    ticketForm.addEventListener("submit", handleSubmitTicket);
   }
 
   const fileInput = document.getElementById("fileInput");
@@ -1180,22 +1180,16 @@ window.closeImageViewer = closeImageViewer;
 
 // EVENT DELEGATION TẬP TRUNG (THAY THẾ TOÀN BỘ INLINE EVENT HANDLERS)
 document.addEventListener("click", (e) => {
-  // Chống nổi bọt cho các modal box
-  if (e.target.closest('[data-stop-propagation="true"]')) {
-    e.stopPropagation();
-  }
-
-  // Backdrop click đóng modal
-  if (e.target.dataset.action === "backdrop-close-detail") {
-    closeTicketDetail();
-    return;
-  }
-
+  const stopProp = e.target.closest('[data-stop-propagation="true"]');
   const btn = e.target.closest("[data-action]");
   if (!btn) return;
+  // Bỏ qua nếu click nằm bên trong khối modal mà action lại thuộc thẻ backdrop bao ngoài
+  if (stopProp && btn.contains(stopProp) && btn !== stopProp) return;
 
   const action = btn.dataset.action;
-  if (action === "switch-tab") {
+  if (action === "backdrop-close-detail") {
+    closeTicketDetail();
+  } else if (action === "switch-tab") {
     switchHelpdeskTab(btn.dataset.tab);
   } else if (action === "trigger-file") {
     triggerFileInput();
@@ -1212,5 +1206,6 @@ document.addEventListener("click", (e) => {
   } else if (action === "dismiss-success") {
     const modal = document.getElementById("modalSuccess");
     if (modal) modal.classList.add("hidden");
+    switchHelpdeskTab("list");
   }
 });
