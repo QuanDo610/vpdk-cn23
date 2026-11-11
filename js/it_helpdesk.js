@@ -83,14 +83,9 @@ function checkAuth() {
     if (reqPhone) {
       reqPhone.textContent = phVal ? phVal : "SĐT: Nội bộ";
     }
-    const deptSelect = document.getElementById("department");
-    if (deptSelect && user.department) {
-      for (let opt of deptSelect.options) {
-        if (opt.value && (user.department.toLowerCase().includes(opt.value.toLowerCase()) || opt.value.toLowerCase().includes(user.department.toLowerCase()))) {
-          deptSelect.value = opt.value;
-          break;
-        }
-      }
+    const deptInput = document.getElementById("department");
+    if (deptInput) {
+      deptInput.value = (user.department || user.dept || user.don_vi || "Chi nhánh số 23").trim();
     }
   } catch (e) {
     window.location.href = "index.html";
@@ -277,10 +272,14 @@ async function autoDetectMachineAndSpecs() {
 function loadSavedUserInfo() {
   try {
     const saved = JSON.parse(localStorage.getItem("IT_HELPDESK_USER_INFO") || "{}");
-    if (saved.fullname && document.getElementById("fullname")) document.getElementById("fullname").value = saved.fullname;
-    if (saved.phone && document.getElementById("phone")) document.getElementById("phone").value = saved.phone;
-    if (saved.department && document.getElementById("department")) document.getElementById("department").value = saved.department;
-    if (saved.machineName && document.getElementById("machineName")) document.getElementById("machineName").value = saved.machineName;
+    const fnEl = document.getElementById("fullname");
+    const phEl = document.getElementById("phone");
+    const deptEl = document.getElementById("department");
+    const machEl = document.getElementById("machineName");
+    if (saved.fullname && fnEl && !fnEl.value) fnEl.value = saved.fullname;
+    if (saved.phone && phEl && !phEl.value) phEl.value = saved.phone;
+    if (saved.department && deptEl && !deptEl.value) deptEl.value = saved.department;
+    if (saved.machineName && machEl && !machEl.value) machEl.value = saved.machineName;
   } catch(e){}
 }
 
@@ -290,7 +289,7 @@ function saveUserInfoIfChecked() {
     const info = {
       fullname: (document.getElementById("fullname")?.value || "").trim(),
       phone: (document.getElementById("phone")?.value || "").trim(),
-      department: document.getElementById("department")?.value || "",
+      department: (document.getElementById("department")?.value || "").trim(),
       machineName: (document.getElementById("machineName")?.value || "").trim()
     };
     localStorage.setItem("IT_HELPDESK_USER_INFO", JSON.stringify(info));
@@ -437,7 +436,7 @@ async function handleSubmitTicket(e) {
     username: currentUsername,
     fullname: currentFullname,
     phone: document.getElementById("phone")?.value.trim() || user.phone || "",
-    department: document.getElementById("department")?.value || "",
+    department: document.getElementById("department")?.value.trim() || user.department || user.dept || "Chi nhánh số 23",
     machineName: machineVal,
     category: selectedCategory,
     errorMessage: document.getElementById("errorMessage")?.value.trim() || "",

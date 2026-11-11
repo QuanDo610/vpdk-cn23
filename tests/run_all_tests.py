@@ -351,6 +351,12 @@ class TestRunner:
         self.assert_equal(list_display, "none", "IT-02: #listSection ẩn mặc định (Monitoring sau)")
         self.assert_true(tab_form_active and not tab_list_active, "IT-02: Tab nút #tabBtnHelpdeskRegister có class active")
         self.assert_true(tab_form_exists, "IT-02: Tab nút #tabBtnHelpdeskRegister điều hướng tạo ticket hiển thị")
+        dept_tag = self.client.evaluate("document.getElementById('department').tagName")
+        dept_readonly = self.client.evaluate("document.getElementById('department').readOnly")
+        dept_val = self.client.evaluate("document.getElementById('department').value")
+        self.assert_equal(dept_tag, "INPUT", "IT-02: #department là ô input tự động (không phải dropdown select)")
+        self.assert_true(dept_readonly, "IT-02: #department có thuộc tính readonly")
+        self.assert_equal(dept_val, "Tổ Hành chính - Tổng hợp", "IT-02: #department tự fill đúng phòng ban từ TaiKhoan")
 
         # TEST CASE IT-03: Tab switching sang Monitoring
         self.client.evaluate("switchHelpdeskTab('list')")
@@ -427,7 +433,6 @@ class TestRunner:
                     return originalFetch(url, opts);
                 };
 
-                document.getElementById('department').value = "Tổ Hành chính - Tổng hợp";
                 document.getElementById('errorMessage').value = "Printer Offline";
                 document.getElementById('description').value = "Máy in không nhận lệnh in từ phần mềm một cửa.";
 
@@ -452,7 +457,8 @@ class TestRunner:
                             listDisplay: listDisplay,
                             modalSuccessVisible: modalSuccessVisible,
                             modalTicketText: modalTicketText,
-                            firstTicketId: firstTicket?.id
+                            firstTicketId: firstTicket?.id,
+                            firstTicketDept: firstTicket?.department
                         });
                     }, 400);
                 });
@@ -462,6 +468,7 @@ class TestRunner:
         self.assert_true(submit_res.get("listDisplay") != "none", "IT-05: Tự động switchHelpdeskTab('list') về Tab Bảng sau khi gửi")
         self.assert_true(submit_res.get("modalSuccessVisible"), "IT-05: Modal #modalSuccess hiển thị xác nhận")
         self.assert_true("TK-261102" in submit_res.get("modalTicketText", ""), "IT-05: Hiển thị đúng mã vé #TK-261102-xxx")
+        self.assert_equal(submit_res.get("firstTicketDept"), "Tổ Hành chính - Tổng hợp", "IT-05: Ticket mới gửi tự động đính kèm phòng ban")
         self.assert_equal(submit_res.get("totalDiff"), 1, "IT-05: Số liệu #statTotal tăng thêm 1")
         self.assert_equal(submit_res.get("pendingDiff"), 1, "IT-05: Số liệu #statPending tăng thêm 1")
 
