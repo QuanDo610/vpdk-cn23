@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard IT - Bảng Điều Hành & Quản Trị Hệ Thống - Chi Nhánh Số 23</title>
+
+  <!-- Modular CSS (Parallel Load - Pure Vanilla Static Web) -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/utilities.css">
+  <link rel="stylesheet" href="css/dashboard_it.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Rào chắn kiểm soát truy cập (Zero-Trust Route Guard) -->
+  <script src="js/auth.js"></script>
+  <script>FamilyAuth.requireAuth();</script>
+
+  <!-- Layout Controller & Logic Phân Hệ Dashboard IT (Deferred) -->
+  <script src="js/layout.js" defer></script>
+  <script src="js/dashboard_it.js" defer></script>
+</head>
+<body class="antialiased bg-slate-50 text-slate-900">
+
+  <!-- Thông báo Toast Notification -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Mobile Sidebar Backdrop Overlay -->
+  <div id="sidebar-overlay" class="dashboard-overlay hidden lg:hidden"></div>
+
+  <!-- Wrapper Flex for Sidebar & Main Content -->
+  <div class="dashboard-wrapper">
+
+    <!-- ================= LEFT SIDEBAR NAVIGATION ================= -->
+    <aside id="sidebar" class="dashboard-sidebar -translate-x-full lg:translate-x-0">
+      
+      <!-- Sidebar Header -->
+      <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-lg bg-sky-600 flex items-center justify-center text-white shadow-2xs shrink-0">
+            <i class="fa-solid fa-server text-xs"></i>
+          </div>
+          <div>
+            <h2 class="text-xs font-bold text-slate-900 tracking-tight uppercase">DASHBOARD IT</h2>
+            <p class="text-[10px] font-semibold text-sky-700">Hạ Tầng &amp; Thiết Bị</p>
+          </div>
+        </div>
+        <!-- Close Button Mobile -->
+        <button onclick="toggleSidebar()" class="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100" aria-label="Đóng menu">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Quick Status Badge -->
+      <div class="px-5 py-3 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between text-xs">
+        <span class="inline-flex items-center text-emerald-700 font-semibold">
+          <span class="w-2 h-2 mr-2 bg-emerald-500 rounded-full animate-pulse"></span>
+          Hệ Thống Trực Tuyến
+        </span>
+        <span class="text-[11px] text-slate-500 font-medium">Năm 2026</span>
+      </div>
+
+      <!-- Sidebar Navigation Links: ĐÚNG 4 MỤC YÊU CẦU -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-6">
+        <div>
+          <div class="px-3 mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Điều Hành & Số Liệu Thiết Bị
+          </div>
+          <div class="space-y-1">
+            <button onclick="switchTab('tab-overview')" id="btn-tab-overview" class="nav-item nav-item-active" title="Xem tổng quan thiết bị đang dùng">
+              <i class="fa-solid fa-chart-pie w-5 text-sky-600 mr-2.5 text-sm"></i>
+              <span>1. Tổng Quan Thiết Bị Đang Dùng</span>
+            </button>
+            
+            <button onclick="switchTab('tab-inventory')" id="btn-tab-inventory" class="nav-item" title="Xem sổ kiểm kê đối soát thiết bị">
+              <i class="fa-solid fa-boxes-packing w-5 text-indigo-600 mr-2.5 text-sm"></i>
+              <span>2. Kiểm Kê: Đang Dùng vs Thanh Lý</span>
+            </button>
+            
+            <button onclick="switchTab('tab-network')" id="btn-tab-network" class="nav-item" title="Xem dải IP và phòng máy chủ">
+              <i class="fa-solid fa-network-wired w-5 text-emerald-600 mr-2.5 text-sm"></i>
+              <span>3. Phòng Server & Mạng IP</span>
+            </button>
+            
+            <button onclick="switchTab('tab-toner')" id="btn-tab-toner" class="nav-item" title="Tra cứu mã hộp mực máy in">
+              <i class="fa-solid fa-print w-5 text-amber-600 mr-2.5 text-sm"></i>
+              <span>4. Tra Cứu Vật Tư & Mã Mực In</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ================= MAIN CONTENT WRAPPER ================= -->
+    <div class="dashboard-main">
+
+      <!-- Main Dynamic Content Area -->
+      <main class="dashboard-content-area">
+
+        <!-- Thanh công cụ điều hướng Mobile (Chỉ hiện trên màn hình < 1024px) -->
+        <div class="lg:hidden mb-4 flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-2xs no-print">
+          <button onclick="toggleSidebar()" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-50 text-sky-700 hover:bg-sky-100 transition" aria-label="Mở menu điều hướng">
+            <i class="fa-solid fa-bars"></i>
+            <span>Menu IT</span>
+          </button>
+          <span class="text-xs font-semibold text-slate-600 truncate max-w-[200px]" id="mobileCurrentTab">1. Tổng Quan Thiết Bị Đang Dùng</span>
+          <button onclick="window.print()" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition" title="In Báo Cáo">
+            <i class="fa-solid fa-print"></i>
+          </button>
+        </div>
+        
+        <!-- Tab 1: Tổng Quan Thiết Bị Đang Dùng -->
+        <section id="tab-overview" class="tab-content block space-y-6">
+          <!-- Header Section Note -->
+        <div class="bg-gradient-to-r from-sky-50 via-indigo-50 to-white border border-sky-200 rounded-2xl p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="space-y-1">
+            <div class="flex items-center space-x-2">
+              <span class="px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase bg-sky-600 text-white shadow-2xs">Thống Kê Hiện Trạng</span>
+              <span class="text-xs font-medium text-slate-500">Cập nhật theo danh mục kiểm kê thực tế năm 2026</span>
+            </div>
+            <h3 class="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight">
+              Tổng Quan Số Lượng Thiết Bị Đang Vận Hành Phục Vụ 85 CBCNV
+            </h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Trích xuất từ <strong>Danh sách máy tính - máy in - máy photo - máy scan đang sử dụng năm 2026</strong> và <strong>Bảng đối chiếu định mức CN23</strong>.
+            </p>
+          </div>
+          
+          <div class="flex sm:flex-col items-center sm:items-end justify-between gap-2 shrink-0">
+            <span class="text-xs text-slate-500">Tỷ lệ thiết bị hoạt động tốt:</span>
+            <span class="text-xl sm:text-2xl font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-xl border border-emerald-200">
+              61.3% <span class="text-xs font-normal text-slate-500">(130 / 212)</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- 6 Metrics Cards: TẬP TRUNG THIẾT BỊ ĐANG DÙNG ĐƯỢC -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          
+          <!-- Card 1: Tổng thiết bị đang dùng -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Tổng Thiết Bị Dùng Tốt</span>
+              <span class="w-8 h-8 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center text-sm shadow-2xs"><i class="fa-solid fa-microchip"></i></span>
+            </div>
+            <div class="mt-3">
+              <div class="text-2xl sm:text-3xl font-black text-slate-900">130</div>
+              <p class="text-[11px] text-emerald-600 font-semibold mt-1 flex items-center gap-1">
+                <i class="fa-solid fa-circle-check"></i> Đang khai thác ổn định
+              </p>
+            </div>
+          </div>
+
+          <!-- Card 2: PC đang dùng -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Máy Trạm PC Đang Dùng</span>
+              <span class="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-sm shadow-2xs"><i class="fa-solid fa-desktop"></i></span>
+            </div>
+            <div class="mt-3">
+              <div class="text-2xl sm:text-3xl font-black text-blue-600">75 <span class="text-sm font-normal text-slate-500">PC</span></div>
+              <p class="text-[11px] text-slate-500 mt-1">Phục vụ 85 CBCNV (88.2%)</p>
+            </div>
+          </div>
+
+          <!-- Card 3: Máy chủ Server -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Máy Chủ Server</span>
+              <span class="w-8 h-8 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-sm shadow-2xs"><i class="fa-solid fa-server"></i></span>
+            </div>
+            <div class="mt-3">
+              <div class="text-2xl sm:text-3xl font-black text-purple-700">03 <span class="text-sm font-normal text-slate-500">Server</span></div>
+              <p class="text-[11px] text-purple-600 font-medium mt-1">VBDLIS / OERP / CSDL</p>
+            </div>
+          </div>
+
+          <!-- Card 4: Máy in đang dùng -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Máy In Đang Hoạt Động</span>
+              <span class="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-sm shadow-2xs"><i class="fa-solid fa-print"></i></span>
+            </div>
+            <div class="mt-3">
+              <div class="text-2xl sm:text-3xl font-black text-amber-700">38 <span class="text-sm font-normal text-slate-500">Máy</span></div>
+              <p class="text-[11px] text-slate-500 mt-1">23 A4 + 15 A3 (In GCN/Bản đồ)</p>
+            </div>
+          </div>
+
+          <!-- Card 5: Máy Scan & Photo -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Máy Scan & Photo Dùng Tốt</span>
+              <span class="w-8 h-8 rounded-xl bg-teal-100 text-teal-600 flex items-center justify-center text-sm shadow-2xs"><i class="fa-solid fa-copy"></i></span>
+            </div>
+            <div class="mt-3">
+              <div class="text-2xl sm:text-3xl font-black text-teal-700">14 <span class="text-sm font-normal text-slate-500">Máy</span></div>
+              <p class="text-[11px] text-slate-500 mt-1">11 Scan (9 A3 + 2 A4) + 3 Photo</p>
+            </div>
+          </div>
+
+          <!-- Card 6: Chờ thanh lý -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-rose-500">Thiết Bị Chờ Thanh Lý</span>
+              <span class="w-8 h-8 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-sm shadow-2xs"><i class="fa-solid fa-trash-can"></i></span>
+            </div>
+            <div class="mt-3">
+              <div class="text-2xl sm:text-3xl font-black text-rose-600">82 <span class="text-sm font-normal text-slate-500">Máy</span></div>
+              <p class="text-[11px] text-rose-500 font-medium mt-1">55 PC, 2 Laptop, 15 In, 7 Photo, 3 Scan</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Bảng Chi Tiết Thiết Bị Đang Dùng vs Chờ Thanh Lý -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div>
+              <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-table-list text-sky-600"></i> Bảng Phân Tích & Đối Chiếu Hiện Trạng Thiết Bị Năm 2026
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">Số liệu đối chiếu giữa danh mục đang hoạt động và danh mục đề nghị thanh lý</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="switchTab('tab-inventory')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-50 hover:bg-sky-100 text-sky-700 transition">
+                Xem Sổ Kiểm Kê Chi Tiết <i class="fa-solid fa-arrow-right text-[10px] ml-1"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
+                  <th class="p-3">Loại Thiết Bị</th>
+                  <th class="p-3 text-center">Số Lượng Đang Dùng Tốt</th>
+                  <th class="p-3 text-center">Số Lượng Chờ Thanh Lý</th>
+                  <th class="p-3 text-center">Tổng Cộng Đã Cấp</th>
+                  <th class="p-3 text-center">Tỷ Lệ Hoạt Động Tốt</th>
+                  <th class="p-3">Tình Trạng & Ghi Chú Đơn Vị</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 font-medium">
+                <tr class="hover:bg-slate-50/70 transition">
+                  <td class="p-3 flex items-center gap-2 font-bold text-slate-900">
+                    <i class="fa-solid fa-desktop text-blue-600 w-4"></i> Máy tính để bàn (PC)
+                  </td>
+                  <td class="p-3 text-center font-bold text-emerald-700 bg-emerald-50/50">75</td>
+                  <td class="p-3 text-center font-bold text-rose-600 bg-rose-50/50">55</td>
+                  <td class="p-3 text-center font-bold text-slate-900">130</td>
+                  <td class="p-3 text-center">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-50 text-blue-700">57.7%</span>
+                  </td>
+                  <td class="p-3 text-slate-600">67 máy đã gán mã H09, nhiều máy cấu hình cũ cần nâng cấp RAM/SSD</td>
+                </tr>
+
+                <tr class="hover:bg-slate-50/70 transition">
+                  <td class="p-3 flex items-center gap-2 font-bold text-slate-900">
+                    <i class="fa-solid fa-laptop text-indigo-600 w-4"></i> Máy tính xách tay (Laptop)
+                  </td>
+                  <td class="p-3 text-center font-bold text-slate-400">0</td>
+                  <td class="p-3 text-center font-bold text-rose-600 bg-rose-50/50">2</td>
+                  <td class="p-3 text-center font-bold text-slate-900">2</td>
+                  <td class="p-3 text-center">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-50 text-rose-700">0.0%</span>
+                  </td>
+                  <td class="p-3 text-slate-600">Đã hư hỏng hoàn toàn, Ban Giám đốc và IT hiện dùng máy bàn</td>
+                </tr>
+
+                <tr class="hover:bg-slate-50/70 transition">
+                  <td class="p-3 flex items-center gap-2 font-bold text-slate-900">
+                    <i class="fa-solid fa-server text-purple-600 w-4"></i> Máy chủ (Server)
+                  </td>
+                  <td class="p-3 text-center font-bold text-emerald-700 bg-emerald-50/50">3</td>
+                  <td class="p-3 text-center font-bold text-slate-400">0</td>
+                  <td class="p-3 text-center font-bold text-slate-900">3</td>
+                  <td class="p-3 text-center">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700">100.0%</span>
+                  </td>
+                  <td class="p-3 text-slate-600">3 máy chủ hoạt động online tại Phòng Server 358 Huỳnh Văn Cù</td>
+                </tr>
+
+                <tr class="hover:bg-slate-50/70 transition">
+                  <td class="p-3 flex items-center gap-2 font-bold text-slate-900">
+                    <i class="fa-solid fa-print text-amber-600 w-4"></i> Máy in văn phòng (Khổ A4)
+                  </td>
+                  <td class="p-3 text-center font-bold text-emerald-700 bg-emerald-50/50">23</td>
+                  <td class="p-3 text-center font-bold text-rose-600 bg-rose-50/50">6</td>
+                  <td class="p-3 text-center font-bold text-slate-900">29</td>
+                  <td class="p-3 text-center">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-50 text-blue-700">79.3%</span>
+                  </td>
+                  <td class="p-3 text-slate-600">Chủ yếu các dòng Canon 2900, HP 1020, Canon 6030 phục vụ văn bản</td>
+                </tr>
+
+                <tr class="hover:bg-slate-50/70 transition">
+                  <td class="p-3 flex items-center gap-2 font-bold text-slate-900">
+                    <i class="fa-solid fa-print text-amber-700 w-4"></i> Máy in chuyên dụng (Khổ A3)
+                  </td>
+                  <td class="p-3 text-center font-bold text-emerald-700 bg-emerald-50/50">15</td>
+                  <td class="p-3 text-center font-bold text-rose-600 bg-rose-50/50">9</td>
+                  <td class="p-3 text-center font-bold text-slate-900">24</td>
+                  <td class="p-3 text-center">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-50 text-blue-700">62.5%</span>
+                  </td>
+                  <td class="p-3 text-slate-600">Chuyên in Giấy chứng nhận quyền sử dụng đất và trích lục bản đồ địa chính</td>
+                </tr>
+
+                <tr class="hover:bg-slate-50/70 transition">
+                  <td class="p-3 flex items-center gap-2 font-bold text-slate-900">
+                    <i class="fa-solid fa-file-invoice text-teal-600 w-4"></i> Máy Scan số hóa (A3 + A4)
+                  </td>
+                  <td class="p-3 text-center font-bold text-emerald-700 bg-emerald-50/50">11</td>
+                  <td class="p-3 text-center font-bold text-rose-600 bg-rose-50/50">3</td>
+                  <td class="p-3 text-center font-bold text-slate-900">14</td>
+                  <td class="p-3 text-center">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700">78.6%</span>
+                  </td>
+                  <td class="p-3 text-slate-600">9 Scan A3 (chuyên quét bản đồ khổ lớn) + 2 Scan A4 (Phòng BĐ có 1 máy scan hư)</td>
+                </tr>
+
+                <tr class="hover:bg-slate-50/70 transition">
+                  <td class="p-3 flex items-center gap-2 font-bold text-slate-900">
+                    <i class="fa-solid fa-copy text-indigo-600 w-4"></i> Máy Photocopy đa năng
+                  </td>
+                  <td class="p-3 text-center font-bold text-emerald-700 bg-emerald-50/50">3</td>
+                  <td class="p-3 text-center font-bold text-rose-600 bg-rose-50/50">7</td>
+                  <td class="p-3 text-center font-bold text-slate-900">10</td>
+                  <td class="p-3 text-center">
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-50 text-rose-700">30.0%</span>
+                  </td>
+                  <td class="p-3 text-slate-600">3 máy Ricoh/Toshiba đang chạy, 7 máy cũ hỏng nặng đề nghị thanh lý</td>
+                </tr>
+
+                <tr class="bg-slate-100 font-extrabold text-slate-900">
+                  <td class="p-3 uppercase">TỔNG CỘNG THIẾT BỊ IT</td>
+                  <td class="p-3 text-center text-emerald-700 text-sm">130</td>
+                  <td class="p-3 text-center text-rose-600 text-sm">82</td>
+                  <td class="p-3 text-center text-sm">212</td>
+                  <td class="p-3 text-center text-sky-800 text-sm">61.3%</td>
+                  <td class="p-3 text-slate-700">Đơn vị đang tích cực bảo trì và kiến nghị bổ sung máy mới</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Phân Bổ Thiết Bị Theo Phòng Ban & Tổ Chuyên Môn -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
+            <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-chart-column text-sky-600"></i> Phân Bổ Máy Tính Theo Khối Chuyên Môn (85 Nhân Sự)
+            </h4>
+            <div class="space-y-3 text-xs">
+              <div>
+                <div class="flex justify-between font-semibold mb-1 text-slate-700">
+                  <span>Tổ Đăng ký và Cấp GCN (32 nhân sự)</span>
+                  <span class="text-sky-700 font-bold">28 PC (87.5%)</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                  <div class="bg-sky-600 h-2.5 rounded-full" style="width: 87.5%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between font-semibold mb-1 text-slate-700">
+                  <span>Tổ Kỹ thuật Địa chính & Lưu trữ (29 nhân sự)</span>
+                  <span class="text-indigo-700 font-bold">26 PC (89.6%)</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                  <div class="bg-indigo-600 h-2.5 rounded-full" style="width: 89.6%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between font-semibold mb-1 text-slate-700">
+                  <span>Tổ Hành chính Tổng hợp & Kế toán (18 nhân sự)</span>
+                  <span class="text-emerald-700 font-bold">16 PC (88.8%)</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                  <div class="bg-emerald-600 h-2.5 rounded-full" style="width: 88.8%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between font-semibold mb-1 text-slate-700">
+                  <span>Ban Giám Đốc & Phụ trách IT (6 nhân sự)</span>
+                  <span class="text-purple-700 font-bold">5 PC + 3 Server (100%)</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                  <div class="bg-purple-600 h-2.5 rounded-full" style="width: 100%"></div>
+                </div>
+              </div>
+            </div>
+            
+            <p class="text-[11px] text-slate-500 pt-2 border-t border-slate-100 italic">
+              * Ghi chú: Định mức theo NĐ 155/2025/NĐ-CP yêu cầu 100% cán bộ, viên chức làm việc chuyên môn phải được trang bị tối thiểu 01 máy vi tính để bàn cấu hình chuẩn.
+            </p>
+          </div>
+
+          <!-- Thông Tin Pháp Nhân & Địa Điểm Công Tác -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
+            <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-landmark text-indigo-600"></i> Pháp Nhân & Trụ Sở Đơn Vị (Chi Nhánh Số 23)
+            </h4>
+            <div class="space-y-2.5 text-xs">
+              <div class="flex justify-between py-1.5 border-b border-slate-100">
+                <span class="text-slate-500">Cơ quan chủ quản cấp trên:</span>
+                <span class="font-bold text-slate-900">Văn phòng Đăng ký đất đai TP.HCM (Sở NN & MT)</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-slate-100">
+                <span class="text-slate-500">Trụ sở cơ sở hiện hữu:</span>
+                <span class="font-semibold text-slate-900">Số 358 Huỳnh Văn Cù, P. Thủ Dầu Một</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-slate-100">
+                <span class="text-slate-500">Khuôn viên đất hiện trạng:</span>
+                <span class="font-semibold text-slate-800">1.417,70 m² (Sàn xây dựng: 835,30 m²)</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-slate-100">
+                <span class="text-slate-500">Địa điểm đề nghị tiếp nhận:</span>
+                <span class="font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded">Trạm Y tế số 3 (Liền kề số 358)</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-slate-100">
+                <span class="text-slate-500">Quy mô tiếp nhận đề xuất:</span>
+                <span class="font-semibold text-slate-800">1.276,20 m² đất (Sàn xây dựng 548 m²)</span>
+              </div>
+              <div class="flex justify-between py-1.5">
+                <span class="text-slate-500">Mục đích sử dụng chính:</span>
+                <span class="font-bold text-emerald-700">Kho lưu trữ chuyên dùng (500m²) & Xử lý số hóa</span>
+              </div>
+            </div>
+
+            <div class="pt-2 flex items-center justify-between">
+              <span class="text-[11px] text-slate-400">Căn cứ NĐ 155/2025 & TT 09/2007</span>
+              <button onclick="switchTab('tab-network')" class="text-xs font-semibold text-sky-700 hover:text-sky-900 hover:underline flex items-center gap-1">
+                Xem Phòng Server & Mạng IP <i class="fa-solid fa-chevron-right text-[10px]"></i>
+              </button>
+            </div>
+          </div>
+
+        </div>
+        </section>
+
+
+        <!-- Tab 2: Kiểm Kê Thiết Bị -->
+        <section id="tab-inventory" class="tab-content hidden space-y-6">
+          <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 mb-4 gap-3">
+          <div>
+            <h3 class="text-base font-bold text-slate-900 flex items-center">
+              <i class="fa-solid fa-scale-balanced text-sky-600 mr-2.5"></i> Bảng Đối Soát Tài Sản: Đang Sử Dụng vs Cần Thanh Lý 2026
+            </h3>
+            <p class="text-xs text-slate-500 mt-1">Theo các file Excel và Word kiểm kê tài sản nhận ngày 10/09/2026</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="search-input-wrapper">
+              <i class="fa-solid fa-magnifying-glass search-input-icon"></i>
+              <input type="text" id="searchInventoryInput" class="filter-search-input" placeholder="Lọc nhanh thiết bị...">
+            </div>
+            <span class="px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-300 shrink-0">
+              Số lượng thanh lý: Số thuần túy
+            </span>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table id="tableInventory" class="dashboard-table w-full text-sm text-left border-collapse">
+            <thead class="text-xs uppercase bg-slate-50 text-slate-700 border-b border-slate-200 font-bold">
+              <tr>
+                <th class="py-3.5 px-4">Loại Thiết Bị</th>
+                <th class="py-3.5 px-4 text-emerald-700">Đang Sử Dụng</th>
+                <th class="py-3.5 px-4 text-rose-700">Cần Thanh Lý</th>
+                <th class="py-3.5 px-4 text-slate-800">Tổng Kiểm Đếm</th>
+                <th class="py-3.5 px-4">Ghi Chú Chi Tiết</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-700">
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-semibold text-slate-900 flex items-center">
+                  <i class="fa-solid fa-desktop text-slate-500 mr-2.5"></i> Máy vi tính để bàn (PC)
+                </td>
+                <td class="py-3.5 px-4 font-bold text-emerald-700 font-mono text-base">75</td>
+                <td class="py-3.5 px-4 font-bold text-rose-700 font-mono text-base">55</td>
+                <td class="py-3.5 px-4 font-mono font-bold text-slate-900">130</td>
+                <td class="py-3.5 px-4 text-xs text-slate-600">67 máy đã gán mã định danh H09. 55 máy nằm trong danh mục số lượng cần thanh lý năm 2026.</td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-semibold text-slate-900 flex items-center">
+                  <i class="fa-solid fa-laptop text-slate-500 mr-2.5"></i> Máy vi tính xách tay (Laptop)
+                </td>
+                <td class="py-3.5 px-4 text-slate-600 font-semibold font-mono">0</td>
+                <td class="py-3.5 px-4 font-bold text-rose-700 font-mono text-base">2</td>
+                <td class="py-3.5 px-4 font-mono font-bold text-slate-900">2</td>
+                <td class="py-3.5 px-4 text-xs text-slate-600">Nằm trong danh mục số lượng cần thanh lý năm 2026.</td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-semibold text-slate-900 flex items-center">
+                  <i class="fa-solid fa-server text-slate-500 mr-2.5"></i> Máy chủ vật lý (Server)
+                </td>
+                <td class="py-3.5 px-4 font-bold text-emerald-700 font-mono text-base">3</td>
+                <td class="py-3.5 px-4 text-slate-600 font-semibold font-mono">0</td>
+                <td class="py-3.5 px-4 font-mono font-bold text-slate-900">3</td>
+                <td class="py-3.5 px-4 text-xs text-slate-600">HP DL360 Gen8, HP Gen9, StoreEasy 1460 (kèm 1 NAS Synology DS423+).</td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-semibold text-slate-900 flex items-center">
+                  <i class="fa-solid fa-print text-slate-500 mr-2.5"></i> Máy in khổ A3
+                </td>
+                <td class="py-3.5 px-4 font-bold text-emerald-700 font-mono text-base">15</td>
+                <td class="py-3.5 px-4 font-bold text-rose-700 font-mono text-base">9</td>
+                <td class="py-3.5 px-4 font-mono font-bold text-slate-900">24</td>
+                <td class="py-3.5 px-4 text-xs text-slate-600">Dòng HP LaserJet Pro M706n dùng mực HP 93A (có 1 máy mới dự phòng trong kho).</td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-semibold text-slate-900 flex items-center">
+                  <i class="fa-solid fa-print text-slate-500 mr-2.5"></i> Máy in khổ A4
+                </td>
+                <td class="py-3.5 px-4 font-bold text-emerald-700 font-mono text-base">23</td>
+                <td class="py-3.5 px-4 font-bold text-rose-700 font-mono text-base">6</td>
+                <td class="py-3.5 px-4 font-mono font-bold text-slate-900">29</td>
+                <td class="py-3.5 px-4 text-xs text-slate-600">HP 402d, 404dn, 4003dn, P2035, Brother (phân bổ cả ở các phường một cửa).</td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-semibold text-slate-900 flex items-center">
+                  <i class="fa-solid fa-camera text-slate-500 mr-2.5"></i> Máy quét (Scan) A3
+                </td>
+                <td class="py-3.5 px-4 font-bold text-emerald-700 font-mono text-base">9</td>
+                <td class="py-3.5 px-4 font-bold text-rose-700 font-mono text-base">1</td>
+                <td class="py-3.5 px-4 font-mono font-bold text-slate-900">10</td>
+                <td class="py-3.5 px-4 text-xs text-slate-600">Trang bị chuyên dụng cho số hóa hồ sơ bản đồ và địa chính.</td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-semibold text-slate-900 flex items-center">
+                  <i class="fa-solid fa-camera text-slate-500 mr-2.5"></i> Máy quét (Scan) A4
+                </td>
+                <td class="py-3.5 px-4 font-bold text-emerald-700 font-mono text-base">2</td>
+                <td class="py-3.5 px-4 font-bold text-rose-700 font-mono text-base">2</td>
+                <td class="py-3.5 px-4 font-mono font-bold text-slate-900">4</td>
+                <td class="py-3.5 px-4 text-xs text-slate-600">Scan hồ sơ tiếp nhận nhanh.</td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-semibold text-slate-900 flex items-center">
+                  <i class="fa-solid fa-copy text-slate-500 mr-2.5"></i> Máy Photocopy
+                </td>
+                <td class="py-3.5 px-4 font-bold text-emerald-700 font-mono text-base">3</td>
+                <td class="py-3.5 px-4 font-bold text-rose-700 font-mono text-base">7</td>
+                <td class="py-3.5 px-4 font-mono font-bold text-slate-900">10</td>
+                <td class="py-3.5 px-4 text-xs text-slate-600">01 Ricoh IM3000 + 02 Konica Minolta Bizhub 367. 7 máy nằm trong danh mục thanh lý 2026.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+        </section>
+
+
+        <!-- Tab 3: Phòng Server & Mạng IP -->
+        <section id="tab-network" class="tab-content hidden space-y-6">
+          <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-xs">
+        <h3 class="text-base font-bold text-slate-900 mb-2 flex items-center">
+          <i class="fa-solid fa-network-wired text-sky-600 mr-2.5"></i> Địa Chỉ IP & Cấu Trúc Dữ Liệu Phòng Server
+        </h3>
+        <p class="text-xs text-slate-500 mb-4">Các thông số vận hành cốt lõi bàn giao từ ông Lý Minh Tân ngày 09/09/2026:</p>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left border-collapse">
+            <thead class="text-xs uppercase bg-slate-50 text-slate-700 border-b border-slate-200 font-bold">
+              <tr>
+                <th class="py-3.5 px-4">Thiết Bị / Model</th>
+                <th class="py-3.5 px-4">Địa chỉ IP</th>
+                <th class="py-3.5 px-4">Thư mục & Dữ liệu quản trị</th>
+                <th class="py-3.5 px-4">Tình trạng</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-700">
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-semibold text-slate-900">Server 1 (HP DL360 Gen8)</td>
+                <td class="py-3.5 px-4 font-mono text-sky-700 font-bold">10.17.2.252</td>
+                <td class="py-3.5 px-4">Chạy DNS Server, lưu dữ liệu hồ sơ quét cũ, hồ sơ giao dịch bảo đảm.</td>
+                <td class="py-3.5 px-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Hoạt động</span></td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-semibold text-slate-900">Server 2 (HP DL360 Gen9)</td>
+                <td class="py-3.5 px-4 font-mono text-sky-700 font-bold">10.17.2.125</td>
+                <td class="py-3.5 px-4">Thư mục <code>Chung</code> (ổ F:), <code>HSQ-TDM</code> (ổ G:), <code>Banve DD</code> (ổ H:).</td>
+                <td class="py-3.5 px-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Hoạt động</span></td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-semibold text-slate-900">Server 3 (StoreEasy 1460)</td>
+                <td class="py-3.5 px-4 font-mono text-sky-700 font-bold">10.17.2.100</td>
+                <td class="py-3.5 px-4">Thư mục <code>Dataweb</code> (Banve DD & HSQ-TDM); file GCN của phần mềm HSQ.</td>
+                <td class="py-3.5 px-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Hoạt động</span></td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-semibold text-slate-900">Tường lửa FortiGate 61F</td>
+                <td class="py-3.5 px-4 font-mono text-amber-700 font-bold">192.168.1.254</td>
+                <td class="py-3.5 px-4">Tường lửa mạng toàn đơn vị (Sắp hết hạn license ngày 30/09/2026).</td>
+                <td class="py-3.5 px-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">Sắp hết hạn license</span></td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-semibold text-slate-900">NAS Synology DS423+</td>
+                <td class="py-3.5 px-4 font-mono text-sky-700 font-bold">10.17.2.150:65001</td>
+                <td class="py-3.5 px-4">Lưu trữ sao lưu tự động định kỳ từ các máy chủ và dữ liệu chia sẻ.</td>
+                <td class="py-3.5 px-4"><span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Hoạt động</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+        </section>
+
+
+        <!-- Tab 4: Tra Cứu Vật Tư & Hộp Mực -->
+        <section id="tab-toner" class="tab-content hidden space-y-6">
+          <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-xs">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 mb-4 gap-3">
+          <div>
+            <h3 class="text-base font-bold text-slate-900 mb-1 flex items-center">
+              <i class="fa-solid fa-fill-drip text-sky-600 mr-2.5"></i> Sổ Tay Tra Cứu Mã Hộp Mực Máy In & Photocopy Toàn Đơn Vị
+            </h3>
+            <p class="text-xs text-slate-500">Khi phòng ban hoặc Bộ phận Một cửa báo hết mực, tra mã hộp mực tương ứng tại đây để xuất kho hoặc báo văn phòng cấp:</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="search-input-wrapper">
+              <i class="fa-solid fa-magnifying-glass search-input-icon"></i>
+              <input type="text" id="searchTonerInput" class="filter-search-input" placeholder="Tra nhanh mã mực, tên máy, vị trí...">
+            </div>
+            <span id="tonerMatchCount" class="text-xs font-bold text-sky-700 shrink-0"></span>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table id="tableToner" class="dashboard-table w-full text-sm text-left border-collapse">
+            <thead class="text-xs uppercase bg-slate-50 text-slate-700 border-b border-slate-200 font-bold">
+              <tr>
+                <th class="py-3.5 px-4">Loại Máy</th>
+                <th class="py-3.5 px-4">Hãng & Chủng Loại Thiết Bị</th>
+                <th class="py-3.5 px-4 text-sky-800">Mã Hộp Mực Cần Dùng</th>
+                <th class="py-3.5 px-4">Số Lượng Máy</th>
+                <th class="py-3.5 px-4">Vị Trí Phân Bổ / Ghi Chú</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-700">
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-bold text-emerald-700">Máy In A3</td>
+                <td class="py-3.5 px-4 font-medium text-slate-900">HP LaserJet Pro M706n</td>
+                <td class="py-3.5 px-4 font-mono font-bold text-amber-800 bg-amber-50/60 rounded">HP 93A (CZ192A)</td>
+                <td class="py-3.5 px-4 font-mono font-semibold">16 cái</td>
+                <td class="py-3.5 px-4 text-xs text-slate-600">Các phòng chuyên môn địa chính, đo đạc, cấp giấy</td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-bold text-sky-700">Máy In A4</td>
+                <td class="py-3.5 px-4 font-medium text-slate-900">HP LaserJet Pro M402d</td>
+                <td class="py-3.5 px-4 font-mono font-bold text-amber-800 bg-amber-50/60 rounded">HP 26A (CF226A)</td>
+                <td class="py-3.5 px-4 font-mono font-semibold">9 cái</td>
+                <td class="py-3.5 px-4 text-xs text-slate-600">Một cửa P. Chánh Hiệp (1 cái), Một cửa P. Phú An (1 cái)</td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-bold text-sky-700">Máy In A4</td>
+                <td class="py-3.5 px-4 font-medium text-slate-900">HP LaserJet Pro M404dn</td>
+                <td class="py-3.5 px-4 font-mono font-bold text-amber-800 bg-amber-50/60 rounded">HP 76A (CF276A)</td>
+                <td class="py-3.5 px-4 font-mono font-semibold">8 cái</td>
+                <td class="py-3.5 px-4 text-xs text-slate-600">Một cửa P. Thủ Dầu Một (1 cái)</td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-bold text-sky-700">Máy In A4</td>
+                <td class="py-3.5 px-4 font-medium text-slate-900">HP LaserJet Pro 4003dn</td>
+                <td class="py-3.5 px-4 font-mono font-bold text-amber-800 bg-amber-50/60 rounded">HP 151A (W1510A)</td>
+                <td class="py-3.5 px-4 font-mono font-semibold">5 cái</td>
+                <td class="py-3.5 px-4 text-xs text-slate-600">Một cửa P. Thủ Dầu Một (1 cái)</td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-bold text-sky-700">Máy In A4</td>
+                <td class="py-3.5 px-4 font-medium text-slate-900">HP LaserJet P2035</td>
+                <td class="py-3.5 px-4 font-mono font-bold text-amber-800 bg-amber-50/60 rounded">HP 05A (CE505A)</td>
+                <td class="py-3.5 px-4 font-mono font-semibold">3 cái</td>
+                <td class="py-3.5 px-4 text-xs text-slate-600">Một cửa P. Thủ Dầu Một</td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-bold text-sky-700">Máy In A4</td>
+                <td class="py-3.5 px-4 font-medium text-slate-900">Brother HL – 2240D</td>
+                <td class="py-3.5 px-4 font-mono font-bold text-amber-800 bg-amber-50/60 rounded">Brother TN-2280</td>
+                <td class="py-3.5 px-4 font-mono font-semibold">3 cái</td>
+                <td class="py-3.5 px-4 text-xs text-slate-600">Một cửa P. Phú Lợi (1 cái)</td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-bold text-sky-700">Máy In A4</td>
+                <td class="py-3.5 px-4 font-medium text-slate-900">Brother HL – L2320D</td>
+                <td class="py-3.5 px-4 font-mono font-bold text-amber-800 bg-amber-50/60 rounded">Brother TN-2385</td>
+                <td class="py-3.5 px-4 font-mono font-semibold">1 cái</td>
+                <td class="py-3.5 px-4 text-xs text-slate-600">Một cửa P. Bình Dương</td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-bold text-sky-700">Máy In A4</td>
+                <td class="py-3.5 px-4 font-medium text-slate-900">Fuji Xerox Docuprint P225db</td>
+                <td class="py-3.5 px-4 font-mono font-bold text-amber-800 bg-amber-50/60 rounded">Xerox CT202330</td>
+                <td class="py-3.5 px-4 font-mono font-semibold">1 cái</td>
+                <td class="py-3.5 px-4 text-xs text-slate-600">Văn phòng</td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-bold text-indigo-700">Photocopy</td>
+                <td class="py-3.5 px-4 font-medium text-slate-900">Ricoh IM3000</td>
+                <td class="py-3.5 px-4 font-mono font-bold text-amber-800 bg-amber-50/60 rounded">Ricoh Type IM 2500</td>
+                <td class="py-3.5 px-4 font-mono font-semibold">1 cái</td>
+                <td class="py-3.5 px-4 text-xs text-slate-600">Máy photocopy đa năng phòng hành chính</td>
+              </tr>
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="py-3.5 px-4 font-bold text-indigo-700">Photocopy</td>
+                <td class="py-3.5 px-4 font-medium text-slate-900">Konica Minolta Bizhub 367</td>
+                <td class="py-3.5 px-4 font-mono font-bold text-amber-800 bg-amber-50/60 rounded">Konica TN-323</td>
+                <td class="py-3.5 px-4 font-mono font-semibold">2 cái</td>
+                <td class="py-3.5 px-4 text-xs text-slate-600">Máy photocopy văn phòng</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+        </section>
+
+
+      </main>
+
+    </div>
+
+  </div>
+
+</body>
+</html>

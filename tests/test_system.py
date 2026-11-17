@@ -29,6 +29,7 @@ class TestSecurityAndRouteGuards(unittest.TestCase):
             "giao_viec.html",
             "bao_cao_to.html",
             "hrm.html",
+            "dashboard_it.html",
             "templates/base_app_template.html"
         ]
 
