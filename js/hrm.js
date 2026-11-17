@@ -1,7 +1,7 @@
 /**
  * ==============================================================================
  * CỔNG DỊCH VỤ NỘI BỘ VPĐK CHI NHÁNH 23 - "FAMILY CN23"
- * Module Controller: HRM - Tra Cứu Nhân Sự & Danh Bạ Cán Bộ (Sheet TaiKhoan)
+ * Module Controller: HRM - Sơ Đồ Cơ Cấu Tổ Chức & Tra Cứu Nhân Sự (QĐ 2637 & Sheet TaiKhoan)
  * File: js/hrm.js
  * ==============================================================================
  */
@@ -40,6 +40,34 @@
 
   function cacheDOM() {
     DOM.toastContainer = document.getElementById("toastContainer");
+
+    // Tab chuyển đổi chính (Sơ đồ tổ chức vs Tra cứu nhân sự)
+    DOM.tabBtnOrgChart = document.getElementById("tabBtnOrgChart");
+    DOM.tabBtnStaffDirectory = document.getElementById("tabBtnStaffDirectory");
+    DOM.panelOrgChart = document.getElementById("panelOrgChart");
+    DOM.panelStaffDirectory = document.getElementById("panelStaffDirectory");
+
+    // Sơ đồ tổ chức & các góc nhìn (Subviews)
+    DOM.orgSubnavBar = document.querySelector(".org-subnav-bar");
+    DOM.orgSubsearchInput = document.getElementById("orgSubsearchInput");
+    DOM.subviewTree = document.getElementById("subviewTree");
+    DOM.subviewDepartments = document.getElementById("subviewDepartments");
+    DOM.subviewTasks = document.getElementById("subviewTasks");
+    DOM.subviewWards = document.getElementById("subviewWards");
+    DOM.subviewGovernance = document.getElementById("subviewGovernance");
+    DOM.orgTasksTableBody = document.getElementById("orgTasksTableBody");
+
+    // Slide-over Modal chi tiết đơn vị / tổ (Org Node)
+    DOM.modalOrgNodeDetail = document.getElementById("modalOrgNodeDetail");
+    DOM.orgModalIconBox = document.getElementById("orgModalIconBox");
+    DOM.orgModalTitle = document.getElementById("orgModalTitle");
+    DOM.orgModalSubtitle = document.getElementById("orgModalSubtitle");
+    DOM.orgModalBody = document.getElementById("orgModalBody");
+    DOM.orgModalFooterRef = document.getElementById("orgModalFooterRef");
+    DOM.btnCloseOrgModal = document.getElementById("btnCloseOrgModal");
+    DOM.btnOrgModalCloseFooter = document.getElementById("btnOrgModalCloseFooter");
+
+    // Danh bạ nhân sự (KPI, tìm kiếm, lọc)
     DOM.statTotalUsers = document.getElementById("statTotalUsers");
     DOM.statActiveUsers = document.getElementById("statActiveUsers");
     DOM.statDeptCount = document.getElementById("statDeptCount");
@@ -73,6 +101,7 @@
     DOM.staffTableWrapper = document.getElementById("staffTableWrapper");
     DOM.staffTableBody = document.getElementById("staffTableBody");
 
+    // Modal chi tiết cán bộ
     DOM.modalStaffDetail = document.getElementById("modalStaffDetail");
     DOM.modalStaffAvatar = document.getElementById("modalStaffAvatar");
     DOM.modalStaffName = document.getElementById("modalStaffName");
@@ -80,6 +109,291 @@
     DOM.modalStaffBody = document.getElementById("modalStaffBody");
     DOM.btnCloseDetailModal = document.getElementById("btnCloseDetailModal");
     DOM.btnModalCloseFooter = document.getElementById("btnModalCloseFooter");
+  }
+
+  // ==================== DỮ LIỆU ĐẶC TẢ CƠ CẤU TỔ CHỨC (QĐ 2637) ====================
+  const ORG_NODE_DETAILS = {
+    so_nnmt: {
+      title: "SỞ TÀI NGUYÊN VÀ MÔI TRƯỜNG TP. HỒ CHÍ MINH",
+      subtitle: "Cơ quan chuyên môn thuộc UBND TP.HCM • Cấp quản lý 01",
+      iconClass: "bg-amber-600",
+      iconFa: "fa-solid fa-building-columns",
+      footerRef: "Căn cứ Quyết định thành lập & phân cấp chức năng của UBND TP.HCM",
+      html: `
+        <div class="hrm-detail-grid">
+          <div class="hrm-detail-tile is-full">
+            <div class="hrm-detail-label"><i class="fa-solid fa-landmark"></i><span>Vị trí &amp; Chức năng</span></div>
+            <div class="hrm-detail-value">Là cơ quan chuyên môn trực thuộc Ủy ban nhân dân TP. Hồ Chí Minh; thực hiện chức năng tham mưu, giúp UBND Thành phố quản lý nhà nước về: đất đai; tài nguyên nước; tài nguyên khoáng sản, địa chất; môi trường; đo đạc và bản đồ; biến đổi khí hậu trên địa bàn Thành phố.</div>
+          </div>
+          <div class="hrm-detail-tile is-full">
+            <div class="hrm-detail-label"><i class="fa-solid fa-scale-balanced"></i><span>Vai trò đối với Hệ thống Đăng ký đất đai</span></div>
+            <div class="hrm-detail-value">Cơ quan chủ quản cấp trên trực tiếp ban hành <strong>Quyết định số 2637/QĐ-SNNMT-VP ngày 31/12/2024</strong> quy định chức năng, nhiệm vụ, quyền hạn và cơ cấu tổ chức của Chi nhánh Văn phòng Đăng ký đất đai Số 23.</div>
+          </div>
+          <div class="hrm-detail-tile">
+            <div class="hrm-detail-label"><i class="fa-solid fa-shield-halved"></i><span>Cấp quản lý</span></div>
+            <div class="hrm-detail-value">Cơ quan hành chính nhà nước cấp Thành phố</div>
+          </div>
+          <div class="hrm-detail-tile">
+            <div class="hrm-detail-label"><i class="fa-solid fa-sitemap"></i><span>Đơn vị trực thuộc</span></div>
+            <div class="hrm-detail-value">Văn phòng Đăng ký đất đai TP.HCM &amp; các Chi nhánh</div>
+          </div>
+        </div>
+      `
+    },
+    vpdkdd_tp: {
+      title: "VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI TP. HỒ CHÍ MINH",
+      subtitle: "Đơn vị sự nghiệp công lập trực thuộc Sở TN&MT • Cấp quản lý 02",
+      iconClass: "bg-indigo-600",
+      iconFa: "fa-solid fa-landmark",
+      footerRef: "Căn cứ Quyết định số 2637/QĐ-SNNMT-VP & Quy chế tổ chức của VPĐKĐĐ TP",
+      html: `
+        <div class="hrm-detail-grid">
+          <div class="hrm-detail-tile is-full">
+            <div class="hrm-detail-label"><i class="fa-solid fa-landmark"></i><span>Vị trí pháp lý</span></div>
+            <div class="hrm-detail-value">Là đơn vị sự nghiệp công lập trực thuộc Sở Tài nguyên và Môi trường TP.HCM; có tư cách pháp nhân, con dấu riêng và được mở tài khoản tại Kho bạc Nhà nước và Ngân hàng theo quy định.</div>
+          </div>
+          <div class="hrm-detail-tile is-full">
+            <div class="hrm-detail-label"><i class="fa-solid fa-briefcase"></i><span>Trách nhiệm chỉ đạo chuyên môn</span></div>
+            <div class="hrm-detail-value">Chỉ đạo, điều hành thống nhất toàn bộ hệ thống các Chi nhánh trực thuộc; hướng dẫn nghiệp vụ đăng ký đất đai, cấp Giấy chứng nhận, xây dựng và quản trị vận hành CSDL đất đai thống nhất.</div>
+          </div>
+          <div class="hrm-detail-tile is-full">
+            <div class="hrm-detail-label"><i class="fa-solid fa-calendar-check"></i><span>Thẩm quyền giải quyết chế độ nghỉ phép (Điều 8)</span></div>
+            <div class="hrm-detail-value">Phê duyệt việc nghỉ phép từ <strong>03 ngày làm việc trở lên</strong> đối với viên chức, người lao động thuộc các Chi nhánh; phê duyệt việc nghỉ phép, đi công tác ngoại tỉnh đối với Giám đốc và Phó Giám đốc Chi nhánh.</div>
+          </div>
+        </div>
+      `
+    },
+    chi_nhanh_23: {
+      title: "CHI NHÁNH VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI SỐ 23",
+      subtitle: "Đơn vị trực thuộc VPĐKĐĐ TP.HCM • Cơ cấu Điều 3 & 4 QĐ 2637",
+      iconClass: "bg-blue-800",
+      iconFa: "fa-solid fa-sitemap",
+      footerRef: "Điều 3, Điều 4 & Điều 7 Quyết định số 2637/QĐ-SNNMT-VP",
+      html: `
+        <div class="hrm-detail-grid">
+          <div class="hrm-detail-tile is-full">
+            <div class="hrm-detail-label"><i class="fa-solid fa-building-flag"></i><span>Vị trí &amp; Trụ sở</span></div>
+            <div class="hrm-detail-value">Đơn vị sự nghiệp trực thuộc Văn phòng Đăng ký đất đai TP.HCM. Trụ sở chính đặt tại Phường Thủ Dầu Một; có con dấu riêng và tài khoản hoạt động phụ thuộc theo quy định.</div>
+          </div>
+          <div class="hrm-detail-tile is-full">
+            <div class="hrm-detail-label"><i class="fa-solid fa-user-tie"></i><span>Cơ cấu Ban Giám đốc (Điều 3)</span></div>
+            <div class="hrm-detail-value">Gồm có <strong>01 Giám đốc</strong> và không quá <strong>02 Phó Giám đốc</strong>. Làm việc theo <strong>chế độ thủ trưởng (Điều 7)</strong>. Giám đốc là người đứng đầu, chịu trách nhiệm trước Giám đốc VPĐKĐĐ TP và pháp luật về toàn bộ hoạt động của Chi nhánh.</div>
+          </div>
+          <div class="hrm-detail-tile is-full">
+            <div class="hrm-detail-label"><i class="fa-solid fa-layer-group"></i><span>03 Tổ Chuyên môn (Điều 4)</span></div>
+            <div class="hrm-detail-value">1. Tổ Hành chính - Tổng hợp<br>2. Tổ Đăng ký và Cấp giấy chứng nhận<br>3. Tổ Kỹ thuật địa chính và Lưu trữ<br><em>Mỗi tổ có 01 Tổ trưởng và không quá 03 Tổ phó.</em></div>
+          </div>
+          <div class="hrm-detail-tile is-full">
+            <div class="hrm-detail-label"><i class="fa-solid fa-map-location-dot"></i><span>Địa bàn phụ trách (05 Phường)</span></div>
+            <div class="hrm-detail-value">Phường Thủ Dầu Một, Phường Chánh Hiệp, Phường Phú Lợi, Phường Phú An, Phường Bình Dương.</div>
+          </div>
+        </div>
+      `
+    },
+    to_hcth: {
+      title: "TỔ HÀNH CHÍNH - TỔNG HỢP",
+      subtitle: "Tổ chuyên môn 01 • Căn cứ Điều 4 Khoản 1 QĐ số 2637/QĐ-SNNMT-VP",
+      iconClass: "bg-emerald-600",
+      iconFa: "fa-solid fa-folder-open",
+      footerRef: "Điều 4 Khoản 1 Quyết định số 2637/QĐ-SNNMT-VP",
+      html: `
+        <div class="hrm-detail-grid">
+          <div class="hrm-detail-tile">
+            <div class="hrm-detail-label"><i class="fa-solid fa-users-gear"></i><span>Định biên lãnh đạo</span></div>
+            <div class="hrm-detail-value">01 Tổ trưởng + tối đa 03 Tổ phó</div>
+          </div>
+          <div class="hrm-detail-tile">
+            <div class="hrm-detail-label"><i class="fa-solid fa-laptop-code"></i><span>Bộ phận phụ trách</span></div>
+            <div class="hrm-detail-value">Văn thư, Kế toán, Một cửa, CNTT</div>
+          </div>
+          <div class="hrm-detail-tile is-full">
+            <div class="hrm-detail-label"><i class="fa-solid fa-list-check"></i><span>Nhiệm vụ trọng tâm</span></div>
+            <div class="hrm-detail-value">
+              <ul style="margin:0; padding-left:18px; display:flex; flex-direction:column; gap:6px;">
+                <li>Công tác văn thư lưu trữ hành chính, tiếp nhận, chuyển giao và quản lý con dấu theo Nghị định 30/2020/NĐ-CP.</li>
+                <li>Công tác tài chính kế toán, lập dự toán, thu phí lệ phí và giá dịch vụ, phát hành hóa đơn điện tử.</li>
+                <li>Kiểm soát quy trình Một cửa, tiếp nhận hồ sơ TTHC, số hóa đầu vào, đôn đốc tiến độ giải quyết và trả kết quả.</li>
+                <li>Quản trị hạ tầng mạng, máy chủ NAS, đảm bảo an toàn thông tin mạng và ứng dụng CNTT phục vụ chuyên môn.</li>
+                <li>Công tác tổ chức cán bộ, thi đua khen thưởng, bảo vệ nội bộ và hậu cần hành chính.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      `
+    },
+    to_dangky: {
+      title: "TỔ ĐĂNG KÝ VÀ CẤP GIẤY CHỨNG NHẬN",
+      subtitle: "Tổ chuyên môn 02 • Căn cứ Điều 4 Khoản 2 QĐ số 2637/QĐ-SNNMT-VP",
+      iconClass: "bg-rose-600",
+      iconFa: "fa-solid fa-stamp",
+      footerRef: "Điều 4 Khoản 2 Quyết định số 2637/QĐ-SNNMT-VP",
+      html: `
+        <div class="hrm-detail-grid">
+          <div class="hrm-detail-tile">
+            <div class="hrm-detail-label"><i class="fa-solid fa-users-gear"></i><span>Định biên lãnh đạo</span></div>
+            <div class="hrm-detail-value">01 Tổ trưởng + tối đa 03 Tổ phó</div>
+          </div>
+          <div class="hrm-detail-tile">
+            <div class="hrm-detail-label"><i class="fa-solid fa-desktop"></i><span>Hệ thống phần mềm</span></div>
+            <div class="hrm-detail-value">VBDLIS • Cổng Dịch vụ công</div>
+          </div>
+          <div class="hrm-detail-tile is-full">
+            <div class="hrm-detail-label"><i class="fa-solid fa-list-check"></i><span>Nhiệm vụ trọng tâm</span></div>
+            <div class="hrm-detail-value">
+              <ul style="margin:0; padding-left:18px; display:flex; flex-direction:column; gap:6px;">
+                <li>Thẩm định hồ sơ đăng ký đất đai, nhà ở và tài sản gắn liền với đất cho hộ gia đình, cá nhân.</li>
+                <li>Kiểm tra tính pháp lý, lập tờ trình đề nghị cấp mới, cấp đổi, cấp lại Giấy chứng nhận quyền sử dụng đất.</li>
+                <li>Thực hiện đăng ký biến động đất đai: chuyển nhượng, tặng cho, thừa kế, chuyển mục đích sử dụng đất.</li>
+                <li>Đăng ký và xóa đăng ký biện pháp thế chấp, giao dịch bảo đảm tại ngân hàng và tổ chức tín dụng.</li>
+                <li>Rà soát sai sót thông tin, lập thủ tục đính chính Giấy chứng nhận hoặc đề xuất thu hồi GCN theo thẩm quyền.</li>
+                <li>Phối hợp liên thông cơ quan Thuế xác định nghĩa vụ tài chính đất đai.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      `
+    },
+    to_kythuat: {
+      title: "TỔ KỸ THUẬT ĐỊA CHÍNH VÀ LƯU TRỮ",
+      subtitle: "Tổ chuyên môn 03 • Căn cứ Điều 4 Khoản 3 QĐ số 2637/QĐ-SNNMT-VP",
+      iconClass: "bg-purple-600",
+      iconFa: "fa-solid fa-compass-drafting",
+      footerRef: "Điều 4 Khoản 3 Quyết định số 2637/QĐ-SNNMT-VP",
+      html: `
+        <div class="hrm-detail-grid">
+          <div class="hrm-detail-tile">
+            <div class="hrm-detail-label"><i class="fa-solid fa-users-gear"></i><span>Định biên lãnh đạo</span></div>
+            <div class="hrm-detail-value">01 Tổ trưởng + tối đa 03 Tổ phó</div>
+          </div>
+          <div class="hrm-detail-tile">
+            <div class="hrm-detail-label"><i class="fa-solid fa-database"></i><span>Cơ sở dữ liệu</span></div>
+            <div class="hrm-detail-value">CSDL VBDLIS • CSDL Quốc gia</div>
+          </div>
+          <div class="hrm-detail-tile is-full">
+            <div class="hrm-detail-label"><i class="fa-solid fa-list-check"></i><span>Nhiệm vụ trọng tâm</span></div>
+            <div class="hrm-detail-value">
+              <ul style="margin:0; padding-left:18px; display:flex; flex-direction:column; gap:6px;">
+                <li>Trích lục bản đồ địa chính, trích đo địa chính thửa đất, kiểm tra bản vẽ hiện trạng nhà đất.</li>
+                <li>Chỉnh lý, cập nhật biến động không gian thửa đất và thuộc tính vào Hệ thống phần mềm VBDLIS.</li>
+                <li>Quản lý, thu nhận, sắp xếp và bảo quản an toàn kho hồ sơ địa chính gốc của Chi nhánh.</li>
+                <li>Thực hiện số hóa hồ sơ địa chính, đồng bộ dữ liệu vào CSDL đất đai Quốc gia.</li>
+                <li>Cung cấp thông tin, dữ liệu, bản đồ địa chính cho cơ quan nhà nước, tổ chức và người dân.</li>
+                <li>Kiểm tra, xác minh thực địa ranh giới thửa đất khi có biến động hoặc tranh chấp, khiếu nại.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      `
+    }
+  };
+
+  // ==================== ĐIỀU HƯỚNG TAB & SUBVIEWS ====================
+  function switchHrmTab(tabName) {
+    const isOrg = tabName === "orgchart";
+    if (DOM.tabBtnOrgChart) {
+      DOM.tabBtnOrgChart.classList.toggle("active", isOrg);
+      DOM.tabBtnOrgChart.setAttribute("aria-selected", isOrg ? "true" : "false");
+    }
+    if (DOM.tabBtnStaffDirectory) {
+      DOM.tabBtnStaffDirectory.classList.toggle("active", !isOrg);
+      DOM.tabBtnStaffDirectory.setAttribute("aria-selected", !isOrg ? "true" : "false");
+    }
+    if (DOM.panelOrgChart) {
+      DOM.panelOrgChart.classList.toggle("hidden", !isOrg);
+    }
+    if (DOM.panelStaffDirectory) {
+      DOM.panelStaffDirectory.classList.toggle("hidden", isOrg);
+    }
+  }
+
+  function switchOrgSubView(subviewName) {
+    const validViews = ["tree", "departments", "tasks", "wards", "governance"];
+    const activeView = validViews.includes(subviewName) ? subviewName : "tree";
+
+    if (DOM.orgSubnavBar) {
+      const buttons = DOM.orgSubnavBar.querySelectorAll("[data-subview]");
+      buttons.forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.subview === activeView);
+      });
+    }
+
+    const viewPanels = {
+      tree: DOM.subviewTree,
+      departments: DOM.subviewDepartments,
+      tasks: DOM.subviewTasks,
+      wards: DOM.subviewWards,
+      governance: DOM.subviewGovernance
+    };
+
+    Object.keys(viewPanels).forEach((key) => {
+      const el = viewPanels[key];
+      if (el) {
+        el.classList.toggle("hidden", key !== activeView);
+      }
+    });
+  }
+
+  function openOrgNodeDetail(nodeKey) {
+    const info = ORG_NODE_DETAILS[nodeKey];
+    if (!info || !DOM.modalOrgNodeDetail) return;
+
+    if (DOM.orgModalTitle) DOM.orgModalTitle.textContent = info.title;
+    if (DOM.orgModalSubtitle) DOM.orgModalSubtitle.textContent = info.subtitle;
+    if (DOM.orgModalIconBox) {
+      DOM.orgModalIconBox.className = `org-modal-icon-box ${info.iconClass}`;
+      DOM.orgModalIconBox.innerHTML = `<i class="${info.iconFa}"></i>`;
+    }
+    if (DOM.orgModalBody) {
+      DOM.orgModalBody.innerHTML = info.html;
+    }
+    if (DOM.orgModalFooterRef) {
+      DOM.orgModalFooterRef.innerHTML = `<i class="fa-solid fa-scale-balanced mr-1"></i> ${escapeHtml(info.footerRef)}`;
+    }
+
+    DOM.modalOrgNodeDetail.classList.remove("hidden");
+  }
+
+  function closeOrgNodeDetail() {
+    if (DOM.modalOrgNodeDetail) {
+      DOM.modalOrgNodeDetail.classList.add("hidden");
+    }
+  }
+
+  function filterOrgTasks(deptFilter) {
+    const activeFilter = deptFilter || "ALL";
+    const pillButtons = document.querySelectorAll("[data-task-filter]");
+    pillButtons.forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.taskFilter === activeFilter);
+    });
+
+    if (!DOM.orgTasksTableBody) return;
+    const rows = DOM.orgTasksTableBody.querySelectorAll("tr");
+    rows.forEach((row) => {
+      const rowDept = row.dataset.deptCode || "";
+      if (activeFilter === "ALL" || rowDept === activeFilter) {
+        row.style.display = "";
+      } else {
+        row.style.display = "none";
+      }
+    });
+  }
+
+  function filterOrgSearch(query) {
+    const norm = removeVietnameseTones(query || "").trim();
+    if (!norm) {
+      if (DOM.orgTasksTableBody) {
+        DOM.orgTasksTableBody.querySelectorAll("tr").forEach((r) => (r.style.display = ""));
+      }
+      return;
+    }
+
+    if (DOM.orgTasksTableBody) {
+      const rows = DOM.orgTasksTableBody.querySelectorAll("tr");
+      rows.forEach((row) => {
+        const text = removeVietnameseTones(row.textContent || "");
+        row.style.display = text.includes(norm) ? "" : "none";
+      });
+    }
   }
 
   // ==================== TIỆN ÍCH AN TOÀN & CHUẨN HÓA ====================
@@ -170,7 +484,7 @@
     const phone = normalizePhoneDigits(user.phone || user.so_dien_thoai || "");
     const email = String(user.email || "").trim().toLowerCase();
 
-    // 1. IT Quản trị viên (Đỗ Trọng Minh Quân / quandtm / admin)
+    // 1. IT Quản trị viên (quandtm / admin)
     if (
       username === "quandtm" ||
       username === "admin" ||
@@ -304,7 +618,6 @@
       createdDate: createdDate,
       email: email,
       extraFields: cleanExtraFields,
-      // Các trường chuẩn hóa phục vụ tìm kiếm nhanh
       _searchText: removeVietnameseTones(`${fullname} ${username} ${position} ${department}`)
     };
   }
@@ -949,6 +1262,75 @@
 
   // ==================== GÁN SỰ KIỆN (EVENT DELEGATION) ====================
   function bindEvents() {
+    // 1. Chuyển đổi tab chính: Sơ đồ tổ chức vs Tra cứu nhân sự
+    if (DOM.tabBtnOrgChart) {
+      DOM.tabBtnOrgChart.addEventListener("click", () => switchHrmTab("orgchart"));
+    }
+    if (DOM.tabBtnStaffDirectory) {
+      DOM.tabBtnStaffDirectory.addEventListener("click", () => switchHrmTab("staff"));
+    }
+
+    // 2. Chuyển đổi các góc nhìn trong Sơ Đồ Tổ Chức
+    if (DOM.orgSubnavBar) {
+      DOM.orgSubnavBar.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-subview]");
+        if (!btn) return;
+        switchOrgSubView(btn.dataset.subview);
+      });
+    }
+
+    // 3. Tìm kiếm trong sơ đồ tổ chức
+    if (DOM.orgSubsearchInput) {
+      DOM.orgSubsearchInput.addEventListener(
+        "input",
+        debounce(() => filterOrgSearch(DOM.orgSubsearchInput.value), 250)
+      );
+    }
+
+    // 4. Lọc 17 nhiệm vụ theo Tổ chuyên môn
+    const taskFilterGroup = document.querySelector(".org-task-filter-pills");
+    if (taskFilterGroup) {
+      taskFilterGroup.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-task-filter]");
+        if (!btn) return;
+        filterOrgTasks(btn.dataset.taskFilter);
+      });
+    }
+
+    // 5. Mở slide-over modal khi click thẻ node trong sơ đồ hình cây
+    if (DOM.subviewTree) {
+      DOM.subviewTree.addEventListener("click", (e) => {
+        const nodeCard = e.target.closest("[data-node-key]");
+        if (!nodeCard) return;
+        openOrgNodeDetail(nodeCard.dataset.nodeKey);
+      });
+      DOM.subviewTree.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          const nodeCard = e.target.closest("[data-node-key]");
+          if (nodeCard) {
+            e.preventDefault();
+            openOrgNodeDetail(nodeCard.dataset.nodeKey);
+          }
+        }
+      });
+    }
+
+    // 6. Đóng slide-over modal Org Node
+    if (DOM.btnCloseOrgModal) {
+      DOM.btnCloseOrgModal.addEventListener("click", closeOrgNodeDetail);
+    }
+    if (DOM.btnOrgModalCloseFooter) {
+      DOM.btnOrgModalCloseFooter.addEventListener("click", closeOrgNodeDetail);
+    }
+    if (DOM.modalOrgNodeDetail) {
+      DOM.modalOrgNodeDetail.addEventListener("click", (e) => {
+        if (e.target === DOM.modalOrgNodeDetail) {
+          closeOrgNodeDetail();
+        }
+      });
+    }
+
+    // 7. Tra cứu danh bạ nhân sự (Input tìm kiếm & Bộ lọc)
     if (DOM.searchInput) {
       DOM.searchInput.addEventListener(
         "input",
@@ -1011,7 +1393,7 @@
       DOM.btnPrintUsers.addEventListener("click", () => window.print());
     }
 
-    // Event Delegation trên danh sách thẻ & bảng
+    // Event Delegation trên danh sách thẻ & bảng nhân sự
     if (DOM.hrmContentArea) {
       DOM.hrmContentArea.addEventListener("click", (e) => {
         const actionBtn = e.target.closest("[data-action]");
@@ -1025,7 +1407,7 @@
       });
     }
 
-    // Event Delegation trong Modal chi tiết
+    // Event Delegation trong Modal chi tiết cán bộ
     if (DOM.modalStaffDetail) {
       DOM.modalStaffDetail.addEventListener("click", (e) => {
         if (e.target === DOM.modalStaffDetail) {
@@ -1046,13 +1428,16 @@
       DOM.btnModalCloseFooter.addEventListener("click", closeStaffDetail);
     }
 
+    // Xử lý phím Escape đóng các modal
     document.addEventListener("keydown", (e) => {
-      if (
-        e.key === "Escape" &&
-        DOM.modalStaffDetail &&
-        !DOM.modalStaffDetail.classList.contains("hidden")
-      ) {
-        closeStaffDetail();
+      if (e.key === "Escape") {
+        if (DOM.modalOrgNodeDetail && !DOM.modalOrgNodeDetail.classList.contains("hidden")) {
+          closeOrgNodeDetail();
+          return;
+        }
+        if (DOM.modalStaffDetail && !DOM.modalStaffDetail.classList.contains("hidden")) {
+          closeStaffDetail();
+        }
       }
     });
   }
@@ -1070,6 +1455,12 @@
     loadUsers: loadUsers,
     applyFilters: applyFilters,
     switchViewMode: switchViewMode,
+    switchHrmTab: switchHrmTab,
+    switchOrgSubView: switchOrgSubView,
+    openOrgNodeDetail: openOrgNodeDetail,
+    closeOrgNodeDetail: closeOrgNodeDetail,
+    filterOrgTasks: filterOrgTasks,
+    filterOrgSearch: filterOrgSearch,
     openStaffDetail: openStaffDetail,
     closeStaffDetail: closeStaffDetail,
     sanitizeUserRecord: sanitizeUserRecord,

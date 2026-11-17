@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HRM - Tra Cứu Nhân Sự &amp; Danh Bạ Cán Bộ - Chi Nhánh Số 23</title>
+  <title>HRM - Sơ Đồ Cơ Cấu Tổ Chức &amp; Tra Cứu Danh Bạ Cán Bộ - Chi Nhánh Số 23</title>
 
   <!-- Modular CSS (Parallel Load - No @import - Pure Vanilla Web) -->
   <link rel="stylesheet" href="css/variables.css">
@@ -37,16 +37,16 @@
             <span>Cổng Dịch Vụ</span>
           </a>
           <i class="fa-solid fa-chevron-right hrm-breadcrumb-sep"></i>
-          <span class="hrm-breadcrumb-current">HRM &bull; Tra Cứu Nhân Sự</span>
+          <span class="hrm-breadcrumb-current">HRM &bull; Cơ Cấu Tổ Chức &amp; Tra Cứu Nhân Sự</span>
         </nav>
         <h1 class="hrm-page-title">
           <span class="hrm-title-icon">
-            <i class="fa-solid fa-users-viewfinder"></i>
+            <i class="fa-solid fa-sitemap"></i>
           </span>
-          <span>HRM &bull; DANH BẠ &amp; TRA CỨU NHÂN SỰ</span>
+          <span>HRM &bull; CƠ CẤU TỔ CHỨC &amp; TRA CỨU NHÂN SỰ</span>
         </h1>
         <p class="hrm-page-subtitle">
-          Thông tin cán bộ, chức danh, đơn vị công tác và liên hệ nội bộ đồng bộ trực tiếp từ Sheet <strong>TaiKhoan</strong>
+          Sơ đồ tổ chức cơ quan, chức năng nhiệm vụ theo <strong>QĐ 2637/QĐ-SNNMT-VP</strong> và danh bạ nhân sự đồng bộ từ Sheet <strong>TaiKhoan</strong>
         </p>
       </div>
 
@@ -59,210 +59,1071 @@
           <i class="fa-solid fa-file-excel"></i>
           <span>Xuất Excel</span>
         </button>
-        <button type="button" id="btnPrintUsers" class="btn btn-primary btn-sm" title="In danh bạ cán bộ chuẩn A4">
+        <button type="button" id="btnPrintUsers" class="btn btn-primary btn-sm" title="In danh bạ cán bộ hoặc sơ đồ tổ chức">
           <i class="fa-solid fa-print"></i>
-          <span>In Danh Bạ</span>
+          <span>In A4</span>
         </button>
       </div>
     </header>
 
-    <!-- 2. THẺ KPI TỔNG QUAN NHÂN SỰ -->
-    <section class="hrm-kpi-grid" aria-label="Thống kê nhân sự">
-      <div class="hrm-kpi-card">
-        <div class="hrm-kpi-icon kpi-navy">
-          <i class="fa-solid fa-users"></i>
-        </div>
-        <div class="hrm-kpi-meta">
-          <div class="hrm-kpi-label">Tổng số nhân sự</div>
-          <div id="statTotalUsers" class="hrm-kpi-value">0</div>
-          <div class="hrm-kpi-sub">Dữ liệu từ Sheet TaiKhoan</div>
-        </div>
-      </div>
-
-      <div class="hrm-kpi-card">
-        <div class="hrm-kpi-icon kpi-success">
-          <i class="fa-solid fa-user-check"></i>
-        </div>
-        <div class="hrm-kpi-meta">
-          <div class="hrm-kpi-label">Đang làm việc</div>
-          <div id="statActiveUsers" class="hrm-kpi-value">0</div>
-          <div class="hrm-kpi-sub">Cán bộ đang công tác</div>
-        </div>
-      </div>
-
-      <div class="hrm-kpi-card">
-        <div class="hrm-kpi-icon kpi-info">
+    <!-- 2. THANH CHUYỂN ĐỔI TAB CHÍNH (SƠ ĐỒ CƠ CẤU TỔ CHỨC vs TRA CỨU NHÂN SỰ) -->
+    <nav class="schedule-tab-nav hrm-main-tab-nav no-print" aria-label="Phân hệ chức năng HRM">
+      <div class="schedule-tab-group" role="tablist">
+        <button
+          type="button"
+          id="tabBtnOrgChart"
+          class="schedule-tab-btn active"
+          role="tab"
+          aria-selected="true"
+          aria-controls="panelOrgChart"
+        >
           <i class="fa-solid fa-sitemap"></i>
-        </div>
-        <div class="hrm-kpi-meta">
-          <div class="hrm-kpi-label">Phòng ban / Tổ</div>
-          <div id="statDeptCount" class="hrm-kpi-value">0</div>
-          <div class="hrm-kpi-sub">Đơn vị chuyên môn</div>
-        </div>
+          <span>1. Sơ Đồ Cơ Cấu Tổ Chức &amp; Chức Năng (QĐ 2637)</span>
+        </button>
+        <button
+          type="button"
+          id="tabBtnStaffDirectory"
+          class="schedule-tab-btn"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panelStaffDirectory"
+        >
+          <i class="fa-solid fa-address-book"></i>
+          <span>2. Tra Cứu Nhân Sự &amp; Danh Bạ Cán Bộ</span>
+        </button>
       </div>
-
-      <div class="hrm-kpi-card">
-        <div class="hrm-kpi-icon kpi-accent">
-          <i class="fa-solid fa-magnifying-glass"></i>
-        </div>
-        <div class="hrm-kpi-meta">
-          <div class="hrm-kpi-label">Kết quả hiển thị</div>
-          <div id="statFilteredUsers" class="hrm-kpi-value">0</div>
-          <div id="statLastSync" class="hrm-kpi-sub">Chưa đồng bộ</div>
-        </div>
+      <div class="text-xs text-muted">
+        <i class="fa-solid fa-scale-balanced"></i> Quyết định số 2637/QĐ-SNNMT-VP &bull; Chi nhánh Văn phòng Đăng ký đất đai Số 23
       </div>
-    </section>
+    </nav>
 
-    <!-- 3. THANH TÌM KIẾM & BỘ LỌC THEO TÊN / PHÒNG BAN -->
-    <section class="hrm-filter-panel no-print" aria-label="Tìm kiếm và lọc nhân sự">
-      <div id="hrmFilterControls" class="hrm-filter-controls no-status-filter">
-        <!-- Ô tìm kiếm theo tên -->
-        <div class="hrm-filter-field">
-          <label for="searchUserInput" class="form-label">
-            <i class="fa-solid fa-id-card"></i> Tìm kiếm theo họ tên
-          </label>
-          <div class="hrm-search-input-wrap">
-            <i class="fa-solid fa-magnifying-glass hrm-search-icon"></i>
-            <input
-              type="text"
-              id="searchUserInput"
-              class="form-control hrm-search-input"
-              placeholder="Nhập họ tên (có dấu hoặc không dấu), username..."
-              autocomplete="off"
-            >
-            <button type="button" id="btnClearSearch" class="hrm-clear-btn hidden" title="Xóa từ khóa tìm kiếm" aria-label="Xóa từ khóa">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
+    <!-- ==================== TAB 1: SƠ ĐỒ CƠ CẤU TỔ CHỨC & CHỨC NĂNG (MẶC ĐỊNH) ==================== -->
+    <section id="panelOrgChart" class="hrm-tab-panel" role="tabpanel" aria-labelledby="tabBtnOrgChart">
+
+      <!-- 4 THẺ TỔNG QUAN HÀNH CHÍNH -->
+      <div class="org-overview-grid" aria-label="Khái quát cơ cấu">
+        <div class="org-overview-card">
+          <div class="org-overview-icon icon-amber">
+            <i class="fa-solid fa-building-columns"></i>
+          </div>
+          <div>
+            <div class="org-overview-label">Cơ quan cấp trên</div>
+            <div class="org-overview-title">Sở Tài nguyên &amp; Môi trường TP.HCM</div>
+            <div class="org-overview-sub text-muted">Cơ quan quản lý nhà nước cấp trên</div>
           </div>
         </div>
 
-        <!-- Bộ lọc phòng ban -->
-        <div class="hrm-filter-field">
-          <label for="filterDeptSelect" class="form-label">
-            <i class="fa-solid fa-building-user"></i> Phòng ban / Bộ phận
-          </label>
-          <select id="filterDeptSelect" class="form-select">
-            <option value="ALL">-- Tất cả phòng ban --</option>
-          </select>
+        <div class="org-overview-card">
+          <div class="org-overview-icon icon-sky">
+            <i class="fa-solid fa-landmark"></i>
+          </div>
+          <div>
+            <div class="org-overview-label">Đơn vị sự nghiệp trực thuộc</div>
+            <div class="org-overview-title">Văn phòng Đăng ký đất đai TP.HCM</div>
+            <div class="org-overview-sub text-muted">Đơn vị quản lý chuyên môn nghiệp vụ</div>
+          </div>
         </div>
 
-        <!-- Bộ lọc trạng thái (Chỉ IT, Giám đốc, Nguyễn Thị Bích Tuyền mới thấy) -->
-        <div id="filterStatusField" class="hrm-filter-field hidden">
-          <label for="filterStatusSelect" class="form-label">
-            <i class="fa-solid fa-circle-dot"></i> Trạng thái
-          </label>
-          <select id="filterStatusSelect" class="form-select">
-            <option value="ALL">Tất cả trạng thái</option>
-            <option value="ACTIVE">Đang làm việc</option>
-            <option value="INACTIVE">Đã nghỉ</option>
-          </select>
+        <div class="org-overview-card">
+          <div class="org-overview-icon icon-emerald">
+            <i class="fa-solid fa-sitemap"></i>
+          </div>
+          <div>
+            <div class="org-overview-label">Khối chuyên môn nghiệp vụ</div>
+            <div class="org-overview-title">03 Tổ Chuyên Môn &amp; Nghiệp Vụ</div>
+            <div class="org-overview-sub text-muted">Tổ HCTH &bull; Tổ ĐK-CGCN &bull; Tổ Kỹ thuật</div>
+          </div>
         </div>
 
-        <!-- Sắp xếp -->
-        <div class="hrm-filter-field">
-          <label for="sortUserSelect" class="form-label">
-            <i class="fa-solid fa-arrow-down-a-z"></i> Sắp xếp
-          </label>
-          <select id="sortUserSelect" class="form-select">
-            <option value="SMART">Mặc định (Tổ &amp; Chức vụ)</option>
-            <option value="NAME_ASC">Họ tên (A &rarr; Z)</option>
-            <option value="NAME_DESC">Họ tên (Z &rarr; A)</option>
-            <option value="DEPT_ASC">Phòng ban (A &rarr; Z)</option>
-          </select>
-        </div>
-
-        <!-- Chuyển đổi chế độ hiển thị -->
-        <div class="hrm-filter-field">
-          <span class="form-label">Chế độ xem</span>
-          <div class="hrm-view-toggle-group" role="group" aria-label="Chế độ hiển thị">
-            <button type="button" id="btnViewGrid" class="hrm-view-btn active" data-view="grid" title="Xem dạng thẻ hồ sơ">
-              <i class="fa-solid fa-grip"></i>
-              <span>Thẻ</span>
-            </button>
-            <button type="button" id="btnViewTable" class="hrm-view-btn" data-view="table" title="Xem dạng bảng danh sách">
-              <i class="fa-solid fa-table-list"></i>
-              <span>Bảng</span>
-            </button>
+        <div class="org-overview-card">
+          <div class="org-overview-icon icon-indigo">
+            <i class="fa-solid fa-map-location-dot"></i>
+          </div>
+          <div>
+            <div class="org-overview-label">Địa bàn quản lý</div>
+            <div class="org-overview-title">Mạng Lưới 05 Phường Địa Bàn</div>
+            <div class="org-overview-sub text-muted">Thực hiện TTHC đất đai cơ sở</div>
           </div>
         </div>
       </div>
 
-      <!-- Pills chọn nhanh theo phòng ban -->
-      <div id="deptPillsContainer" class="hrm-dept-pills-bar" aria-label="Lọc nhanh theo phòng ban">
-        <span class="hrm-dept-pills-label">
-          <i class="fa-solid fa-filter"></i> Lọc nhanh phòng ban:
-        </span>
+      <!-- THANH ĐIỀU HƯỚNG GÓC NHÌN SƠ ĐỒ (SUBNAV) -->
+      <div class="org-subnav-bar no-print" role="navigation" aria-label="Góc nhìn sơ đồ tổ chức">
+        <div class="org-subnav-group">
+          <button type="button" class="org-subnav-btn active" data-subview="tree">
+            <i class="fa-solid fa-network-wired"></i>
+            <span>Sơ đồ hình cây</span>
+          </button>
+          <button type="button" class="org-subnav-btn" data-subview="departments">
+            <i class="fa-solid fa-layer-group"></i>
+            <span>03 Tổ chuyên môn (Điều 4)</span>
+          </button>
+          <button type="button" class="org-subnav-btn" data-subview="tasks">
+            <i class="fa-solid fa-list-check"></i>
+            <span>17 Nhiệm vụ Điều 2 QĐ 2637</span>
+          </button>
+          <button type="button" class="org-subnav-btn" data-subview="wards">
+            <i class="fa-solid fa-map-location-dot"></i>
+            <span>05 Phường địa bàn</span>
+          </button>
+          <button type="button" class="org-subnav-btn" data-subview="governance">
+            <i class="fa-solid fa-scale-balanced"></i>
+            <span>Chế độ làm việc &amp; Pháp lý</span>
+          </button>
+        </div>
+
+        <div class="org-subsearch-wrap">
+          <i class="fa-solid fa-magnifying-glass org-subsearch-icon"></i>
+          <input
+            type="text"
+            id="orgSubsearchInput"
+            class="org-subsearch-input"
+            placeholder="Tìm chức năng, nhiệm vụ, tổ..."
+            aria-label="Tìm kiếm nội dung trong sơ đồ tổ chức"
+          >
+        </div>
       </div>
+
+      <!-- GÓC NHÌN 1: SƠ ĐỒ HÌNH CÂY (TREE VIEW) -->
+      <div id="subviewTree" class="org-view-panel">
+        <div class="org-tree-wrapper">
+          <div class="org-tree-canvas">
+
+            <!-- CẤP 1: SỞ TN&MT TP.HCM -->
+            <div class="org-node-card node-level-so" data-node-key="so_nnmt" tabindex="0" role="button" aria-label="Sở Tài nguyên và Môi trường TP.HCM">
+              <div class="org-node-badge-row">
+                <span class="org-node-tag tag-amber">Cơ quan chủ quản cấp trên</span>
+                <span class="org-node-click-hint"><i class="fa-solid fa-circle-info"></i> Chi tiết</span>
+              </div>
+              <h2 class="org-node-title">SỞ TÀI NGUYÊN VÀ MÔI TRƯỜNG TP. HỒ CHÍ MINH</h2>
+              <p class="org-node-desc">Cơ quan chuyên môn thuộc UBND TP.HCM; quản lý nhà nước về đất đai, tài nguyên nước, khoáng sản, môi trường.</p>
+              <div class="org-node-footer-ref">
+                <span>Căn cứ: QĐ thành lập &amp; phân cấp</span>
+                <span>Cấp quản lý 01</span>
+              </div>
+            </div>
+
+            <!-- ĐƯỜNG DỌC NỐI CẤP 1 -> CẤP 2 -->
+            <div class="tree-line-v" style="height: 28px;"></div>
+
+            <!-- CẤP 2: VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI TP.HCM -->
+            <div class="org-node-card node-level-vp" data-node-key="vpdkdd_tp" tabindex="0" role="button" aria-label="Văn phòng Đăng ký đất đai TP.HCM">
+              <div class="org-node-badge-row">
+                <span class="org-node-tag tag-indigo">Đơn vị sự nghiệp trực thuộc Sở</span>
+                <span class="org-node-click-hint"><i class="fa-solid fa-circle-info"></i> Chi tiết</span>
+              </div>
+              <h2 class="org-node-title">VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI TP. HỒ CHÍ MINH</h2>
+              <p class="org-node-desc">Đơn vị sự nghiệp công lập trực thuộc Sở TN&MT; thực hiện đăng ký đất đai, cấp Giấy chứng nhận, xây dựng CSDL đất đai thống nhất toàn thành phố.</p>
+              <div class="org-node-footer-ref">
+                <span>QĐ số 2637/QĐ-SNNMT-VP</span>
+                <span>Cấp quản lý 02</span>
+              </div>
+            </div>
+
+            <!-- ĐƯỜNG DỌC NỐI CẤP 2 -> CẤP 3 -->
+            <div class="tree-line-v" style="height: 28px;"></div>
+
+            <!-- CẤP 3: CHI NHÁNH SỐ 23 & BAN GIÁM ĐỐC -->
+            <div class="org-node-card node-level-cn" data-node-key="chi_nhanh_23" tabindex="0" role="button" aria-label="Chi nhánh Văn phòng Đăng ký đất đai Số 23">
+              <div class="org-node-badge-row">
+                <span class="org-node-tag tag-navy">Đơn vị trực thuộc &bull; Cơ sở phục vụ</span>
+                <span class="org-node-click-hint"><i class="fa-solid fa-circle-info"></i> Thẩm quyền &amp; Trách nhiệm</span>
+              </div>
+              <h2 class="org-node-title">CHI NHÁNH VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI SỐ 23</h2>
+              <p class="org-node-desc">Có tư cách pháp nhân, con dấu riêng, hạch toán phụ thuộc; thực hiện chức năng đăng ký đất đai, cấp GCN và quản lý hồ sơ địa chính trên địa bàn được phân công.</p>
+              <div class="org-node-highlight-box bg-blue-50 text-blue-900 border border-blue-200 mt-2">
+                <i class="fa-solid fa-user-tie mr-1"></i> <strong>Ban Giám đốc:</strong> 01 Giám đốc phụ trách chung + tối đa 02 Phó Giám đốc giúp việc theo lĩnh vực (Điều 3 QĐ 2637).
+              </div>
+              <div class="org-node-footer-ref">
+                <span>Trụ sở chính: Phường Thủ Dầu Một</span>
+                <span>Chế độ thủ trưởng (Điều 7)</span>
+              </div>
+            </div>
+
+            <!-- ĐƯỜNG DỌC NỐI TỪ CHI NHÁNH XUỐNG THANH NGANG -->
+            <div class="tree-line-v" style="height: 24px;"></div>
+
+            <!-- THANH NGANG PHÂN NHÁNH 3 TỔ CHUYÊN MÔN -->
+            <div class="tree-line-h" style="width: 82%;">
+              <div class="tree-dot-left"></div>
+              <div class="tree-dot-center"></div>
+              <div class="tree-dot-right"></div>
+            </div>
+
+            <div class="tree-line-v" style="height: 20px;"></div>
+
+            <!-- HÀNG 3 TỔ CHUYÊN MÔN -->
+            <div class="org-dept-grid-row">
+
+              <!-- TỔ 1: TỔ HÀNH CHÍNH - TỔNG HỢP -->
+              <div class="org-node-card node-dept-1" data-node-key="to_hcth" tabindex="0" role="button" aria-label="Tổ Hành chính - Tổng hợp">
+                <div class="org-node-badge-row">
+                  <span class="org-node-tag tag-emerald">Tổ Chuyên Môn 01</span>
+                  <span class="org-node-click-hint"><i class="fa-solid fa-circle-info"></i> Xem việc</span>
+                </div>
+                <h2 class="org-node-title">TỔ HÀNH CHÍNH - TỔNG HỢP</h2>
+                <p class="org-node-desc">Tổng hợp tham mưu, văn thư lưu trữ hành chính, thủ quỹ - kế toán, nhân sự, kiểm soát thủ tục một cửa, hạ tầng CNTT &amp; Cổng dịch vụ công.</p>
+                <div class="org-node-highlight-box bg-emerald-50 text-emerald-900 border border-emerald-200 mt-2">
+                  <i class="fa-solid fa-users-gear mr-1"></i> <strong>Định biên:</strong> 01 Tổ trưởng + tối đa 03 Tổ phó (Điều 4).
+                </div>
+                <ul class="org-node-duties-list">
+                  <li><i class="fa-solid fa-check text-emerald-600"></i> Quản lý văn thư, con dấu, công văn đi/đến, phát hành văn bản</li>
+                  <li><i class="fa-solid fa-check text-emerald-600"></i> Thu phí, lệ phí đăng ký, biên lai điện tử &amp; kế toán tài vụ</li>
+                  <li><i class="fa-solid fa-check text-emerald-600"></i> Vận hành Một cửa điện tử, số hóa đầu vào &amp; trả kết quả TTHC</li>
+                  <li><i class="fa-solid fa-check text-emerald-600"></i> Quản trị mạng, an toàn thông tin, sao lưu NAS &amp; ứng dụng CNTT</li>
+                </ul>
+                <div class="org-node-footer-ref">
+                  <span>Điều 4 Khoản 1 QĐ 2637</span>
+                  <span>Quy chế phối hợp</span>
+                </div>
+              </div>
+
+              <!-- TỔ 2: TỔ ĐĂNG KÝ VÀ CẤP GIẤY CHỨNG NHẬN -->
+              <div class="org-node-card node-dept-2" data-node-key="to_dangky" tabindex="0" role="button" aria-label="Tổ Đăng ký và Cấp giấy chứng nhận">
+                <div class="org-node-badge-row">
+                  <span class="org-node-tag tag-rose">Tổ Chuyên Môn 02</span>
+                  <span class="org-node-click-hint"><i class="fa-solid fa-circle-info"></i> Xem việc</span>
+                </div>
+                <h2 class="org-node-title">TỔ ĐĂNG KÝ &amp; CẤP GCN</h2>
+                <p class="org-node-desc">Thẩm định hồ sơ đăng ký đất đai, nhà ở và tài sản gắn liền với đất; cấp mới, cấp đổi, cấp lại GCN; đăng ký biến động, biện pháp bảo đảm; đính chính/thu hồi GCN.</p>
+                <div class="org-node-highlight-box bg-rose-50 text-rose-900 border border-rose-200 mt-2">
+                  <i class="fa-solid fa-users-gear mr-1"></i> <strong>Định biên:</strong> 01 Tổ trưởng + tối đa 03 Tổ phó (Điều 4).
+                </div>
+                <ul class="org-node-duties-list">
+                  <li><i class="fa-solid fa-check text-rose-600"></i> Thẩm tra điều kiện pháp lý đăng ký quyền sử dụng đất &amp; tài sản</li>
+                  <li><i class="fa-solid fa-check text-rose-600"></i> Soạn thảo tờ trình, in Giấy chứng nhận trình Lãnh đạo ký duyệt</li>
+                  <li><i class="fa-solid fa-check text-rose-600"></i> Đăng ký &amp; xóa đăng ký biện pháp thế chấp, giao dịch bảo đảm</li>
+                  <li><i class="fa-solid fa-check text-rose-600"></i> Luân chuyển nghĩa vụ tài chính liên thông với cơ quan Thuế</li>
+                </ul>
+                <div class="org-node-footer-ref">
+                  <span>Điều 4 Khoản 2 QĐ 2637</span>
+                  <span>Phần mềm VBDLIS</span>
+                </div>
+              </div>
+
+              <!-- TỔ 3: TỔ KỸ THUẬT ĐỊA CHÍNH VÀ LƯU TRỮ -->
+              <div class="org-node-card node-dept-3" data-node-key="to_kythuat" tabindex="0" role="button" aria-label="Tổ Kỹ thuật địa chính và Lưu trữ">
+                <div class="org-node-badge-row">
+                  <span class="org-node-tag tag-purple">Tổ Chuyên Môn 03</span>
+                  <span class="org-node-click-hint"><i class="fa-solid fa-circle-info"></i> Xem việc</span>
+                </div>
+                <h2 class="org-node-title">TỔ KỸ THUẬT ĐC &amp; LƯU TRỮ</h2>
+                <p class="org-node-desc">Đo đạc, kiểm tra bản vẽ hiện trạng thửa đất, trích lục bản đồ địa chính; cập nhật chỉnh lý biến động cơ sở dữ liệu đất đai không gian; quản lý kho lưu trữ hồ sơ địa chính.</p>
+                <div class="org-node-highlight-box bg-purple-50 text-purple-900 border border-purple-200 mt-2">
+                  <i class="fa-solid fa-users-gear mr-1"></i> <strong>Định biên:</strong> 01 Tổ trưởng + tối đa 03 Tổ phó (Điều 4).
+                </div>
+                <ul class="org-node-duties-list">
+                  <li><i class="fa-solid fa-check text-purple-600"></i> Trích lục, trích đo địa chính, kiểm tra bản vẽ hiện trạng nhà đất</li>
+                  <li><i class="fa-solid fa-check text-purple-600"></i> Cập nhật biến động ranh giới, hình thể thửa đất vào CSDL VBDLIS</li>
+                  <li><i class="fa-solid fa-check text-purple-600"></i> Quản lý, số hóa và bảo quản hồ sơ lưu trữ địa chính gốc</li>
+                  <li><i class="fa-solid fa-check text-purple-600"></i> Cung cấp dữ liệu, thông tin đất đai cho cơ quan, tổ chức, công dân</li>
+                </ul>
+                <div class="org-node-footer-ref">
+                  <span>Điều 4 Khoản 3 QĐ 2637</span>
+                  <span>CSDL Đất đai Quốc gia</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- KHỐI 5 PHƯỜNG ĐỊA BÀN PHỤ TRÁCH -->
+            <div class="org-wards-network-box">
+              <div class="org-wards-network-header">
+                <span class="org-wards-network-tag">
+                  <i class="fa-solid fa-map-location-dot"></i> ĐỊA BÀN QUẢN LÝ &amp; MẠNG LƯỚI PHỐI HỢP CƠ SỞ (05 PHƯỜNG)
+                </span>
+              </div>
+
+              <div class="org-wards-five-grid">
+                <div class="org-ward-item-box">
+                  <div class="org-ward-icon text-blue-600"><i class="fa-solid fa-building-flag"></i></div>
+                  <div class="org-ward-name">P. Thủ Dầu Một</div>
+                  <div class="org-ward-desc">Trụ sở Chi nhánh 23</div>
+                  <span class="org-ward-badge">Trung tâm hành chính</span>
+                </div>
+
+                <div class="org-ward-item-box">
+                  <div class="org-ward-icon text-indigo-600"><i class="fa-solid fa-city"></i></div>
+                  <div class="org-ward-name">P. Chánh Hiệp</div>
+                  <div class="org-ward-desc">Địa bàn phụ trách</div>
+                  <span class="org-ward-badge">Liên thông TTHC</span>
+                </div>
+
+                <div class="org-ward-item-box">
+                  <div class="org-ward-icon text-teal-600"><i class="fa-solid fa-tree-city"></i></div>
+                  <div class="org-ward-name">P. Phú Lợi</div>
+                  <div class="org-ward-desc">Địa bàn phụ trách</div>
+                  <span class="org-ward-badge">Liên thông TTHC</span>
+                </div>
+
+                <div class="org-ward-item-box">
+                  <div class="org-ward-icon text-amber-600"><i class="fa-solid fa-house-laptop"></i></div>
+                  <div class="org-ward-name">P. Phú An</div>
+                  <div class="org-ward-desc">Địa bàn phụ trách</div>
+                  <span class="org-ward-badge">Liên thông TTHC</span>
+                </div>
+
+                <div class="org-ward-item-box">
+                  <div class="org-ward-icon text-emerald-600"><i class="fa-solid fa-seedling"></i></div>
+                  <div class="org-ward-name">P. Bình Dương</div>
+                  <div class="org-ward-desc">Địa bàn phụ trách</div>
+                  <span class="org-ward-badge">Liên thông TTHC</span>
+                </div>
+              </div>
+
+              <div class="org-interagency-box">
+                <div>
+                  <i class="fa-solid fa-handshake mr-1 text-blue-600"></i>
+                  <strong>Quy chế phối hợp liên ngành theo Điều 9 QĐ 2637:</strong>
+                  Cơ chế phối hợp giải quyết thủ tục hành chính đất đai một cửa liên thông
+                </div>
+                <div class="org-interagency-pills">
+                  <span class="org-interagency-pill">UBND 05 Phường</span>
+                  <span class="org-interagency-pill">Chi cục Thuế khu vực</span>
+                  <span class="org-interagency-pill">Phòng Tài nguyên &amp; Môi trường</span>
+                  <span class="org-interagency-pill">Tòa án &amp; THADS</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- GÓC NHÌN 2: 03 TỔ CHUYÊN MÔN (DEPARTMENTS VIEW) -->
+      <div id="subviewDepartments" class="org-view-panel hidden">
+        <div class="org-depts-detail-card">
+          <div class="flex items-center justify-between border-b pb-3 mb-4">
+            <div>
+              <h2 class="text-base font-bold text-navy-900">
+                <i class="fa-solid fa-layer-group text-primary mr-2"></i>QUY ĐỊNH CƠ CẤU &amp; NHIỆM VỤ 03 TỔ CHUYÊN MÔN
+              </h2>
+              <p class="text-xs text-muted mt-1">Căn cứ Điều 4 Quyết định số 2637/QĐ-SNNMT-VP ngày 31/12/2024</p>
+            </div>
+            <div class="bg-blue-50 text-blue-800 text-xs px-3 py-1.5 rounded font-semibold border border-blue-200">
+              <i class="fa-solid fa-users-gear mr-1"></i> Định biên: 01 Tổ trưởng + tối đa 03 Tổ phó / mỗi tổ
+            </div>
+          </div>
+
+          <div class="org-depts-detail-grid">
+            <!-- TỔ 1 -->
+            <div class="org-dept-column col-hcth">
+              <div>
+                <div class="org-dept-col-header">
+                  <div>
+                    <span class="text-xs font-bold text-emerald-800 uppercase">Tổ Chuyên Môn 01</span>
+                    <h3 class="text-sm font-extrabold text-navy-900 mt-1">TỔ HÀNH CHÍNH - TỔNG HỢP</h3>
+                  </div>
+                  <div class="org-dept-col-icon bg-emerald-600">
+                    <i class="fa-solid fa-folder-open"></i>
+                  </div>
+                </div>
+
+                <div class="org-dept-quota-box mt-3 mb-3">
+                  <div><strong>Lãnh đạo tổ:</strong> 01 Tổ trưởng, không quá 03 Tổ phó</div>
+                  <div class="text-muted mt-1"><strong>Trách nhiệm:</strong> Quản lý điều hành toàn diện công tác hành chính, tài vụ, nhân sự và CNTT theo phân công.</div>
+                </div>
+
+                <div class="org-dept-mission-list">
+                  <div class="org-dept-mission-item">
+                    <i class="fa-solid fa-check text-emerald-600"></i>
+                    <span><strong>Văn thư &amp; Lưu trữ hành chính:</strong> Quản lý tiếp nhận, phân loại, đăng ký văn bản đi/đến, quản lý con dấu theo đúng Nghị định 30/2020/NĐ-CP.</span>
+                  </div>
+                  <div class="org-dept-mission-item">
+                    <i class="fa-solid fa-check text-emerald-600"></i>
+                    <span><strong>Tài chính - Kế toán:</strong> Quản lý thu phí, lệ phí, xuất hóa đơn điện tử, thanh toán nội bộ, báo cáo tài chính định kỳ.</span>
+                  </div>
+                  <div class="org-dept-mission-item">
+                    <i class="fa-solid fa-check text-emerald-600"></i>
+                    <span><strong>Bộ phận Một cửa:</strong> Tiếp nhận hồ sơ TTHC, số hóa hồ sơ đầu vào, kiểm soát tiến độ giải quyết và trả kết quả cho người dân/doanh nghiệp.</span>
+                  </div>
+                  <div class="org-dept-mission-item">
+                    <i class="fa-solid fa-check text-emerald-600"></i>
+                    <span><strong>Công nghệ thông tin:</strong> Quản trị hạ tầng mạng, máy chủ dữ liệu NAS, an toàn thông tin, hỗ trợ kỹ thuật người dùng và phần mềm chuyên ngành.</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="pt-3 border-t text-xs text-muted">
+                <i class="fa-solid fa-book-bookmark mr-1"></i> Điều 4 Khoản 1 &bull; QĐ 2637/QĐ-SNNMT-VP
+              </div>
+            </div>
+
+            <!-- TỔ 2 -->
+            <div class="org-dept-column col-dangky">
+              <div>
+                <div class="org-dept-col-header">
+                  <div>
+                    <span class="text-xs font-bold text-rose-800 uppercase">Tổ Chuyên Môn 02</span>
+                    <h3 class="text-sm font-extrabold text-navy-900 mt-1">TỔ ĐĂNG KÝ VÀ CẤP GCN</h3>
+                  </div>
+                  <div class="org-dept-col-icon bg-rose-600">
+                    <i class="fa-solid fa-stamp"></i>
+                  </div>
+                </div>
+
+                <div class="org-dept-quota-box mt-3 mb-3">
+                  <div><strong>Lãnh đạo tổ:</strong> 01 Tổ trưởng, không quá 03 Tổ phó</div>
+                  <div class="text-muted mt-1"><strong>Trách nhiệm:</strong> Quản lý điều hành công tác đăng ký đất đai, nhà ở, cấp mới, cấp đổi, biến động và thế chấp.</div>
+                </div>
+
+                <div class="org-dept-mission-list">
+                  <div class="org-dept-mission-item">
+                    <i class="fa-solid fa-check text-rose-600"></i>
+                    <span><strong>Đăng ký đất đai &amp; Cấp mới GCN:</strong> Thẩm tra nguồn gốc, tính hợp pháp hồ sơ cấp Giấy chứng nhận lần đầu cho hộ gia đình, cá nhân.</span>
+                  </div>
+                  <div class="org-dept-mission-item">
+                    <i class="fa-solid fa-check text-rose-600"></i>
+                    <span><strong>Đăng ký biến động &amp; Cấp đổi GCN:</strong> Chuyển nhượng, tặng cho, thừa kế, chia tách, hợp thửa, chuyển mục đích sử dụng đất.</span>
+                  </div>
+                  <div class="org-dept-mission-item">
+                    <i class="fa-solid fa-check text-rose-600"></i>
+                    <span><strong>Biện pháp bảo đảm:</strong> Đăng ký, đăng ký thay đổi, xóa đăng ký thế chấp quyền sử dụng đất, tài sản gắn liền với đất tại ngân hàng/tổ chức tín dụng.</span>
+                  </div>
+                  <div class="org-dept-mission-item">
+                    <i class="fa-solid fa-check text-rose-600"></i>
+                    <span><strong>Đính chính &amp; Xử lý nghiệp vụ:</strong> Rà soát sai sót thông tin, lập thủ tục đính chính hoặc kiến nghị thu hồi GCN theo đúng quy định.</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="pt-3 border-t text-xs text-muted">
+                <i class="fa-solid fa-book-bookmark mr-1"></i> Điều 4 Khoản 2 &bull; QĐ 2637/QĐ-SNNMT-VP
+              </div>
+            </div>
+
+            <!-- TỔ 3 -->
+            <div class="org-dept-column col-kythuat">
+              <div>
+                <div class="org-dept-col-header">
+                  <div>
+                    <span class="text-xs font-bold text-purple-800 uppercase">Tổ Chuyên Môn 03</span>
+                    <h3 class="text-sm font-extrabold text-navy-900 mt-1">TỔ KỸ THUẬT ĐỊA CHÍNH &amp; LƯU TRỮ</h3>
+                  </div>
+                  <div class="org-dept-col-icon bg-purple-600">
+                    <i class="fa-solid fa-compass-drafting"></i>
+                  </div>
+                </div>
+
+                <div class="org-dept-quota-box mt-3 mb-3">
+                  <div><strong>Lãnh đạo tổ:</strong> 01 Tổ trưởng, không quá 03 Tổ phó</div>
+                  <div class="text-muted mt-1"><strong>Trách nhiệm:</strong> Quản lý công tác đo vẽ bản đồ địa chính, cập nhật CSDL đất đai VBDLIS và kho lưu trữ hồ sơ gốc.</div>
+                </div>
+
+                <div class="org-dept-mission-list">
+                  <div class="org-dept-mission-item">
+                    <i class="fa-solid fa-check text-purple-600"></i>
+                    <span><strong>Đo đạc &amp; Trích lục bản đồ:</strong> Lập trích lục bản đồ địa chính, trích đo địa chính thửa đất, kiểm tra bản vẽ hiện trạng nhà đất.</span>
+                  </div>
+                  <div class="org-dept-mission-item">
+                    <i class="fa-solid fa-check text-purple-600"></i>
+                    <span><strong>Cập nhật CSDL đất đai:</strong> Chỉnh lý bản đồ địa chính, cập nhật biến động không gian &amp; thuộc tính vào hệ thống VBDLIS và CSDL Quốc gia.</span>
+                  </div>
+                  <div class="org-dept-mission-item">
+                    <i class="fa-solid fa-check text-purple-600"></i>
+                    <span><strong>Quản lý kho Lưu trữ địa chính:</strong> Thu nhận, sắp xếp, bảo quản an toàn hồ sơ địa chính gốc; số hóa hồ sơ theo tiêu chuẩn nghiệp vụ lưu trữ.</span>
+                  </div>
+                  <div class="org-dept-mission-item">
+                    <i class="fa-solid fa-check text-purple-600"></i>
+                    <span><strong>Cung cấp thông tin dữ liệu:</strong> Khai thác và cung cấp thông tin, hồ sơ, bản đồ phục vụ công tác quản lý nhà nước và nhu cầu của công dân.</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="pt-3 border-t text-xs text-muted">
+                <i class="fa-solid fa-book-bookmark mr-1"></i> Điều 4 Khoản 3 &bull; QĐ 2637/QĐ-SNNMT-VP
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GÓC NHÌN 3: 17 NHIỆM VỤ ĐIỀU 2 (TASKS VIEW) -->
+      <div id="subviewTasks" class="org-view-panel hidden">
+        <div class="org-tasks-card">
+          <div class="org-tasks-filter-bar">
+            <div>
+              <h2 class="text-base font-bold text-navy-900">
+                <i class="fa-solid fa-list-check text-primary mr-2"></i>17 NHÓM NHIỆM VỤ &amp; QUYỀN HẠN CỦA CHI NHÁNH
+              </h2>
+              <p class="text-xs text-muted mt-1">Quy định chi tiết tại Điều 2 Quyết định số 2637/QĐ-SNNMT-VP</p>
+            </div>
+
+            <div class="org-task-filter-pills" role="group" aria-label="Lọc nhiệm vụ theo đơn vị thực hiện">
+              <button type="button" class="org-task-pill-btn active" data-task-filter="ALL">Tất cả (17)</button>
+              <button type="button" class="org-task-pill-btn" data-task-filter="HCTH">Tổ Hành chính - TH</button>
+              <button type="button" class="org-task-pill-btn" data-task-filter="DANGKY">Tổ Đăng ký - CGCN</button>
+              <button type="button" class="org-task-pill-btn" data-task-filter="KYTHUAT">Tổ Kỹ thuật - LT</button>
+              <button type="button" class="org-task-pill-btn" data-task-filter="BGD">Ban Giám đốc &amp; Chung</button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="org-task-table">
+              <thead>
+                <tr>
+                  <th style="width: 50px; text-align: center;">STT</th>
+                  <th style="width: 140px;">Căn cứ Điều 2</th>
+                  <th>Nội dung nhiệm vụ &amp; quyền hạn</th>
+                  <th style="width: 190px;">Tổ chủ trì / phối hợp</th>
+                  <th style="width: 180px;">Ứng dụng / Cơ sở</th>
+                </tr>
+              </thead>
+              <tbody id="orgTasksTableBody">
+                <tr data-dept-code="DANGKY">
+                  <td class="org-task-num">01</td>
+                  <td><strong>Khoản 1</strong></td>
+                  <td>Thực hiện việc đăng ký đất đai và tài sản gắn liền với đất; cấp Giấy chứng nhận quyền sử dụng đất, quyền sở hữu tài sản gắn liền với đất đối với các trường hợp được ủy quyền hoặc theo thẩm quyền pháp luật.</td>
+                  <td><span class="badge badge-rose">Tổ ĐK &amp; Cấp GCN</span></td>
+                  <td><span class="badge badge-neutral">VBDLIS &bull; DVC</span></td>
+                </tr>
+                <tr data-dept-code="DANGKY">
+                  <td class="org-task-num">02</td>
+                  <td><strong>Khoản 2</strong></td>
+                  <td>Đăng ký biến động đất đai, nhà ở và tài sản gắn liền với đất đối với hộ gia đình, cá nhân, cộng đồng dân cư theo quy định pháp luật.</td>
+                  <td><span class="badge badge-rose">Tổ ĐK &amp; Cấp GCN</span></td>
+                  <td><span class="badge badge-neutral">VBDLIS</span></td>
+                </tr>
+                <tr data-dept-code="DANGKY">
+                  <td class="org-task-num">03</td>
+                  <td><strong>Khoản 3</strong></td>
+                  <td>Thực hiện đăng ký và xóa đăng ký biện pháp bảo đảm bằng quyền sử dụng đất, tài sản gắn liền với đất theo quy định của pháp luật.</td>
+                  <td><span class="badge badge-rose">Tổ ĐK &amp; Cấp GCN</span></td>
+                  <td><span class="badge badge-neutral">Một cửa &bull; VBDLIS</span></td>
+                </tr>
+                <tr data-dept-code="KYTHUAT">
+                  <td class="org-task-num">04</td>
+                  <td><strong>Khoản 4</strong></td>
+                  <td>Lập, chỉnh lý, cập nhật, quản lý hồ sơ địa chính; thực hiện số hóa và lưu trữ hồ sơ địa chính gốc tại Chi nhánh theo tiêu chuẩn lưu trữ quốc gia.</td>
+                  <td><span class="badge badge-purple">Tổ Kỹ thuật &amp; LT</span></td>
+                  <td><span class="badge badge-neutral">Kho lưu trữ &bull; Số hóa</span></td>
+                </tr>
+                <tr data-dept-code="KYTHUAT">
+                  <td class="org-task-num">05</td>
+                  <td><strong>Khoản 5</strong></td>
+                  <td>Cập nhật, chỉnh lý, quản lý và vận hành cơ sở dữ liệu đất đai trên Hệ thống phần mềm VBDLIS và tích hợp CSDL đất đai Quốc gia.</td>
+                  <td><span class="badge badge-purple">Tổ Kỹ thuật &amp; LT</span></td>
+                  <td><span class="badge badge-neutral">Hệ thống VBDLIS</span></td>
+                </tr>
+                <tr data-dept-code="KYTHUAT">
+                  <td class="org-task-num">06</td>
+                  <td><strong>Khoản 6</strong></td>
+                  <td>Thực hiện đo đạc địa chính, trích lục bản đồ địa chính, trích đo địa chính thửa đất; kiểm tra bản vẽ trích đo địa chính phục vụ đăng ký, cấp GCN.</td>
+                  <td><span class="badge badge-purple">Tổ Kỹ thuật &amp; LT</span></td>
+                  <td><span class="badge badge-neutral">Bản đồ địa chính</span></td>
+                </tr>
+                <tr data-dept-code="KYTHUAT">
+                  <td class="org-task-num">07</td>
+                  <td><strong>Khoản 7</strong></td>
+                  <td>Kiểm tra, đối soát thực địa, xác minh hiện trạng sử dụng đất trong các trường hợp ranh giới, diện tích thửa đất biến động hoặc có kiến nghị, tranh chấp.</td>
+                  <td><span class="badge badge-purple">Tổ Kỹ thuật (chủ trì)</span><br><small class="text-muted">Phối hợp Tổ ĐK &amp; UBND Phường</small></td>
+                  <td><span class="badge badge-neutral">Thực địa hiện trường</span></td>
+                </tr>
+                <tr data-dept-code="KYTHUAT">
+                  <td class="org-task-num">08</td>
+                  <td><strong>Khoản 8</strong></td>
+                  <td>Cung cấp hồ sơ, bản đồ, thông tin, dữ liệu đất đai cho cơ quan nhà nước, tổ chức và cá nhân có nhu cầu theo đúng quy định pháp luật.</td>
+                  <td><span class="badge badge-purple">Tổ Kỹ thuật &amp; LT</span></td>
+                  <td><span class="badge badge-neutral">Một cửa &bull; Dữ liệu số</span></td>
+                </tr>
+                <tr data-dept-code="HCTH">
+                  <td class="org-task-num">09</td>
+                  <td><strong>Khoản 9</strong></td>
+                  <td>Thực hiện việc thu phí, lệ phí đăng ký, cấp Giấy chứng nhận và giá dịch vụ theo đúng quy định pháp luật và phân cấp quản lý tài chính.</td>
+                  <td><span class="badge badge-emerald">Tổ Hành chính - TH</span></td>
+                  <td><span class="badge badge-neutral">Hóa đơn điện tử &bull; Kho bạc</span></td>
+                </tr>
+                <tr data-dept-code="DANGKY">
+                  <td class="org-task-num">10</td>
+                  <td><strong>Khoản 10</strong></td>
+                  <td>Phối hợp với cơ quan Thuế luân chuyển hồ sơ, thông báo nghĩa vụ tài chính và xác nhận hoàn thành nghĩa vụ tài chính đất đai theo quy trình liên thông.</td>
+                  <td><span class="badge badge-rose">Tổ ĐK &amp; Cấp GCN</span><br><small class="text-muted">Phối hợp Bộ phận Một cửa</small></td>
+                  <td><span class="badge badge-neutral">Liên thông Thuế</span></td>
+                </tr>
+                <tr data-dept-code="BGD">
+                  <td class="org-task-num">11</td>
+                  <td><strong>Khoản 11</strong></td>
+                  <td>Phối hợp với UBND các xã/phường trên địa bàn trong công tác xác nhận nguồn gốc đất, hiện trạng sử dụng, niêm yết công khai và giải quyết tranh chấp đất đai.</td>
+                  <td><span class="badge badge-info">Ban Giám đốc &amp; Các Tổ</span></td>
+                  <td><span class="badge badge-neutral">Quy chế phối hợp</span></td>
+                </tr>
+                <tr data-dept-code="HCTH">
+                  <td class="org-task-num">12</td>
+                  <td><strong>Khoản 12</strong></td>
+                  <td>Báo cáo định kỳ và đột xuất về tình hình quản lý, đăng ký biến động đất đai, cấp Giấy chứng nhận cho VPĐKĐĐ TP và Sở Tài nguyên và Môi trường.</td>
+                  <td><span class="badge badge-emerald">Tổ Hành chính - TH</span></td>
+                  <td><span class="badge badge-neutral">Chế độ báo cáo</span></td>
+                </tr>
+                <tr data-dept-code="BGD">
+                  <td class="org-task-num">13</td>
+                  <td><strong>Khoản 13</strong></td>
+                  <td>Tiếp công dân, giải quyết phản ánh, kiến nghị, khiếu nại, tố cáo liên quan đến việc thực hiện thủ tục hành chính đất đai theo thẩm quyền phân cấp.</td>
+                  <td><span class="badge badge-info">Ban Giám đốc</span><br><small class="text-muted">Các Tổ chuyên môn tham mưu</small></td>
+                  <td><span class="badge badge-neutral">Phòng Tiếp dân</span></td>
+                </tr>
+                <tr data-dept-code="HCTH">
+                  <td class="org-task-num">14</td>
+                  <td><strong>Khoản 14</strong></td>
+                  <td>Quản lý công tác văn thư, lưu trữ, con dấu; quản lý và bảo vệ tài sản, trang thiết bị, hạ tầng công nghệ thông tin và an toàn an ninh mạng của Chi nhánh.</td>
+                  <td><span class="badge badge-emerald">Tổ Hành chính - TH</span></td>
+                  <td><span class="badge badge-neutral">Hạ tầng mạng &bull; NAS</span></td>
+                </tr>
+                <tr data-dept-code="HCTH">
+                  <td class="org-task-num">15</td>
+                  <td><strong>Khoản 15</strong></td>
+                  <td>Thực hiện chế độ quản lý tài chính, tài sản, kế toán công khai, minh bạch theo quy định của đơn vị sự nghiệp công lập tự chủ một phần chi thường xuyên.</td>
+                  <td><span class="badge badge-emerald">Tổ Hành chính - TH</span></td>
+                  <td><span class="badge badge-neutral">Kế toán &bull; Tài vụ</span></td>
+                </tr>
+                <tr data-dept-code="BGD">
+                  <td class="org-task-num">16</td>
+                  <td><strong>Khoản 16</strong></td>
+                  <td>Quản lý viên chức, người lao động, phân công nhiệm vụ, đánh giá xếp loại, thực hiện chế độ chính sách, đào tạo bồi dưỡng chuyên môn theo phân cấp quản lý.</td>
+                  <td><span class="badge badge-info">Ban Giám đốc</span><br><small class="text-muted">Tổ HCTH tham mưu nhân sự</small></td>
+                  <td><span class="badge badge-neutral">Hồ sơ cán bộ/VC</span></td>
+                </tr>
+                <tr data-dept-code="BGD">
+                  <td class="org-task-num">17</td>
+                  <td><strong>Khoản 17</strong></td>
+                  <td>Thực hiện các nhiệm vụ khác do Giám đốc Sở Tài nguyên &amp; Môi trường và Giám đốc Văn phòng Đăng ký đất đai TP. Hồ Chí Minh giao.</td>
+                  <td><span class="badge badge-info">Ban Giám đốc Chi nhánh</span></td>
+                  <td><span class="badge badge-neutral">Chỉ đạo cấp trên</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- GÓC NHÌN 4: 05 PHƯỜNG ĐỊA BÀN (WARDS VIEW) -->
+      <div id="subviewWards" class="org-view-panel hidden">
+        <div class="org-wards-detail-card">
+          <div class="flex items-center justify-between border-b pb-3 mb-4">
+            <div>
+              <h2 class="text-base font-bold text-navy-900">
+                <i class="fa-solid fa-map-location-dot text-primary mr-2"></i>MẠNG LƯỚI ĐỊA BÀN PHỤ TRÁCH &amp; ĐIỂM TIẾP NHẬN TTHC (05 PHƯỜNG)
+              </h2>
+              <p class="text-xs text-muted mt-1">Triển khai cơ chế Một cửa liên thông theo quy định tại Điều 9 QĐ số 2637/QĐ-SNNMT-VP</p>
+            </div>
+            <div class="text-xs text-muted">
+              <i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> Liên thông 100% hồ sơ đất đai cơ sở
+            </div>
+          </div>
+
+          <div class="org-wards-detail-grid">
+            <div class="org-ward-detail-item is-headquarter">
+              <div>
+                <div class="org-ward-icon-box bg-blue-600">
+                  <i class="fa-solid fa-building-flag"></i>
+                </div>
+                <h3 class="text-sm font-bold text-navy-900">Phường Thủ Dầu Một</h3>
+                <div class="text-xs text-emerald-700 font-semibold mt-1">Trụ sở Chi nhánh Số 23</div>
+                <p class="text-xs text-muted mt-2">Điểm tiếp nhận tập trung toàn bộ TTHC đất đai, bộ phận Một cửa chính, kho lưu trữ địa chính gốc và văn phòng làm việc của Ban Giám đốc cùng 3 Tổ chuyên môn.</p>
+              </div>
+              <div class="pt-2 border-t text-xs text-muted">
+                <i class="fa-solid fa-location-dot mr-1 text-primary"></i> Trụ sở chính &bull; Tiếp dân
+              </div>
+            </div>
+
+            <div class="org-ward-detail-item">
+              <div>
+                <div class="org-ward-icon-box bg-indigo-600">
+                  <i class="fa-solid fa-city"></i>
+                </div>
+                <h3 class="text-sm font-bold text-navy-900">Phường Chánh Hiệp</h3>
+                <div class="text-xs text-indigo-700 font-semibold mt-1">Địa bàn quản lý</div>
+                <p class="text-xs text-muted mt-2">Phối hợp UBND Phường xác nhận nguồn gốc đất, hiện trạng sử dụng, niêm yết công khai thủ tục cấp GCN và giải quyết tranh chấp ranh giới thửa đất.</p>
+              </div>
+              <div class="pt-2 border-t text-xs text-muted">
+                <i class="fa-solid fa-arrows-split-up-and-left mr-1"></i> Một cửa liên thông
+              </div>
+            </div>
+
+            <div class="org-ward-detail-item">
+              <div>
+                <div class="org-ward-icon-box bg-teal-600">
+                  <i class="fa-solid fa-tree-city"></i>
+                </div>
+                <h3 class="text-sm font-bold text-navy-900">Phường Phú Lợi</h3>
+                <div class="text-xs text-teal-700 font-semibold mt-1">Địa bàn quản lý</div>
+                <p class="text-xs text-muted mt-2">Thực hiện công tác trích lục, đo đạc biến động, cấp đổi, cấp mới Giấy chứng nhận và đăng ký biện pháp thế chấp tài sản gắn liền với đất.</p>
+              </div>
+              <div class="pt-2 border-t text-xs text-muted">
+                <i class="fa-solid fa-arrows-split-up-and-left mr-1"></i> Một cửa liên thông
+              </div>
+            </div>
+
+            <div class="org-ward-detail-item">
+              <div>
+                <div class="org-ward-icon-box bg-amber-600">
+                  <i class="fa-solid fa-house-laptop"></i>
+                </div>
+                <h3 class="text-sm font-bold text-navy-900">Phường Phú An</h3>
+                <div class="text-xs text-amber-700 font-semibold mt-1">Địa bàn quản lý</div>
+                <p class="text-xs text-muted mt-2">Xử lý hồ sơ đăng ký biến động, thừa kế, tặng cho, chuyển nhượng quyền sử dụng đất và cập nhật đồng bộ dữ liệu vào hệ thống VBDLIS.</p>
+              </div>
+              <div class="pt-2 border-t text-xs text-muted">
+                <i class="fa-solid fa-arrows-split-up-and-left mr-1"></i> Một cửa liên thông
+              </div>
+            </div>
+
+            <div class="org-ward-detail-item">
+              <div>
+                <div class="org-ward-icon-box bg-emerald-600">
+                  <i class="fa-solid fa-seedling"></i>
+                </div>
+                <h3 class="text-sm font-bold text-navy-900">Phường Bình Dương</h3>
+                <div class="text-xs text-emerald-700 font-semibold mt-1">Địa bàn quản lý</div>
+                <p class="text-xs text-muted mt-2">Phối hợp tổ chức đo vẽ thực địa, giải quyết khiếu nại kiến nghị, cung cấp dữ liệu địa chính và phục vụ công tác thu hồi, bồi thường đất đai.</p>
+              </div>
+              <div class="pt-2 border-t text-xs text-muted">
+                <i class="fa-solid fa-arrows-split-up-and-left mr-1"></i> Một cửa liên thông
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GÓC NHÌN 5: CHẾ ĐỘ LÀM VIỆC & PHÁP LÝ (GOVERNANCE VIEW) -->
+      <div id="subviewGovernance" class="org-view-panel hidden">
+        <div class="org-governance-card">
+          <div class="border-b pb-3 mb-4">
+            <h2 class="text-base font-bold text-navy-900">
+              <i class="fa-solid fa-scale-balanced text-primary mr-2"></i>CHẾ ĐỘ LÀM VIỆC, THẨM QUYỀN &amp; QUY CHẾ PHỐI HỢP
+            </h2>
+            <p class="text-xs text-muted mt-1">Trích lục các Điều khoản trọng tâm theo Quyết định số 2637/QĐ-SNNMT-VP</p>
+          </div>
+
+          <div class="org-governance-grid">
+            <!-- CHẾ ĐỘ THỦ TRƯỞNG -->
+            <div class="org-governance-box">
+              <div class="org-governance-title">
+                <i class="fa-solid fa-gavel text-amber-600"></i>
+                <span>Chế Độ Thủ Trưởng &amp; Trách Nhiệm Người Đứng Đầu (Điều 7)</span>
+              </div>
+              <ul class="org-governance-list">
+                <li>
+                  <i class="fa-solid fa-check-double"></i>
+                  <span>Chi nhánh làm việc theo <strong>chế độ thủ trưởng</strong>; Giám đốc Chi nhánh là người đứng đầu, chịu trách nhiệm trước Giám đốc Văn phòng Đăng ký đất đai TP và trước pháp luật về toàn bộ hoạt động của đơn vị.</span>
+                </li>
+                <li>
+                  <i class="fa-solid fa-check-double"></i>
+                  <span>Phó Giám đốc giúp việc cho Giám đốc, được Giám đốc phân công phụ trách một hoặc một số lĩnh vực công tác và chịu trách nhiệm trước Giám đốc và trước pháp luật về nhiệm vụ được giao.</span>
+                </li>
+                <li>
+                  <i class="fa-solid fa-check-double"></i>
+                  <span>Tổ trưởng các Tổ chuyên môn chịu trách nhiệm trước Lãnh đạo Chi nhánh về toàn bộ kết quả thực hiện nhiệm vụ của Tổ mình quản lý.</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- THẨM QUYỀN NGHỈ PHÉP -->
+            <div class="org-governance-box">
+              <div class="org-governance-title">
+                <i class="fa-solid fa-calendar-check text-emerald-600"></i>
+                <span>Quy Định Nghỉ Phép &amp; Thẩm Quyền Phê Duyệt (Điều 8)</span>
+              </div>
+              <ul class="org-governance-list">
+                <li>
+                  <i class="fa-solid fa-check-double"></i>
+                  <span><strong>Nghỉ dưới 03 ngày làm việc:</strong> Viên chức, người lao động thuộc Chi nhánh nghỉ phép năm, nghỉ ốm, việc riêng dưới 03 ngày do <em>Giám đốc Chi nhánh</em> xem xét, quyết định.</span>
+                </li>
+                <li>
+                  <i class="fa-solid fa-check-double"></i>
+                  <span><strong>Nghỉ từ 03 ngày làm việc trở lên:</strong> Phải báo cáo bằng văn bản và phải được sự chấp thuận của <em>Giám đốc Văn phòng Đăng ký đất đai TP. Hồ Chí Minh</em>.</span>
+                </li>
+                <li>
+                  <i class="fa-solid fa-check-double"></i>
+                  <span><strong>Lãnh đạo Chi nhánh nghỉ việc riêng / công tác:</strong> Giám đốc và Phó Giám đốc Chi nhánh khi vắng mặt hoặc đi công tác ngoại tỉnh phải báo cáo và được sự đồng ý của Giám đốc VPĐKĐĐ TP.</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- QUAN HỆ CÔNG TÁC & PHỐI HỢP -->
+            <div class="org-governance-box">
+              <div class="org-governance-title">
+                <i class="fa-solid fa-handshake text-blue-600"></i>
+                <span>Mối Quan Hệ Công Tác &amp; Phối Hợp Liên Ngành (Điều 9)</span>
+              </div>
+              <ul class="org-governance-list">
+                <li>
+                  <i class="fa-solid fa-check-double"></i>
+                  <span><strong>Với Cơ quan Thuế:</strong> Thực hiện quy trình liên thông luân chuyển hồ sơ điện tử, thông báo nghĩa vụ tài chính và xác nhận biên lai thu thuế kịp thời, đúng hẹn.</span>
+                </li>
+                <li>
+                  <i class="fa-solid fa-check-double"></i>
+                  <span><strong>Với UBND các Phường:</strong> Phối hợp kiểm tra xác minh nguồn gốc nhà đất, kiểm tra quy hoạch, niêm yết công khai và hòa giải các vụ việc tranh chấp đất đai.</span>
+                </li>
+                <li>
+                  <i class="fa-solid fa-check-double"></i>
+                  <span><strong>Với Tòa án &amp; Cơ quan Thi hành án:</strong> Cung cấp thông tin địa chính, trích lục hồ sơ thửa đất phục vụ xét xử và thi hành án dân sự theo đúng luật định.</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- CHUẨN MỰC GIAO TIẾP HÀNH CHÍNH -->
+            <div class="org-governance-box">
+              <div class="org-governance-title">
+                <i class="fa-solid fa-face-smile text-purple-600"></i>
+                <span>Văn Hóa Công Sở &amp; Chuẩn Mực Giao Tiếp (Điều 9 Khoản 5)</span>
+              </div>
+              <ul class="org-governance-list">
+                <li>
+                  <i class="fa-solid fa-check-double"></i>
+                  <span>Cán bộ, viên chức khi tiếp xúc với nhân dân, tổ chức phải giữ tác phong văn minh, lịch sự, tôn trọng, giải thích rõ ràng, tận tình hướng dẫn.</span>
+                </li>
+                <li>
+                  <i class="fa-solid fa-check-double"></i>
+                  <span>Thực hiện nghiêm túc phương châm <strong>"4 xin, 4 luôn"</strong>: <em>Xin chào, Xin lỗi, Xin cảm ơn, Xin phép; Luôn mỉm cười, Luôn nhẹ nhàng, Luôn lắng nghe, Luôn giúp đỡ</em>.</span>
+                </li>
+                <li>
+                  <i class="fa-solid fa-check-double"></i>
+                  <span>Tuyệt đối không gây phiền hà, sách nhiễu, tiêu cực, đùn đẩy trách nhiệm trong quá trình tiếp nhận và giải quyết thủ tục hành chính đất đai.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </section>
 
-    <!-- 4. KHU VỰC HIỂN THỊ DANH SÁCH NHÂN SỰ -->
-    <section id="hrmContentArea" aria-label="Danh sách nhân sự">
+    <!-- ==================== TAB 2: TRA CỨU NHÂN SỰ & DANH BẠ CÁN BỘ ==================== -->
+    <section id="panelStaffDirectory" class="hrm-tab-panel hidden" role="tabpanel" aria-labelledby="tabBtnStaffDirectory">
 
-      <!-- Trạng thái đang tải -->
-      <div id="hrmLoadingState" class="hrm-state-box">
-        <div class="hrm-state-icon">
-          <i class="fa-solid fa-spinner fa-spin"></i>
+      <!-- 2. THẺ KPI TỔNG QUAN NHÂN SỰ -->
+      <section class="hrm-kpi-grid" aria-label="Thống kê nhân sự">
+        <div class="hrm-kpi-card">
+          <div class="hrm-kpi-icon kpi-navy">
+            <i class="fa-solid fa-users"></i>
+          </div>
+          <div class="hrm-kpi-meta">
+            <div class="hrm-kpi-label">Tổng số nhân sự</div>
+            <div id="statTotalUsers" class="hrm-kpi-value">0</div>
+            <div class="hrm-kpi-sub">Dữ liệu từ Sheet TaiKhoan</div>
+          </div>
         </div>
-        <h2 class="hrm-state-title">Đang tải dữ liệu nhân sự từ Sheet TaiKhoan...</h2>
-        <p class="hrm-state-desc">Hệ thống đang kết nối Google Sheets để đồng bộ danh bạ cán bộ mới nhất.</p>
-      </div>
 
-      <!-- Trạng thái lỗi kết nối -->
-      <div id="hrmErrorState" class="hrm-state-box hidden">
-        <div class="hrm-state-icon is-error">
-          <i class="fa-solid fa-triangle-exclamation"></i>
+        <div class="hrm-kpi-card">
+          <div class="hrm-kpi-icon kpi-success">
+            <i class="fa-solid fa-user-check"></i>
+          </div>
+          <div class="hrm-kpi-meta">
+            <div class="hrm-kpi-label">Đang làm việc</div>
+            <div id="statActiveUsers" class="hrm-kpi-value">0</div>
+            <div class="hrm-kpi-sub">Cán bộ đang công tác</div>
+          </div>
         </div>
-        <h2 class="hrm-state-title">Không thể tải danh sách nhân sự</h2>
-        <p id="hrmErrorMessage" class="hrm-state-desc">Vui lòng kiểm tra kết nối mạng hoặc thử tải lại dữ liệu.</p>
-        <button type="button" id="btnRetryFetch" class="btn btn-primary btn-sm">
-          <i class="fa-solid fa-rotate-right"></i>
-          <span>Thử tải lại</span>
-        </button>
-      </div>
 
-      <!-- Trạng thái không có kết quả phù hợp -->
-      <div id="hrmEmptyState" class="hrm-state-box hidden">
-        <div class="hrm-state-icon">
-          <i class="fa-solid fa-user-slash"></i>
+        <div class="hrm-kpi-card">
+          <div class="hrm-kpi-icon kpi-info">
+            <i class="fa-solid fa-sitemap"></i>
+          </div>
+          <div class="hrm-kpi-meta">
+            <div class="hrm-kpi-label">Phòng ban / Tổ</div>
+            <div id="statDeptCount" class="hrm-kpi-value">0</div>
+            <div class="hrm-kpi-sub">Đơn vị chuyên môn</div>
+          </div>
         </div>
-        <h2 class="hrm-state-title">Không tìm thấy cán bộ phù hợp</h2>
-        <p class="hrm-state-desc">Không có nhân sự nào khớp với từ khóa tìm kiếm hoặc bộ lọc phòng ban hiện tại.</p>
-        <button type="button" id="btnResetFilters" class="btn btn-secondary btn-sm">
-          <i class="fa-solid fa-rotate-left"></i>
-          <span>Xóa toàn bộ bộ lọc</span>
-        </button>
-      </div>
 
-      <!-- Chế độ 1: Lưới Thẻ Hồ Sơ (Mặc định) -->
-      <div id="staffCardGrid" class="hrm-staff-grid hidden"></div>
-
-      <!-- Chế độ 2: Bảng Danh Sách Chi Tiết -->
-      <div id="staffTableWrapper" class="hrm-table-card hidden">
-        <div class="hrm-table-scroll">
-          <table class="hrm-table">
-            <thead>
-              <tr>
-                <th>STT</th>
-                <th>Họ và tên / Tài khoản</th>
-                <th>Chức danh / Chức vụ</th>
-                <th>Phòng ban / Bộ phận</th>
-                <th>Số điện thoại</th>
-                <th>Vai trò</th>
-                <th>Trạng thái</th>
-                <th>Ngày tạo</th>
-                <th class="no-print">Chi tiết</th>
-              </tr>
-            </thead>
-            <tbody id="staffTableBody"></tbody>
-          </table>
+        <div class="hrm-kpi-card">
+          <div class="hrm-kpi-icon kpi-accent">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </div>
+          <div class="hrm-kpi-meta">
+            <div class="hrm-kpi-label">Kết quả hiển thị</div>
+            <div id="statFilteredUsers" class="hrm-kpi-value">0</div>
+            <div id="statLastSync" class="hrm-kpi-sub">Chưa đồng bộ</div>
+          </div>
         </div>
-      </div>
+      </section>
+
+      <!-- 3. THANH TÌM KIẾM & BỘ LỌC THEO TÊN / PHÒNG BAN -->
+      <section class="hrm-filter-panel no-print" aria-label="Tìm kiếm và lọc nhân sự">
+        <div id="hrmFilterControls" class="hrm-filter-controls no-status-filter">
+          <!-- Ô tìm kiếm theo tên -->
+          <div class="hrm-filter-field">
+            <label for="searchUserInput" class="form-label">
+              <i class="fa-solid fa-id-card"></i> Tìm kiếm theo họ tên
+            </label>
+            <div class="hrm-search-input-wrap">
+              <i class="fa-solid fa-magnifying-glass hrm-search-icon"></i>
+              <input
+                type="text"
+                id="searchUserInput"
+                class="form-control hrm-search-input"
+                placeholder="Nhập họ tên (có dấu hoặc không dấu), username..."
+                autocomplete="off"
+              >
+              <button type="button" id="btnClearSearch" class="hrm-clear-btn hidden" title="Xóa từ khóa tìm kiếm" aria-label="Xóa từ khóa">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Bộ lọc phòng ban -->
+          <div class="hrm-filter-field">
+            <label for="filterDeptSelect" class="form-label">
+              <i class="fa-solid fa-building-user"></i> Phòng ban / Bộ phận
+            </label>
+            <select id="filterDeptSelect" class="form-select">
+              <option value="ALL">-- Tất cả phòng ban --</option>
+            </select>
+          </div>
+
+          <!-- Bộ lọc trạng thái (Chỉ IT, Giám đốc, Nguyễn Thị Bích Tuyền mới thấy) -->
+          <div id="filterStatusField" class="hrm-filter-field hidden">
+            <label for="filterStatusSelect" class="form-label">
+              <i class="fa-solid fa-circle-dot"></i> Trạng thái
+            </label>
+            <select id="filterStatusSelect" class="form-select">
+              <option value="ALL">Tất cả trạng thái</option>
+              <option value="ACTIVE">Đang làm việc</option>
+              <option value="INACTIVE">Đã nghỉ</option>
+            </select>
+          </div>
+
+          <!-- Sắp xếp -->
+          <div class="hrm-filter-field">
+            <label for="sortUserSelect" class="form-label">
+              <i class="fa-solid fa-arrow-down-a-z"></i> Sắp xếp
+            </label>
+            <select id="sortUserSelect" class="form-select">
+              <option value="SMART">Mặc định (Tổ &amp; Chức vụ)</option>
+              <option value="NAME_ASC">Họ tên (A &rarr; Z)</option>
+              <option value="NAME_DESC">Họ tên (Z &rarr; A)</option>
+              <option value="DEPT_ASC">Phòng ban (A &rarr; Z)</option>
+            </select>
+          </div>
+
+          <!-- Chuyển đổi chế độ hiển thị -->
+          <div class="hrm-filter-field">
+            <span class="form-label">Chế độ xem</span>
+            <div class="hrm-view-toggle-group" role="group" aria-label="Chế độ hiển thị">
+              <button type="button" id="btnViewGrid" class="hrm-view-btn active" data-view="grid" title="Xem dạng thẻ hồ sơ">
+                <i class="fa-solid fa-grip"></i>
+                <span>Thẻ</span>
+              </button>
+              <button type="button" id="btnViewTable" class="hrm-view-btn" data-view="table" title="Xem dạng bảng danh sách">
+                <i class="fa-solid fa-table-list"></i>
+                <span>Bảng</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pills chọn nhanh theo phòng ban -->
+        <div id="deptPillsContainer" class="hrm-dept-pills-bar" aria-label="Lọc nhanh theo phòng ban">
+          <span class="hrm-dept-pills-label">
+            <i class="fa-solid fa-filter"></i> Lọc nhanh phòng ban:
+          </span>
+        </div>
+      </section>
+
+      <!-- 4. KHU VỰC HIỂN THỊ DANH SÁCH NHÂN SỰ -->
+      <section id="hrmContentArea" aria-label="Danh sách nhân sự">
+
+        <!-- Trạng thái đang tải -->
+        <div id="hrmLoadingState" class="hrm-state-box">
+          <div class="hrm-state-icon">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+          </div>
+          <h2 class="hrm-state-title">Đang tải dữ liệu nhân sự từ Sheet TaiKhoan...</h2>
+          <p class="hrm-state-desc">Hệ thống đang kết nối Google Sheets để đồng bộ danh bạ cán bộ mới nhất.</p>
+        </div>
+
+        <!-- Trạng thái lỗi kết nối -->
+        <div id="hrmErrorState" class="hrm-state-box hidden">
+          <div class="hrm-state-icon is-error">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <h2 class="hrm-state-title">Không thể tải danh sách nhân sự</h2>
+          <p id="hrmErrorMessage" class="hrm-state-desc">Vui lòng kiểm tra kết nối mạng hoặc thử tải lại dữ liệu.</p>
+          <button type="button" id="btnRetryFetch" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-rotate-right"></i>
+            <span>Thử tải lại</span>
+          </button>
+        </div>
+
+        <!-- Trạng thái không có kết quả phù hợp -->
+        <div id="hrmEmptyState" class="hrm-state-box hidden">
+          <div class="hrm-state-icon">
+            <i class="fa-solid fa-user-slash"></i>
+          </div>
+          <h2 class="hrm-state-title">Không tìm thấy cán bộ phù hợp</h2>
+          <p class="hrm-state-desc">Không có nhân sự nào khớp với từ khóa tìm kiếm hoặc bộ lọc phòng ban hiện tại.</p>
+          <button type="button" id="btnResetFilters" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-rotate-left"></i>
+            <span>Xóa toàn bộ bộ lọc</span>
+          </button>
+        </div>
+
+        <!-- Chế độ 1: Lưới Thẻ Hồ Sơ (Mặc định) -->
+        <div id="staffCardGrid" class="hrm-staff-grid hidden"></div>
+
+        <!-- Chế độ 2: Bảng Danh Sách Chi Tiết -->
+        <div id="staffTableWrapper" class="hrm-table-card hidden">
+          <div class="hrm-table-scroll">
+            <table class="hrm-table">
+              <thead>
+                <tr>
+                  <th>STT</th>
+                  <th>Họ và tên / Tài khoản</th>
+                  <th>Chức danh / Chức vụ</th>
+                  <th>Phòng ban / Bộ phận</th>
+                  <th>Số điện thoại</th>
+                  <th>Vai trò</th>
+                  <th>Trạng thái</th>
+                  <th>Ngày tạo</th>
+                  <th class="no-print">Chi tiết</th>
+                </tr>
+              </thead>
+              <tbody id="staffTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
 
     </section>
 
   </main>
 
-  <!-- ==================== MODAL HỒ SƠ CHI TIẾT CÁN BỘ ==================== -->
+  <!-- ==================== SLIDE-OVER MODAL CHI TIẾT ĐƠN VỊ / TỔ (ORG NODE) ==================== -->
+  <div id="modalOrgNodeDetail" class="org-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="orgModalTitle">
+    <div class="org-modal-slideover">
+      <div class="org-modal-header">
+        <div class="org-modal-header-left">
+          <div id="orgModalIconBox" class="org-modal-icon-box bg-blue-700">
+            <i class="fa-solid fa-sitemap"></i>
+          </div>
+          <div>
+            <h2 id="orgModalTitle" class="org-modal-title">Tên Đơn Vị / Tổ Chuyên Môn</h2>
+            <div id="orgModalSubtitle" class="org-modal-subtitle">Cơ cấu &bull; Quyết định số 2637/QĐ-SNNMT-VP</div>
+          </div>
+        </div>
+        <button type="button" id="btnCloseOrgModal" class="org-modal-close-btn" aria-label="Đóng bảng thông tin">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div id="orgModalBody" class="org-modal-body">
+        <!-- Nội dung chi tiết đơn vị được nạp động từ js/hrm.js -->
+      </div>
+
+      <div class="org-modal-footer">
+        <div id="orgModalFooterRef" class="text-xs text-muted">
+          <i class="fa-solid fa-scale-balanced mr-1"></i> Quyết định số 2637/QĐ-SNNMT-VP
+        </div>
+        <button type="button" id="btnOrgModalCloseFooter" class="btn btn-secondary btn-sm">
+          <i class="fa-solid fa-xmark"></i>
+          <span>Đóng</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL HỒ SƠ CHI TIẾT CÁN BỘ (STAFF DETAIL) ==================== -->
   <div id="modalStaffDetail" class="hrm-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modalStaffName">
     <div class="hrm-modal-dialog">
       <div class="hrm-modal-header">
